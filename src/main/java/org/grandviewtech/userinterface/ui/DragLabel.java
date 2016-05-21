@@ -23,7 +23,7 @@ public class DragLabel extends JLabel implements DragGestureListener, DragSource
 		private static final long	serialVersionUID	= 4128980357528030474L;
 		private DragSource			dragSource;
 		
-		
+		dd
 		public DragLabel(String text)
 			{
 				setText(text);
