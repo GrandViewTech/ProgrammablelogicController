@@ -159,4 +159,28 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<properties>
+		<lucene.query.parser.version>6.0.0</lucene.query.parser.version>
+		<lucene.analyzers.common.version>6.0.0</lucene.analyzers.common.version>
+		<lucene.queries.version>6.0.0</lucene.queries.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-queryparser</artifactId>
+			<version>${lucene.query.parser.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-queries</artifactId>
+			<version>${lucene.queries.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-analyzers-common</artifactId>
+			<version>${lucene.analyzers.common.version}</version>
+		</dependency>
+	</dependencies>
 </project>

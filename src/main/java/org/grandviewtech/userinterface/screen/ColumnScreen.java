@@ -18,7 +18,9 @@ import javax.swing.JPanel;
 import javax.swing.TransferHandler;
 
 import org.grandviewtech.constants.Coils;
+import org.grandviewtech.constants.Icons;
 import org.grandviewtech.constants.PreferredDimension;
+import org.grandviewtech.entity.bo.ClipBoard;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.service.validation.ValidateDragOption;
 import org.grandviewtech.userinterface.coils.PaintCoilsOnScreen;
@@ -27,8 +29,9 @@ import org.grandviewtech.userinterface.helper.CustomBorder;
 import org.grandviewtech.userinterface.listeners.ColumnScreenFocusListener;
 import org.grandviewtech.userinterface.listeners.ColumnScreenKeyPressListener;
 import org.grandviewtech.userinterface.listeners.ColumnScreenMouseClickListener;
+import org.grandviewtech.userinterface.listeners.SettingsMouseClickListener;
 
-public class ColumnScreen extends JPanel implements PreferredDimension, DropTargetListener
+public class ColumnScreen extends JPanel implements PreferredDimension, DropTargetListener, Icons
 	{
 		private static final long	serialVersionUID	= -4357735797077739462L;
 		private ColumnScreen		previous;
@@ -38,9 +41,13 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 		private int					rowNumber;
 		private int					columnNumber;
 		private boolean				paintDefault		= true;
-		private JLabel				coilName			= new JLabel();
-		private String				coil;
 		final static Screen			SCREEN				= Screen.getInstance();
+		private JLabel				setting				= new JLabel(SETTING);
+		private JLabel				valueLabel			= new JLabel("");
+		private boolean				isBlank				= true;
+		private String				tag					= "";
+		private String				value;
+		private String				coil;
 		
 		public ColumnScreen()
 			{
@@ -49,25 +56,18 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 			
 		private void init()
 			{
-				add(coilName);
+				setLayout(null);
+				valueLabel.setBounds(10, 10, 50, 20);
+				add(valueLabel);
 				setPreferredSize(CELL_SIZE);
+				setting.setBounds(getX() + 55, 0, 50, 20);
+				setting.addMouseListener(new SettingsMouseClickListener(this));
 				setBorder(new CustomBorder());
 				setTransferHandler(new TransferHandler("icon"));
 				new DropTarget(this, this);
 				addMouseListener(new ColumnScreenMouseClickListener(this));
 				addKeyListener(new ColumnScreenKeyPressListener(this));
 				addFocusListener(new ColumnScreenFocusListener(this));
-				
-			}
-			
-		public JLabel getCoilName()
-			{
-				return coilName;
-			}
-			
-		public void setCoilName(JLabel coilName)
-			{
-				this.coilName = coilName;
 			}
 			
 		public int getColumnNumber()
@@ -84,7 +84,8 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 		protected void paintComponent(java.awt.Graphics graphics)
 			{
 				super.paintComponent(graphics);
-				PaintCoilsOnScreen.paint(graphics, coil, paintDefault);
+				this.valueLabel.setText(this.value);
+				PaintCoilsOnScreen.paint(this, graphics);
 			}
 			
 		@Override
@@ -121,9 +122,7 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 									{
 										dropTargetDragEvent.getDropTargetContext().getComponent().setCursor(DragSource.DefaultCopyNoDrop);
 										dropTargetDragEvent.rejectDrop();
-										//setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-										
-										dropTargetDragEvent.getDropTargetContext().dropComplete(false);
+										//dropTargetDragEvent.getDropTargetContext().dropComplete(false);
 									}
 									
 							}
@@ -244,8 +243,18 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 			
 		public void setCoil(String coil)
 			{
-				this.paintDefault = false;
-				this.coil = coil;
+				if (coil != null)
+					{
+						this.paintDefault = false;
+						this.coil = coil;
+						setBlank(false);
+					}
+				else
+					{
+						this.paintDefault = true;
+						this.coil = coil;
+						setBlank(true);
+					}
 			}
 			
 		public boolean isPaintDefault()
@@ -258,7 +267,6 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 				this.paintDefault = paintDefault;
 			}
 			
-		
 		private void selectTheRigthCoilUsingDragOption(String dragContents)
 			{
 				switch (dragContents)
@@ -275,9 +283,79 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 							}
 						case Coils.LOAD:
 							{
+								ColumnConfigurationScreen columnConfigurationScreen = ColumnConfigurationScreen.getInstance();
+								columnConfigurationScreen.initiateInstance(this);
+								columnConfigurationScreen.requestFocusInWindow();
+								ClipBoard.setCurrentRowNumber(rowNumber);
+								ClipBoard.setCurrentColumnNumber(columnNumber);
 								setCoil(Coils.LOAD);
+								break;
+							}
+						case Coils.JUMP:
+							{
+								setCoil(Coils.JUMP);
 								break;
 							}
 					}
 			}
+			
+		public JLabel getSetting()
+			{
+				return setting;
+			}
+			
+		public String getValue()
+			{
+				return value;
+			}
+			
+		public void setValue(String value)
+			{
+				this.value = value;
+			}
+			
+		public JLabel getValueLabel()
+			{
+				return valueLabel;
+			}
+			
+		public void setValueLabel(JLabel valueLabel)
+			{
+				this.valueLabel = valueLabel;
+			}
+			
+		public boolean isBlank()
+			{
+				return isBlank;
+			}
+			
+		public void setBlank(boolean isBlank)
+			{
+				this.isBlank = isBlank;
+			}
+			
+		public void reset()
+			{
+				remove(setting);
+				setBlank(true);
+				setCoil(null);
+				setValue(null);
+			}
+			
+		public String getTag()
+			{
+				return tag;
+			}
+			
+		public void setTag(String tag)
+			{
+				this.tag = tag;
+			}
+			
+		@Override
+		public String toString()
+			{
+				return "ColumnScreen [rowNumber=" + rowNumber + ", columnNumber=" + columnNumber + ", paintDefault=" + paintDefault + ", coil=" + coil + ", value=" + value + "]";
+			}
+			
 	}

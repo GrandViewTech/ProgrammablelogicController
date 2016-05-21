@@ -28,6 +28,7 @@ public class RungListener implements MouseListener, KeyListener, Icons
 			{
 				if (SwingUtilities.isRightMouseButton(mouseEvent))
 					{
+						editMenu.removeAll();
 						open();
 						editMenu.show(rung, rung.getX() + 22, rung.getY());
 					}
@@ -89,8 +90,10 @@ public class RungListener implements MouseListener, KeyListener, Icons
 			{
 				JMenuItem menuItem = new JMenuItem("New");
 				menuItem.setIcon(NEW);
+				int currentRungNumber = rung.getRowNumber();
+				int newRungNumber = currentRungNumber + 1;
+				menuItem.addActionListener(new NewRowListener(currentRungNumber, newRungNumber));
 				editMenu.add(menuItem);
-				
 				if (addSeparator)
 					{
 						editMenu.addSeparator();

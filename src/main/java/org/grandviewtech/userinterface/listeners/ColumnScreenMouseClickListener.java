@@ -19,7 +19,6 @@ public class ColumnScreenMouseClickListener implements MouseListener
 		@Override
 		public void mouseClicked(MouseEvent eventvent)
 			{
-				//source.requestFocus();
 				if (isSelected == false)
 					{
 						isSelected = true;
@@ -30,7 +29,7 @@ public class ColumnScreenMouseClickListener implements MouseListener
 						isSelected = false;
 						ActionBot.focusLost(source);
 					}
-
+					
 			}
 			
 		@Override

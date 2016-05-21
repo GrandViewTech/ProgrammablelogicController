@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.grandviewtech.constants.PLCConstant;
 import org.grandviewtech.service.system.Printer;
 import org.grandviewtech.userinterface.screen.RowScreen;
 import org.grandviewtech.userinterface.screen.Sheet;
@@ -28,11 +27,13 @@ public class Screen implements Serializable
 				return ScreenFactoryInstance.instance;
 			}
 			
-		final private Sheet	sheet			= new Sheet();
+	
 		
-		private int			totalRow		= 1;
+		final private Sheet							sheet			= new Sheet();
 		
-		final private int	maxNumberOffRow	= 50;
+		private int									totalRow		= 1;
+		
+		final private int							maxNumberOffRow	= 50;
 		
 		public int getMaxNumberOffRow()
 			{
@@ -82,7 +83,7 @@ public class Screen implements Serializable
 					}
 				else
 					{
-						throw new RuntimeException("Invald RowNumber "+i$);
+						throw new RuntimeException("Invald RowNumber " + i$);
 					}
 					
 			}
@@ -100,5 +101,12 @@ public class Screen implements Serializable
 						throw new RuntimeException("Invald RowNumber" + i$);
 					}
 			}
+
+		public List<RowScreen> getRows()
+			{
+				return rows;
+			}
+		
+		
 			
 	}

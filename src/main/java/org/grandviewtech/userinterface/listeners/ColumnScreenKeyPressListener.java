@@ -3,16 +3,20 @@ package org.grandviewtech.userinterface.listeners;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+import org.grandviewtech.constants.Borders;
+import org.grandviewtech.entity.bo.ClipBoard;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.userinterface.helper.ColumnScreenGenerator;
 import org.grandviewtech.userinterface.misc.ActionBot;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 
-public class ColumnScreenKeyPressListener implements KeyListener
+public class ColumnScreenKeyPressListener implements KeyListener, Borders
 	{
-		final static Screen		SCREEN	= Screen.getInstance();
+		final static Screen				SCREEN		= Screen.getInstance();
 		
-		private ColumnScreen	source;
+		private ColumnScreen			source;
+		
+		final private static ClipBoard	CLIP_BOARD	= ClipBoard.getInstance();
 		
 		public ColumnScreenKeyPressListener(ColumnScreen source)
 			{
@@ -23,13 +27,31 @@ public class ColumnScreenKeyPressListener implements KeyListener
 		public void keyTyped(KeyEvent keyEvent)
 			{
 				boolean defaultWait = true;
-				onFocus(keyEvent, defaultWait);	
+				onFocus(keyEvent, defaultWait);
+				if (keyEvent.getKeyCode() == KeyEvent.VK_CONTROL)
+					{
+						CLIP_BOARD.setControlKeyActive(true);
+					}
+				else if (keyEvent.getKeyCode() == KeyEvent.VK_ESCAPE)
+					{
+						ClipBoard.cutLabel.setBorder(null);
+						ClipBoard.copyLabel.setBorder(null);
+						ClipBoard.pasteLabel.setBorder(null);
+						actionOnEscape();
+					}
 			}
 			
 		@Override
 		public void keyPressed(KeyEvent keyEvent)
 			{
-				
+				if (keyEvent.getKeyCode() == KeyEvent.VK_CONTROL)
+					{
+						CLIP_BOARD.setControlKeyActive(true);
+					}
+				else if (keyEvent.getKeyCode() == KeyEvent.VK_ESCAPE)
+					{
+						actionOnEscape();
+					}
 			}
 			
 		@Override
@@ -69,6 +91,14 @@ public class ColumnScreenKeyPressListener implements KeyListener
 								break;
 							}
 					}
+			}
+			
+		private void actionOnEscape()
+			{
+				ClipBoard.cutLabel.setBorder(PADDED_DEFAULT);
+				ClipBoard.copyLabel.setBorder(PADDED_DEFAULT);
+				ClipBoard.pasteLabel.setBorder(PADDED_DEFAULT);
+				CLIP_BOARD.resetClipBoardColumnSelection();
 			}
 			
 	}

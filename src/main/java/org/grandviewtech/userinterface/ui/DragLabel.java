@@ -1,5 +1,6 @@
 package org.grandviewtech.userinterface.ui;
 
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
@@ -12,7 +13,9 @@ import java.awt.dnd.DragSourceDropEvent;
 import java.awt.dnd.DragSourceEvent;
 import java.awt.dnd.DragSourceListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
+import javax.swing.border.Border;
 
 import org.grandviewtech.service.system.Printer;
 
@@ -20,10 +23,13 @@ public class DragLabel extends JLabel implements DragGestureListener, DragSource
 	{
 		private static final long	serialVersionUID	= 4128980357528030474L;
 		private DragSource			dragSource;
+		Border						paddingBorder		= BorderFactory.createEmptyBorder(2, 5, 5, 2);
+		Border						border				= BorderFactory.createLineBorder(Color.white);
 		
 		public DragLabel(String text)
 			{
 				setText(text);
+				setBorder(BorderFactory.createCompoundBorder(border, paddingBorder));
 				dragSource = new DragSource();
 				dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
 				setCursor(new Cursor(Cursor.HAND_CURSOR));

@@ -57,4 +57,16 @@ public class Rung extends JPanel implements PreferredDimension
 					}
 				return param;
 			}
+			
+		public int getRowNumber()
+			{
+				return rowNumber;
+			}
+			
+		public void setRowNumber(int rowNumber)
+			{
+				this.rowNumber = rowNumber;
+				label.setText(addPaddingToRowNumber(this.rowNumber));
+			}
+			
 	}

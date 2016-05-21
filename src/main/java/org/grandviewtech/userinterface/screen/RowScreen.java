@@ -19,6 +19,8 @@ public class RowScreen extends JPanel implements PLCConstant
 		
 		private int					rowNumber;
 		
+		private Rung				rung;
+		
 		public RowScreen(int rowNumber)
 			{
 				this.rowNumber = rowNumber;
@@ -54,7 +56,8 @@ public class RowScreen extends JPanel implements PLCConstant
 				gridBagConstraints.gridx = 1;
 				gridBagConstraints.gridy = 1;
 				gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-				add(new Rung(rowNumber), gridBagConstraints);
+				rung = new Rung(rowNumber);
+				add(rung, gridBagConstraints);
 				int columnNumber = 1;
 				while (columnNumber <= MAX_CELL)
 					{
@@ -71,4 +74,10 @@ public class RowScreen extends JPanel implements PLCConstant
 				revalidate();
 				repaint();
 			}
+			
+		public Rung getRung()
+			{
+				return rung;
+			}
+			
 	}
