@@ -1,6 +1,5 @@
 package org.grandviewtech.userinterface.ui;
 
-import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
@@ -15,7 +14,6 @@ import java.awt.dnd.DragSourceListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
-import javax.swing.border.Border;
 
 import org.grandviewtech.constants.Borders;
 import org.grandviewtech.service.system.Printer;
