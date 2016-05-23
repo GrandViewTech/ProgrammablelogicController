@@ -11,7 +11,7 @@ import javax.swing.SwingConstants;
 import org.grandviewtech.constants.PreferredDimension;
 import org.grandviewtech.userinterface.listeners.RungListener;
 
-public class Rung extends JPanel implements PreferredDimension
+public class Rung extends JPanel implements PreferredDimension, Comparable<Rung>
 	{
 		
 		private static final long	serialVersionUID	= -9169919756235566414L;
@@ -67,6 +67,36 @@ public class Rung extends JPanel implements PreferredDimension
 			{
 				this.rowNumber = rowNumber;
 				label.setText(addPaddingToRowNumber(this.rowNumber));
+			}
+			
+		@Override
+		public int compareTo(Rung comparableRung)
+			{
+				Integer currentRowNumber = rowNumber;
+				Integer comparableRowNumber = comparableRung.getRowNumber();
+				return currentRowNumber.compareTo(comparableRowNumber);
+			}
+			
+		@Override
+		public int hashCode()
+			{
+				return rowNumber;
+			}
+			
+		@Override
+		public boolean equals(Object comparableRung)
+			{
+				if (comparableRung instanceof Rung)
+					{
+						int currentRowNumber = rowNumber;
+						int comparableRowNumber = ((Rung) comparableRung).getRowNumber();
+						if (currentRowNumber == comparableRowNumber)
+							{
+								return true;
+							}
+						return false;
+					}
+				return false;
 			}
 			
 	}

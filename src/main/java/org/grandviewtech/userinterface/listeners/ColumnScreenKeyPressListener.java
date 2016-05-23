@@ -12,11 +12,9 @@ import org.grandviewtech.userinterface.screen.ColumnScreen;
 
 public class ColumnScreenKeyPressListener implements KeyListener, Borders
 	{
-		final static Screen				SCREEN		= Screen.getInstance();
+		final static Screen		SCREEN	= Screen.getInstance();
 		
-		private ColumnScreen			source;
-		
-		final private static ClipBoard	CLIP_BOARD	= ClipBoard.getInstance();
+		private ColumnScreen	source;
 		
 		public ColumnScreenKeyPressListener(ColumnScreen source)
 			{
@@ -30,7 +28,7 @@ public class ColumnScreenKeyPressListener implements KeyListener, Borders
 				onFocus(keyEvent, defaultWait);
 				if (keyEvent.getKeyCode() == KeyEvent.VK_CONTROL)
 					{
-						CLIP_BOARD.setControlKeyActive(true);
+						ClipBoard.setControlKeyActive(true);
 					}
 				else if (keyEvent.getKeyCode() == KeyEvent.VK_ESCAPE)
 					{
@@ -46,7 +44,7 @@ public class ColumnScreenKeyPressListener implements KeyListener, Borders
 			{
 				if (keyEvent.getKeyCode() == KeyEvent.VK_CONTROL)
 					{
-						CLIP_BOARD.setControlKeyActive(true);
+						ClipBoard.setControlKeyActive(true);
 					}
 				else if (keyEvent.getKeyCode() == KeyEvent.VK_ESCAPE)
 					{
@@ -59,6 +57,10 @@ public class ColumnScreenKeyPressListener implements KeyListener, Borders
 			{
 				boolean defaultWait = false;
 				onFocus(keyEvent, defaultWait);
+				if (keyEvent.getKeyCode() == KeyEvent.VK_CONTROL)
+					{
+						ClipBoard.setControlKeyActive(false);
+					}
 			}
 			
 		private void onFocus(KeyEvent keyEvent, boolean defaultWait)
@@ -98,7 +100,7 @@ public class ColumnScreenKeyPressListener implements KeyListener, Borders
 				ClipBoard.cutLabel.setBorder(PADDED_DEFAULT);
 				ClipBoard.copyLabel.setBorder(PADDED_DEFAULT);
 				ClipBoard.pasteLabel.setBorder(PADDED_DEFAULT);
-				CLIP_BOARD.resetClipBoardColumnSelection();
+				ClipBoard.resetClipBoardColumnSelection();
 			}
 			
 	}

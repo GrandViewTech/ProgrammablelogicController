@@ -31,7 +31,7 @@ import org.grandviewtech.userinterface.listeners.ColumnScreenKeyPressListener;
 import org.grandviewtech.userinterface.listeners.ColumnScreenMouseClickListener;
 import org.grandviewtech.userinterface.listeners.SettingsMouseClickListener;
 
-public class ColumnScreen extends JPanel implements PreferredDimension, DropTargetListener, Icons
+public class ColumnScreen extends JPanel implements PreferredDimension, DropTargetListener, Icons, Comparable<ColumnScreen>
 	{
 		private static final long	serialVersionUID	= -4357735797077739462L;
 		private ColumnScreen		previous;
@@ -283,7 +283,7 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 							}
 						case Coils.LOAD:
 							{
-								ColumnConfigurationScreen columnConfigurationScreen = ColumnConfigurationScreen.getInstance();
+								ColumnConfigurationScreen columnConfigurationScreen = new ColumnConfigurationScreen();
 								columnConfigurationScreen.initiateInstance(this);
 								columnConfigurationScreen.requestFocusInWindow();
 								ClipBoard.setCurrentRowNumber(rowNumber);
@@ -356,6 +356,14 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 		public String toString()
 			{
 				return "ColumnScreen [rowNumber=" + rowNumber + ", columnNumber=" + columnNumber + ", paintDefault=" + paintDefault + ", coil=" + coil + ", value=" + value + "]";
+			}
+			
+		@Override
+		public int compareTo(ColumnScreen comparableColumnScreen)
+			{
+				Integer currentColumnNumber = columnNumber;
+				Integer comparableColumnNumber = comparableColumnScreen.getColumnNumber();
+				return currentColumnNumber.compareTo(comparableColumnNumber);
 			}
 			
 	}

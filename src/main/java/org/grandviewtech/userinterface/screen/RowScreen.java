@@ -8,7 +8,7 @@ import javax.swing.JPanel;
 
 import org.grandviewtech.constants.PLCConstant;
 
-public class RowScreen extends JPanel implements PLCConstant
+public class RowScreen extends JPanel implements PLCConstant, Comparable<RowScreen>
 	{
 		
 		private static final long	serialVersionUID	= 8194999359481289598L;
@@ -78,6 +78,24 @@ public class RowScreen extends JPanel implements PLCConstant
 		public Rung getRung()
 			{
 				return rung;
+			}
+			
+		public void setRung(Rung rung)
+			{
+				this.rung = rung;
+			}
+			
+		public void setRowNumber(int rowNumber)
+			{
+				this.rowNumber = rowNumber;
+			}
+			
+		@Override
+		public int compareTo(RowScreen comparableRowScreen)
+			{
+				Integer currentRowNumber = rowNumber;
+				Integer comparableRowNumber = comparableRowScreen.getRowNumber();
+				return currentRowNumber.compareTo(comparableRowNumber);
 			}
 			
 	}

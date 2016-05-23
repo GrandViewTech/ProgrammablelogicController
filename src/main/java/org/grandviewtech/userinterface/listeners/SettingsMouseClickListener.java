@@ -3,10 +3,6 @@ package org.grandviewtech.userinterface.listeners;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-
 import org.grandviewtech.constants.Icons;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.userinterface.screen.ColumnConfigurationScreen;
@@ -16,22 +12,21 @@ public class SettingsMouseClickListener implements MouseListener, Icons
 	{
 		final static Screen		SCREEN	= Screen.getInstance();
 		private ColumnScreen	columnScreen;
-		private JLabel			setting;
+		//private JLabel			setting;
 		
 		public SettingsMouseClickListener(ColumnScreen columnScreen)
 			{
 				this.columnScreen = columnScreen;
-				this.setting = this.columnScreen.getSetting();
 			}
 			
-		private JPopupMenu popUpMenu = new JPopupMenu();
+		//private JPopupMenu popUpMenu = new JPopupMenu();
 		
 		@Override
 		public void mouseClicked(MouseEvent mouseEvent)
 			{
-				ColumnConfigurationScreen columnConfigurationScreen = ColumnConfigurationScreen.getInstance();
-				columnConfigurationScreen.requestFocusInWindow();
+				ColumnConfigurationScreen columnConfigurationScreen =new ColumnConfigurationScreen();
 				columnConfigurationScreen.initiateInstance(columnScreen);
+				columnConfigurationScreen.requestFocusInWindow();
 			}
 			
 		@Override
@@ -54,13 +49,13 @@ public class SettingsMouseClickListener implements MouseListener, Icons
 			{
 			}
 			
-		private void addPopUpMenu()
+		/*private void addPopUpMenu()
 			{
 				edit();
 				delete();
 				popUpMenu.show(setting, setting.getX() - 10, setting.getY() + 5);
 			}
-			
+		
 		private void edit()
 			{
 				JMenuItem menuItem = new JMenuItem("Edit");
@@ -79,5 +74,5 @@ public class SettingsMouseClickListener implements MouseListener, Icons
 				JMenuItem menuItem = new JMenuItem("delete");
 				menuItem.setIcon(DELETE);
 				popUpMenu.add(menuItem);
-			}
+			}*/
 	}

@@ -49,7 +49,6 @@ public final class ActionBot extends BaseBot
 				if (ClipBoard.isControlKeyActive() == false)
 					{
 						columnScreen.setBorder(Borders.CUSTOM_BORDER);
-						//ClipBoard.getCopiedCell().remove(columnScreen);
 					}
 			}
 			

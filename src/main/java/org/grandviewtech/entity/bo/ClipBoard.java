@@ -9,9 +9,12 @@ import javax.swing.border.Border;
 import org.grandviewtech.constants.Borders;
 import org.grandviewtech.entity.enums.CLIPBOARD_ACTION;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
+import org.grandviewtech.userinterface.screen.RowScreen;
+import org.grandviewtech.userinterface.screen.Rung;
 
 final public class ClipBoard implements Borders
 	{
+		
 		private ClipBoard()
 			{
 			}
@@ -28,6 +31,7 @@ final public class ClipBoard implements Borders
 				return ClipBoardInstanceFactory.instance;
 			}
 			
+		private static JLabel				selection			= new JLabel("SELECTION : OFF ");
 		private static CLIPBOARD_ACTION		clipboardAction;
 		public static JLabel				cutLabel;
 		public static JLabel				copyLabel;
@@ -36,7 +40,8 @@ final public class ClipBoard implements Borders
 		private static boolean				isControlKeyActive	= false;
 		
 		private static String				clipBoardType;
-		
+		private static List<Rung>			copiedTempRung		= new ArrayList<Rung>();
+		private static List<Rung>			copiedRung			= new ArrayList<Rung>();
 		private static List<ColumnScreen>	tempData			= new ArrayList<ColumnScreen>();
 		private static List<ColumnScreen>	copiedCell			= new ArrayList<ColumnScreen>();
 		
@@ -56,6 +61,46 @@ final public class ClipBoard implements Borders
 		public static List<ColumnScreen> getCopiedCell()
 			{
 				return ClipBoard.copiedCell;
+			}
+			
+		public static List<Rung> getCopiedRung()
+			{
+				return copiedRung;
+			}
+			
+		public static void addTempRung(Rung rung)
+			{
+				if (copiedTempRung.contains(rung) == false)
+					{
+						if (ClipBoard.isControlKeyActive)
+							{
+								copiedTempRung.add(rung);
+							}
+						else
+							{
+								copiedTempRung.clear();
+								copiedTempRung.add(rung);
+							}
+						rung.setBackground(java.awt.Color.LIGHT_GRAY);
+					}
+			}
+			
+		public static void addCopiedRung()
+			{
+				for (Rung rung : copiedTempRung)
+					{
+						int rowNumber = rung.getRowNumber();
+						RowScreen rowScreen = SCREEN.getRow(rowNumber);
+						if (clipboardAction == CLIPBOARD_ACTION.COPY)
+							{
+								rowScreen.setBackground(java.awt.Color.GREEN);
+							}
+						else if (clipboardAction == CLIPBOARD_ACTION.CUT)
+							{
+								rowScreen.setBackground(java.awt.Color.RED);
+							}
+						copiedRung.add(rung);
+					}
 			}
 			
 		public static void addCopiedCell(ColumnScreen columnScreen)
@@ -78,6 +123,14 @@ final public class ClipBoard implements Borders
 		public static void setControlKeyActive(boolean isControlKeyActive)
 			{
 				ClipBoard.isControlKeyActive = isControlKeyActive;
+				if (ClipBoard.isControlKeyActive == true)
+					{
+						selection.setText("SELECTION : ON ");
+					}
+				else
+					{
+						selection.setText("SELECTION : OFF ");
+					}
 			}
 			
 		public static int getCurrentRowNumber()
@@ -129,6 +182,15 @@ final public class ClipBoard implements Borders
 							{
 								columnScreen.setBorder(CUSTOM_BORDER);
 							}
+						ClipBoard.copiedCell.clear();
+					}
+				if (ClipBoard.copiedRung.isEmpty() == false)
+					{
+						for (Rung copiedRung : ClipBoard.copiedRung)
+							{
+								copiedRung.setBackground(null);
+							}
+						ClipBoard.copiedCell.clear();
 					}
 			}
 			
@@ -140,6 +202,11 @@ final public class ClipBoard implements Borders
 		public static void setClipboardAction(CLIPBOARD_ACTION clipboardAction)
 			{
 				ClipBoard.clipboardAction = clipboardAction;
+			}
+			
+		public static JLabel getSelection()
+			{
+				return selection;
 			}
 			
 	}

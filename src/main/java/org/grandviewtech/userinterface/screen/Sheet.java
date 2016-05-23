@@ -5,6 +5,8 @@ import java.awt.GridBagLayout;
 
 import javax.swing.JPanel;
 
+import org.grandviewtech.userinterface.listeners.DefaultKeyListener;
+
 public class Sheet extends JPanel
 	{
 		private static final long	serialVersionUID	= 2259392011305568009L;
@@ -13,6 +15,7 @@ public class Sheet extends JPanel
 		
 		public Sheet()
 			{
+				addKeyListener(new DefaultKeyListener());
 				GridBagLayout gridBagLayout = new GridBagLayout();
 				setLayout(gridBagLayout);
 			}

@@ -17,6 +17,7 @@ import javax.swing.SwingConstants;
 import javax.swing.TransferHandler;
 
 import org.grandviewtech.constants.Icons;
+import org.grandviewtech.userinterface.listeners.AdvancedSearchMouseListener;
 import org.grandviewtech.userinterface.misc.CustomToolBar;
 import org.grandviewtech.userinterface.misc.Helper;
 
@@ -30,6 +31,7 @@ public class CustomHeader implements Icons
 				menuBar.add(fileMenu);
 				Helper.setCursor(menuBar);
 				JButton advancedSearch = new JButton("Advanced Search");
+				advancedSearch.addMouseListener(new AdvancedSearchMouseListener());
 				advancedSearch.setToolTipText("Advanced Search");
 				menuBar.add(advancedSearch);
 				// PARTITION

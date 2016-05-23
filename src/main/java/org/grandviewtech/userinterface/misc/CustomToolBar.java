@@ -6,7 +6,9 @@ import java.awt.Dimension;
 
 import javax.swing.Box;
 import javax.swing.JLabel;
+import javax.swing.JSeparator;
 import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
 
 import org.grandviewtech.constants.Coils;
 import org.grandviewtech.constants.Icons;
@@ -35,6 +37,12 @@ public class CustomToolBar
 				toolBar.addSeparator();
 				setCoilsFunctions();
 				toolBar.add(Box.createHorizontalGlue());
+				toolBar.add(ClipBoard.getSelection());
+				JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
+				Dimension dimension = new Dimension(1, 20);
+				separator.setMaximumSize(dimension);
+				separator.setBackground(Color.BLACK);
+				toolBar.add(separator);
 				toolBar.add(new JLabel("Pointer : "));
 				toolBar.add(pointerValue);
 				return toolBar;

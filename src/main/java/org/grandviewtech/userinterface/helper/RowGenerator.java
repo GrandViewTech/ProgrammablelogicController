@@ -2,7 +2,9 @@ package org.grandviewtech.userinterface.helper;
 
 import java.awt.GridBagConstraints;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
@@ -22,14 +24,12 @@ public class RowGenerator
 				int startIndex = screen.getTotalRow();
 				int endIndex = screen.getTotalRow() + screen.getMaxNumberOffRow();
 				screen.setTotalRow(endIndex);
-				List<RowScreen> rowScreens = new ArrayList<RowScreen>();
 				for (int i = startIndex; i < endIndex; i++)
 					{
 						gridBagConstraints.gridy = i;
 						RowScreen row = new RowScreen(i);
 						sheet.add(row, gridBagConstraints);
 						screen.addRow(i, row);
-						rowScreens.add(row);
 					}
 				sheet.revalidate();
 				sheet.repaint();
@@ -37,10 +37,7 @@ public class RowGenerator
 			
 		public static void regenerateRow(int rowNumber)
 			{
-				gridBagConstraints.gridx = 1;
-				gridBagConstraints.gridy = rowNumber;
 				RowScreen row = new RowScreen(rowNumber);
-				sheet.add(row, gridBagConstraints);
 				List<RowScreen> updatedRowScreen = new ArrayList<RowScreen>();
 				for (RowScreen rowScreen : screen.getRows())
 					{
@@ -52,32 +49,91 @@ public class RowGenerator
 							}
 						else if (currentRowNumber > rowNumber)
 							{
-								updatedRowScreen.add(updateColumnNumber(rowScreen));
+								updatedRowScreen.add(updateColumnNumber(rowScreen, currentRowNumber + 1));
 							}
 						else if (currentRowNumber == rowNumber)
 							{
 								updatedRowScreen.add(row);
-								updatedRowScreen.add(updateColumnNumber(rowScreen));
+								updatedRowScreen.add(updateColumnNumber(rowScreen, currentRowNumber + 1));
 							}
-							
 					}
+				updateScreen(updatedRowScreen);
+			}
+			
+		public static void deleteRow(Set<Integer> deletedRowNumbers)
+			{
+				List<RowScreen> updatedRowScreen = new ArrayList<RowScreen>();
+				for (RowScreen rowScreen : screen.getRows())
+					{
+						int currentRowNumber = rowScreen.getRowNumber();
+						if (deletedRowNumbers.contains(currentRowNumber) == false)
+							{
+								updatedRowScreen.add(rowScreen);
+							}
+					}
+				gridBagConstraints.gridx = 1;
 				screen.getRows().clear();
-				screen.getRows().addAll(updatedRowScreen);
+				sheet.removeAll();
+				screen.setTotalRow(updatedRowScreen.size());
+				int i$ = 1;
+				Collections.sort(updatedRowScreen);
+				for (RowScreen rowScreen : updatedRowScreen)
+					{
+						gridBagConstraints.gridy = i$;
+						updateColumnNumber(rowScreen, i$);
+						sheet.add(rowScreen, gridBagConstraints);
+						screen.addRow(rowScreen.getRowNumber(), rowScreen);
+						i$ = i$ + 1;
+					}
 				sheet.revalidate();
 				sheet.repaint();
 			}
 			
-		
-		
-		private static RowScreen updateColumnNumber(RowScreen rowScreen)
+		public static void deleteRow(int rowNumber)
+			{
+				List<RowScreen> updatedRowScreen = new ArrayList<RowScreen>();
+				for (RowScreen rowScreen : screen.getRows())
+					{
+						int currentRowNumber = rowScreen.getRowNumber();
+						
+						if (currentRowNumber < rowNumber)
+							{
+								updatedRowScreen.add(rowScreen);
+							}
+						else if (currentRowNumber > rowNumber)
+							{
+								updatedRowScreen.add(updateColumnNumber(rowScreen, rowNumber - 1));
+							}
+					}
+				updateScreen(updatedRowScreen);
+			}
+			
+		private static RowScreen updateColumnNumber(RowScreen rowScreen, int rowNumber)
 			{
 				Rung rung = rowScreen.getRung();
-				rung.setRowNumber(rung.getRowNumber() + 1);
+				rung.setRowNumber(rowNumber);
 				for (ColumnScreen columnScreen : rowScreen.getAllColumnScreens())
 					{
-						columnScreen.setRowNumber(columnScreen.getRowNumber() + 1);
+						columnScreen.setRowNumber(rowNumber);
 					}
+				rowScreen.setRowNumber(rowNumber);
 				return rowScreen;
 			}
 			
+		private static void updateScreen(List<RowScreen> updatedRowScreen)
+			{
+				gridBagConstraints.gridx = 1;
+				screen.getRows().clear();
+				sheet.removeAll();
+				screen.setTotalRow(updatedRowScreen.size());
+				for (RowScreen rowScreen : updatedRowScreen)
+					{
+						int i$ = rowScreen.getRowNumber();
+						gridBagConstraints.gridy = i$;
+						sheet.add(rowScreen, gridBagConstraints);
+						screen.addRow(rowScreen.getRowNumber(), rowScreen);
+					}
+				sheet.revalidate();
+				sheet.repaint();
+			}
 	}

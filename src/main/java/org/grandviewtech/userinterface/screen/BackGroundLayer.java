@@ -16,6 +16,7 @@ import org.grandviewtech.constants.PreferredDimension;
 import org.grandviewtech.entity.bo.PlcFile;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.userinterface.helper.RowGenerator;
+import org.grandviewtech.userinterface.listeners.DefaultKeyListener;
 import org.grandviewtech.userinterface.ui.Ruler;
 
 public class BackGroundLayer extends JFrame implements PreferredDimension
@@ -30,6 +31,7 @@ public class BackGroundLayer extends JFrame implements PreferredDimension
 		
 		public BackGroundLayer()
 			{
+				addKeyListener(new DefaultKeyListener());
 				setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				setVisible(true);
 				setPositioning();
@@ -47,6 +49,7 @@ public class BackGroundLayer extends JFrame implements PreferredDimension
 		private Ruler addRulerJScrolBar()
 			{
 				Ruler jScrollPane = new Ruler(screen.getSheet(), ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+				jScrollPane.addKeyListener(new DefaultKeyListener());
 				jScrollPane.initializeScrollPane();
 				JScrollBar verticalScrollBar = jScrollPane.getVerticalScrollBar();
 				verticalScrollBar.setUnitIncrement(15);

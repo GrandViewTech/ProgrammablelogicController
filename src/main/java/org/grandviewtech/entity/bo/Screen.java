@@ -91,14 +91,14 @@ public class Screen implements Serializable
 		public void addRow(int index, RowScreen rowScreen)
 			{
 				int i$ = index - 1;
-				if (i$ <= getMaxNumberOffRow())
+				if (i$ <= getTotalRow())
 					{
 						Printer.print("Inserting Row Number " + i$);
 						rows.add(i$, rowScreen);
 					}
 				else
 					{
-						throw new RuntimeException("Invald RowNumber" + i$);
+						throw new RuntimeException("Invald RowNumber " + i$);
 					}
 			}
 
