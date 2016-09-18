@@ -82,6 +82,7 @@ public class CustomToolBar
 			
 		private static void setDefaultFunction()
 			{
+				
 				ToolBarLabel cut = new ToolBarLabel(Icons.CUT);
 				cut.setToolTipText("cut");
 				ToolBarLabel copy = new ToolBarLabel(Icons.COPY);
@@ -105,12 +106,21 @@ public class CustomToolBar
 			{
 				DragLabel load = new DragLabel(Coils.LOAD);
 				DragLabel line = new DragLabel(Coils.LINE);
+				//
+				DragLabel delete = new DragLabel(Coils.DELETE);
+				DragLabel end = new DragLabel(Coils.END);
+				DragLabel compile = new DragLabel(Coils.COMPLIE);
+				//
 				DragLabel output = new DragLabel(Coils.OUTPUT);
 				DragLabel jump = new DragLabel(Coils.JUMP);
+				//
 				toolBar.add(load);
 				toolBar.add(line);
+				toolBar.add(compile);
+				toolBar.add(delete);
 				toolBar.add(jump);
 				toolBar.add(output);
+				toolBar.add(end);
 			}
 			
 		public static void setPointerValue(String pointerValue)

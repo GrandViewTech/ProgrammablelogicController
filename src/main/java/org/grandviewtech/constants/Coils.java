@@ -24,8 +24,11 @@ package org.grandviewtech.constants;
 
 public interface Coils
 	{
+		String	DELETE	= "Delete";
+		String	END		= "End";
 		String	JUMP	= "Jump";
 		String	OUTPUT	= "Output";
 		String	LINE	= "Line";
 		String	LOAD	= "Load";
+		String	COMPLIE	= "Compile";
 	}

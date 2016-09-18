@@ -33,17 +33,20 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
 import org.grandviewtech.constants.PreferredDimension;
+import org.grandviewtech.entity.helper.Dimension;
+import org.grandviewtech.runner.Application;
 import org.grandviewtech.service.searching.SearchEngine;
 import org.grandviewtech.service.system.Printer;
 
 public class ColumnConfigurationScreen extends JFrame implements PreferredDimension
 	{
-		private static final long serialVersionUID = 1L;
+		private static org.apache.log4j.Logger	logger				= org.apache.log4j.Logger.getLogger(ColumnConfigurationScreen.class);
+		
+		private static final long				serialVersionUID	= 1L;
 		
 		public ColumnConfigurationScreen()
 			{
 				reset();
-				
 			}
 			
 		private ColumnScreen columnScreen;
@@ -126,23 +129,23 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 						String optionType = "";
 						if (input.isSelected())
 							{
-								optionType="I/";
+								optionType = "I/";
 							}
 						else if (flag.isSelected())
 							{
-								optionType="F/";
+								optionType = "F/";
 							}
 						else if (word.isSelected())
 							{
-								optionType="D/";
+								optionType = "D/";
 							}
 						else if (output.isSelected())
 							{
-								optionType="O/";
+								optionType = "O/";
 							}
 						this.columnScreen.setValue(value.getText());
-						String valueLabel=optionType+this.columnScreen.getValue();
-						Printer.print("valueLabel "+valueLabel);
+						String valueLabel = optionType + this.columnScreen.getValue();
+						Printer.print("valueLabel " + valueLabel);
 						this.columnScreen.getValueLabel().setText(valueLabel);
 						String tag = (tagValue.getText() == null || tagValue.getText().trim().length() == 0) ? "" : tagValue.getText();
 						this.columnScreen.setTag(tag);
@@ -168,7 +171,10 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 				panel.add(submit);
 				panel.add(cancel);
 				add(panel);
-				setLocationRelativeTo(null);
+				//setLocationRelativeTo(null);
+				Dimension dimension = Application.calculateCenterAlignment(getPreferredSize());
+				logger.info("setting location relative to  X: " + dimension.getX() + " | Y :" + dimension.getY());
+				setLocation(dimension.getX(), dimension.getY());
 				setPreferredSize(CONFIGURATION_SCREEN);
 				pack();
 				setVisible(true);

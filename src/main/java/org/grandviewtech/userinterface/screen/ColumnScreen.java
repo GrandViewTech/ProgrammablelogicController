@@ -307,6 +307,7 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 							{
 								ColumnConfigurationScreen columnConfigurationScreen = new ColumnConfigurationScreen();
 								columnConfigurationScreen.initiateInstance(this);
+								
 								columnConfigurationScreen.requestFocusInWindow();
 								ClipBoard.setCurrentRowNumber(rowNumber);
 								ClipBoard.setCurrentColumnNumber(columnNumber);

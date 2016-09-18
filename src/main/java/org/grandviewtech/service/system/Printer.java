@@ -24,14 +24,17 @@ package org.grandviewtech.service.system;
 
 final public class Printer
 	{
-		static private boolean isDebugPrintingEnabled = true;
+		
+		private static org.apache.log4j.Logger	logger					= org.apache.log4j.Logger.getLogger(Printer.class);
+		
+		static private boolean					isDebugPrintingEnabled	= true;
 		
 		public static void print(String param)
 			{
 				if (isDebugPrintingEnabled == true)
 					{
-						if(param!=null && param !="")
-						System.out.println(param);
+						if (param != null && param != "")
+							logger.info(param);
 					}
 			}
 	}
