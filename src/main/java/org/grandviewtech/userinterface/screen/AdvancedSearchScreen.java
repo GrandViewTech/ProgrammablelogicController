@@ -89,11 +89,12 @@ public class AdvancedSearchScreen extends JPanel
 				add(cancel);
 				JSeparator separator = new JSeparator(JSeparator.HORIZONTAL);
 				separator.setBounds(10, 90, 380, 10);
-				add(separator,BorderLayout.LINE_START);
+				add(separator, BorderLayout.LINE_START);
 				add(text);
 				add(next);
 				add(previous);
 				setVisible(true);
+				
 			}
 			
 	}

@@ -70,6 +70,7 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 		private String				tag					= "";
 		private String				value;
 		private String				coil;
+		private String				comment;
 		
 		public ColumnScreen()
 			{
@@ -387,6 +388,16 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 				Integer currentColumnNumber = columnNumber;
 				Integer comparableColumnNumber = comparableColumnScreen.getColumnNumber();
 				return currentColumnNumber.compareTo(comparableColumnNumber);
+			}
+			
+		public String getComment()
+			{
+				return comment;
+			}
+			
+		public void setComment(String comment)
+			{
+				this.comment = comment;
 			}
 			
 	}

@@ -92,6 +92,7 @@ public class BackGroundLayer extends JFrame implements PreferredDimension
 			{
 				setJMenuBar(CustomHeader.getJMenuBar());
 				container.add(CustomHeader.getJToolBar(), BorderLayout.NORTH);
+				container.add(CustomHeader.getColoumnMarker(), BorderLayout.SOUTH);
 				
 			}
 			
