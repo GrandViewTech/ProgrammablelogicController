@@ -1,5 +1,9 @@
 package org.grandviewtech.service.system;
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.lang.management.ManagementFactory;
+
 /*
  * #%L
  * Programmable Login Controller Inteface
@@ -34,8 +38,14 @@ public class SystemInformation
 			{
 				try
 					{
+						Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+						Double width = screenSize.getWidth();
+						Double height = screenSize.getHeight();
+						Printer.print("Deteching Screen Resolution  : Width : " + width.intValue() + " X  Hieght : " + height.intValue());
 						String motherBoardUniqueInformation = getNetworkCardInformationToGetMACAddress();
 						Printer.print(motherBoardUniqueInformation);
+						String name = ManagementFactory.getRuntimeMXBean().getName();
+						Printer.print("Launching Process with PID : " + name);
 					}
 				catch (Exception exception)
 					{

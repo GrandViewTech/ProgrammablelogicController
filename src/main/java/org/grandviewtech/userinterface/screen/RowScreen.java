@@ -72,9 +72,30 @@ public class RowScreen extends JPanel implements PLCConstant, Comparable<RowScre
 				return this.rowNumber;
 			}
 			
+		public void resetColumnScreen()
+			{
+				gridBagConstraints.gridx = 1;
+				gridBagConstraints.gridy = 1;
+				gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+				rung = new Rung(rowNumber);
+				add(rung, gridBagConstraints);
+				int columnNumber = 1;
+				for (ColumnScreen columnScreen : columnScreens)
+					{
+						gridBagConstraints.gridx = columnNumber + 1;
+						columnScreen.setColumnNumber(columnNumber);
+						columnScreen.setRowNumber(rowNumber);
+						columnScreen.revalidate();
+						columnScreen.repaint();
+						add(columnScreen, gridBagConstraints);
+						columnNumber = columnNumber + 1;
+					}
+				revalidate();
+				repaint();
+			}
+			
 		public void createColumnScreen()
 			{
-				
 				gridBagConstraints.gridx = 1;
 				gridBagConstraints.gridy = 1;
 				gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;

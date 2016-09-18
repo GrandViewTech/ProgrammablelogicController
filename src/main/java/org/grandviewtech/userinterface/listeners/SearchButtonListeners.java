@@ -1,5 +1,8 @@
 package org.grandviewtech.userinterface.listeners;
 
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
 /*
  * #%L
  * Programmable Login Controller Inteface
@@ -30,11 +33,61 @@ import org.grandviewtech.entity.bo.SearchResult;
 import org.grandviewtech.service.searching.SearchEngine;
 import org.grandviewtech.userinterface.screen.Search;
 
-public class SearchButtonListeners implements MouseListener
+public class SearchButtonListeners implements MouseListener, KeyListener
 	{
 		
 		@Override
 		public void mouseClicked(MouseEvent e)
+			{
+				
+				search();
+			}
+			
+		@Override
+		public void mousePressed(MouseEvent e)
+			{
+			}
+			
+		@Override
+		public void mouseReleased(MouseEvent e)
+			{
+			}
+			
+		@Override
+		public void mouseEntered(MouseEvent e)
+			{
+			}
+			
+		@Override
+		public void mouseExited(MouseEvent e)
+			{
+				
+			}
+			
+		@Override
+		public void keyTyped(KeyEvent e)
+			{
+				
+			}
+			
+		@Override
+		public void keyPressed(KeyEvent e)
+			{
+				if (e.getKeyCode() == KeyEvent.VK_ENTER)
+					{
+						search();
+					}
+					
+			}
+			
+		@Override
+		public void keyReleased(KeyEvent e)
+			{
+				
+				clearSearch();
+			}
+			
+		public void search()
 			{
 				String searchKeyWord = Search.getSearchTextField().getText();
 				List<SearchResult> searchResults = SearchEngine.search(searchKeyWord);
@@ -49,35 +102,14 @@ public class SearchButtonListeners implements MouseListener
 						Search.setCurrentIndex(-1);
 						Search.setSearchResults(searchResults);
 					}
-					
 			}
 			
-		@Override
-		public void mousePressed(MouseEvent e)
+		public void clearSearch()
 			{
-				 
-				
+				String searchKeyWord = Search.getSearchTextField().getText();
+				if (searchKeyWord == null || searchKeyWord.trim().length() == 0)
+					{
+						Search.getSearchLabel().setText("Search :");
+					}
 			}
-			
-		@Override
-		public void mouseReleased(MouseEvent e)
-			{
-				 
-				
-			}
-			
-		@Override
-		public void mouseEntered(MouseEvent e)
-			{
-				 
-				
-			}
-			
-		@Override
-		public void mouseExited(MouseEvent e)
-			{
-
-				
-			}
-			
 	}

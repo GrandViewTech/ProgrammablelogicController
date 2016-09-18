@@ -33,6 +33,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
@@ -49,8 +50,7 @@ public class CustomHeader implements Icons
 		public static JMenuBar getJMenuBar()
 			{
 				JMenuBar menuBar = new JMenuBar();
-				JMenu fileMenu = new JMenu("File");
-				menuBar.add(fileMenu);
+				menuBar.add(getFileMenu());
 				Helper.setCursor(menuBar);
 				JButton advancedSearch = new JButton("Advanced Search");
 				advancedSearch.addMouseListener(new AdvancedSearchMouseListener());
@@ -70,6 +70,36 @@ public class CustomHeader implements Icons
 				menuBar.add(Search.getNext());
 				menuBar.add(new JLabel("  "));
 				return menuBar;
+			}
+			
+		public static JMenu getFileMenu()
+			{
+				JMenu fileMenu = new JMenu("File");
+				JMenuItem _new = new JMenuItem("New");
+				JMenuItem _newTab = new JMenuItem("New Tab");
+				JMenuItem save = new JMenuItem("Save");
+				JMenuItem saveAs = new JMenuItem("Save As");
+				JMenuItem open = new JMenuItem("Open");
+				JMenuItem close = new JMenuItem("Close");
+				JMenuItem exit = new JMenuItem("Exit");
+				JMenuItem preference = new JMenuItem("Preference");
+				exit.addActionListener(event ->
+					{
+						System.exit(0);
+					});
+				fileMenu.add(_new);
+				fileMenu.add(_newTab);
+				fileMenu.addSeparator();
+				fileMenu.add(save);
+				fileMenu.add(saveAs);
+				fileMenu.addSeparator();
+				fileMenu.add(open);
+				fileMenu.addSeparator();
+				fileMenu.add(close);
+				fileMenu.add(exit);
+				fileMenu.addSeparator();
+				fileMenu.add(preference);
+				return fileMenu;
 			}
 			
 		public static JToolBar getJToolBar()

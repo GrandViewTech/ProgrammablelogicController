@@ -79,7 +79,7 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 		private void init()
 			{
 				setLayout(null);
-				valueLabel.setBounds(10, 10, 50, 20);
+				valueLabel.setBounds(35, 6, 50, 20);
 				add(valueLabel);
 				setPreferredSize(CELL_SIZE);
 				setting.setBounds(getX() + 55, 0, 50, 20);
@@ -106,7 +106,7 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 		protected void paintComponent(java.awt.Graphics graphics)
 			{
 				super.paintComponent(graphics);
-				this.valueLabel.setText(this.value);
+				this.valueLabel.setText(this.valueLabel.getText());
 				PaintCoilsOnScreen.paint(this, graphics);
 			}
 			

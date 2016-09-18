@@ -24,12 +24,13 @@ package org.grandviewtech.service.system;
 
 final public class Printer
 	{
-		static private boolean isDebugPrintingEnabled = false;
+		static private boolean isDebugPrintingEnabled = true;
 		
 		public static void print(String param)
 			{
 				if (isDebugPrintingEnabled == true)
 					{
+						if(param!=null && param !="")
 						System.out.println(param);
 					}
 			}

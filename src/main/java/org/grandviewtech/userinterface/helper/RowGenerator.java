@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.grandviewtech.entity.bo.Screen;
+import org.grandviewtech.service.searching.SearchEngine;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 import org.grandviewtech.userinterface.screen.RowScreen;
 import org.grandviewtech.userinterface.screen.Rung;
@@ -92,6 +93,14 @@ public class RowGenerator
 							{
 								updatedRowScreen.add(rowScreen);
 							}
+						else
+							{
+								for (ColumnScreen columnScreen : rowScreen.getAllColumnScreens())
+									{
+										columnScreen.setBlank(true);
+										SearchEngine.index(columnScreen);
+									}
+							}
 					}
 				gridBagConstraints.gridx = 1;
 				screen.getRows().clear();
@@ -117,14 +126,13 @@ public class RowGenerator
 				for (RowScreen rowScreen : screen.getRows())
 					{
 						int currentRowNumber = rowScreen.getRowNumber();
-						
 						if (currentRowNumber < rowNumber)
 							{
 								updatedRowScreen.add(rowScreen);
 							}
 						else if (currentRowNumber > rowNumber)
 							{
-								updatedRowScreen.add(updateColumnNumber(rowScreen, rowNumber - 1));
+								updatedRowScreen.add(updateColumnNumber(rowScreen, currentRowNumber - 1));
 							}
 					}
 				updateScreen(updatedRowScreen);
@@ -147,11 +155,20 @@ public class RowGenerator
 				gridBagConstraints.gridx = 1;
 				screen.getRows().clear();
 				sheet.removeAll();
+				sheet.revalidate();
+				sheet.repaint();
 				screen.setTotalRow(updatedRowScreen.size());
 				for (RowScreen rowScreen : updatedRowScreen)
 					{
 						int i$ = rowScreen.getRowNumber();
 						gridBagConstraints.gridy = i$;
+						ColumnScreen[] oldColumnScreen=rowScreen.getAllColumnScreens();
+						for (ColumnScreen columnScreen : oldColumnScreen)
+							{
+								//columnScreen.
+							}
+						rowScreen.revalidate();
+						rowScreen.repaint();
 						sheet.add(rowScreen, gridBagConstraints);
 						screen.addRow(rowScreen.getRowNumber(), rowScreen);
 					}

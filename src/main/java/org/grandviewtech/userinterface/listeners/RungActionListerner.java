@@ -33,6 +33,7 @@ import java.util.Set;
 import org.grandviewtech.entity.bo.ClipBoard;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CLIPBOARD_ACTION;
+import org.grandviewtech.service.searching.SearchEngine;
 import org.grandviewtech.userinterface.helper.RowGenerator;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 import org.grandviewtech.userinterface.screen.RowScreen;
@@ -126,6 +127,7 @@ public class RungActionListerner implements ActionListener
 										pasteColumn.setValue(copiedColumn.getValue());
 										pasteColumn.setTag(copiedColumn.getTag());
 										pasteColumn.requestFocus();
+										SearchEngine.index(pasteColumn);
 									}
 								columnIndex = columnIndex + 1;
 								

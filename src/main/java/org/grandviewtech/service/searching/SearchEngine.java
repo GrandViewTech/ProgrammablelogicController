@@ -81,17 +81,19 @@ public class SearchEngine
 								try
 									{
 										indexWriter.deleteDocuments(new QueryParser("columnId", standardAnalyzer).parse("" + columnScreen.getRowNumber() + "." + columnScreen.getColumnNumber()));
-										
 										indexWriter.commit();
-										Document document = new Document();
-										document.add(new TextField("columnId", "" + columnScreen.getRowNumber() + "." + columnScreen.getColumnNumber(), Field.Store.YES));
-										document.add(new TextField("rowNumber", "" + columnScreen.getRowNumber(), Field.Store.YES));
-										document.add(new TextField("columnNumber", "" + columnScreen.getColumnNumber(), Field.Store.YES));
-										document.add(new TextField("tag", columnScreen.getTag(), Field.Store.NO));
-										document.add(new TextField("value", columnScreen.getValue(), Field.Store.NO));
-										document.add(new TextField("coil", columnScreen.getCoil(), Field.Store.NO));
-										indexWriter.addDocument(document);
-										indexWriter.commit();
+										if (columnScreen.isBlank() == false)
+											{
+												Document document = new Document();
+												document.add(new TextField("columnId", "" + columnScreen.getRowNumber() + "." + columnScreen.getColumnNumber(), Field.Store.YES));
+												document.add(new TextField("rowNumber", "" + columnScreen.getRowNumber(), Field.Store.YES));
+												document.add(new TextField("columnNumber", "" + columnScreen.getColumnNumber(), Field.Store.YES));
+												document.add(new TextField("tag", columnScreen.getTag(), Field.Store.NO));
+												document.add(new TextField("value", columnScreen.getValue(), Field.Store.NO));
+												document.add(new TextField("coil", columnScreen.getCoil(), Field.Store.NO));
+												indexWriter.addDocument(document);
+												indexWriter.commit();
+											}
 									}
 								catch (Exception exception)
 									{
@@ -160,17 +162,25 @@ public class SearchEngine
 		private static List<SearchResult> search(Query query) throws IOException
 			{
 				List<SearchResult> results = new ArrayList<SearchResult>();
-				Directory directory = FSDirectory.open((new File(fileLocation)).toPath());
-				IndexReader indexReader = DirectoryReader.open(directory);
-				IndexSearcher searcher = new IndexSearcher(indexReader);
-				int hitsPerPage = 10;
-				TopDocs docs = searcher.search(query, hitsPerPage);
-				ScoreDoc[] hits = docs.scoreDocs;
-				for (ScoreDoc scoreDoc : hits)
+				try
 					{
-						int documentId = scoreDoc.doc;
-						Document document = searcher.doc(documentId);
-						results.add(new SearchResult(document));
+						Directory directory = FSDirectory.open((new File(fileLocation)).toPath());
+						IndexReader indexReader = DirectoryReader.open(directory);
+						IndexSearcher searcher = new IndexSearcher(indexReader);
+						int hitsPerPage = 10;
+						TopDocs docs = searcher.search(query, hitsPerPage);
+						ScoreDoc[] hits = docs.scoreDocs;
+						for (ScoreDoc scoreDoc : hits)
+							{
+								int documentId = scoreDoc.doc;
+								Document document = searcher.doc(documentId);
+								results.add(new SearchResult(document));
+							}
+							
+					}
+				catch (org.apache.lucene.index.IndexNotFoundException indexNotFoundException)
+					{
+						indexNotFoundException.printStackTrace();
 					}
 				return results;
 			}

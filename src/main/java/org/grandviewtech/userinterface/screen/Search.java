@@ -57,6 +57,7 @@ final public class Search
 				next.setEnabled(false);
 				go.setToolTipText("Proceed For Search");
 				go.addMouseListener(new SearchButtonListeners());
+				searchTextField.addKeyListener(new SearchButtonListeners());
 			}
 			
 		public static JLabel getSearchLabel()

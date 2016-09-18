@@ -2,7 +2,7 @@ package org.grandviewtech.runner;
 
 /*
  * #%L
- * Programmable Login Controller Inteface
+ * Programmable Login Controller Interface
  * %%
  * Copyright (C) 2016 GrandViewTech
  * %%
