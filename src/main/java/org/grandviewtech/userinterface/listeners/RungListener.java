@@ -43,12 +43,9 @@ public class RungListener implements MouseListener, KeyListener, Icons
 		
 		private Rung		rung;
 		
-		private int			currentRowIndex;
-		
 		public RungListener(Rung rung)
 			{
 				this.rung = rung;
-				this.currentRowIndex = rung.getRowNumber();
 			}
 			
 		@Override
@@ -142,6 +139,7 @@ public class RungListener implements MouseListener, KeyListener, Icons
 			
 		private void newMenu(boolean addSeparator)
 			{
+				int currentRowIndex = rung.getRowNumber();
 				JMenuItem menuItem = new JMenuItem("New");
 				menuItem.setIcon(NEW);
 				menuItem.addActionListener(new RungActionListerner(RungActionListerner.RungAction.NEW, currentRowIndex));
@@ -155,6 +153,7 @@ public class RungListener implements MouseListener, KeyListener, Icons
 			
 		private void copyMenu(boolean addSeparator)
 			{
+				int currentRowIndex = rung.getRowNumber();
 				JMenuItem menuItem = new JMenuItem("Copy");
 				menuItem.setIcon(COPY);
 				menuItem.addActionListener(new RungActionListerner(RungActionListerner.RungAction.COPY, currentRowIndex));
@@ -167,6 +166,7 @@ public class RungListener implements MouseListener, KeyListener, Icons
 			
 		private void cutMenu(boolean addSeparator)
 			{
+				int currentRowIndex = rung.getRowNumber();
 				JMenuItem menuItem = new JMenuItem("Cut");
 				menuItem.setIcon(CUT);
 				editMenu.add(menuItem);
@@ -179,6 +179,7 @@ public class RungListener implements MouseListener, KeyListener, Icons
 			
 		private void pasteMenu(boolean addSeparator)
 			{
+				int currentRowIndex = rung.getRowNumber();
 				JMenuItem menuItem = new JMenuItem("Paste");
 				menuItem.setIcon(PASTE);
 				editMenu.add(menuItem);
@@ -192,6 +193,7 @@ public class RungListener implements MouseListener, KeyListener, Icons
 			
 		private void deleteMenu(boolean addSeparator)
 			{
+				int currentRowIndex = rung.getRowNumber();
 				JMenuItem menuItem = new JMenuItem("Delete");
 				menuItem.setIcon(DELETE);
 				menuItem.addActionListener(new RungActionListerner(RungActionListerner.RungAction.DELETE, currentRowIndex));

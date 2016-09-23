@@ -89,7 +89,7 @@ public class RungActionListerner implements ActionListener
 								paste();
 								break;
 							}
-						
+							
 					}
 					
 			}
@@ -101,7 +101,7 @@ public class RungActionListerner implements ActionListener
 			
 		private void _new()
 			{
-				int newRungNumber = currentRungNumber + 1;
+				int newRungNumber = currentRungNumber;
 				RowGenerator.regenerateRow(newRungNumber);
 			}
 			

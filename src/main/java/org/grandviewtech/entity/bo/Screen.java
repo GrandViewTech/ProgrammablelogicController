@@ -49,13 +49,11 @@ public class Screen implements Serializable
 				return ScreenFactoryInstance.instance;
 			}
 			
-	
+		final private Sheet	sheet			= new Sheet();
 		
-		final private Sheet							sheet			= new Sheet();
+		private int			totalRow		= 1;
 		
-		private int									totalRow		= 1;
-		
-		final private int							maxNumberOffRow	= 50;
+		final private int	maxNumberOffRow	= 50;
 		
 		public int getMaxNumberOffRow()
 			{
@@ -110,12 +108,17 @@ public class Screen implements Serializable
 					
 			}
 			
+		public void removeAll()
+			{
+				rows.clear();
+			}
+			
 		public void addRow(int index, RowScreen rowScreen)
 			{
 				int i$ = index - 1;
 				if (i$ <= getTotalRow())
 					{
-						Printer.print("Inserting Row Number " + i$);
+						//Printer.print("Inserting Row Number " + i$);
 						rows.add(i$, rowScreen);
 					}
 				else
@@ -123,12 +126,10 @@ public class Screen implements Serializable
 						throw new RuntimeException("Invald RowNumber " + i$);
 					}
 			}
-
+			
 		public List<RowScreen> getRows()
 			{
 				return rows;
 			}
-		
-		
 			
 	}

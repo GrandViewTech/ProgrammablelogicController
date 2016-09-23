@@ -88,7 +88,8 @@ public class Rung extends JPanel implements PreferredDimension, Comparable<Rung>
 		public void setRowNumber(int rowNumber)
 			{
 				this.rowNumber = rowNumber;
-				label.setText(addPaddingToRowNumber(this.rowNumber));
+				label.setText(addPaddingToRowNumber(rowNumber));
+				this.setToolTipText("Rung : " + rowNumber);
 			}
 			
 		@Override

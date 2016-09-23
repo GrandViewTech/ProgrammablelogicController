@@ -27,19 +27,38 @@ import java.awt.GridBagLayout;
 
 import javax.swing.JPanel;
 
+import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.userinterface.listeners.DefaultKeyListener;
 
 public class Sheet extends JPanel
 	{
+		private static Screen		screen				= Screen.getInstance();
+		
 		private static final long	serialVersionUID	= 2259392011305568009L;
 		
 		public GridBagConstraints	gridBagConstraints	= new GridBagConstraints();
 		
 		public Sheet()
 			{
+				if (screen == null)
+					{
+						screen = Screen.getInstance();
+					}
 				addKeyListener(new DefaultKeyListener());
 				GridBagLayout gridBagLayout = new GridBagLayout();
 				setLayout(gridBagLayout);
+			}
+			
+		@Override
+		public void removeAll()
+			{
+				
+				super.removeAll();
+				if (screen == null)
+					{
+						screen = Screen.getInstance();
+					}
+				screen.removeAll();
 			}
 			
 	}
