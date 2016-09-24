@@ -26,6 +26,7 @@ package org.grandviewtech.userinterface.listeners;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -96,13 +97,33 @@ public class RungActionListerner implements ActionListener
 			
 		private void delete()
 			{
-				RowGenerator.deleteRow(currentRungNumber);
+				int newRungNumber = currentRungNumber;
+				List<Rung> rungs = ClipBoard.getSelectedRung();
+				if (rungs.size() == 0)
+					{
+						RowGenerator.regenerateRow(newRungNumber, false);
+					}
+				else
+					{
+						Set<Integer> rowNumbers = new HashSet<Integer>();
+						for (Rung rung : rungs)
+							{
+								Integer rowNumber = rung.getRowNumber();
+								if (rowNumber != null)
+									{
+										rowNumbers.add(rowNumber);
+									}
+							}
+						RowGenerator.deleteRows(rowNumbers);
+					}
+				List<Rung> tempRungs = ClipBoard.getSelectedRung();
+				
 			}
 			
 		private void _new()
 			{
 				int newRungNumber = currentRungNumber;
-				RowGenerator.regenerateRow(newRungNumber);
+				RowGenerator.regenerateRow(newRungNumber, true);
 			}
 			
 		private void copy()
@@ -143,8 +164,7 @@ public class RungActionListerner implements ActionListener
 							{
 								deletedRowNumbers.add(rung.getRowNumber());
 							}
-						System.out.println("deletedRowNumbers : " + deletedRowNumbers);
-						RowGenerator.deleteRow(deletedRowNumbers);
+						RowGenerator.deleteRows(deletedRowNumbers);
 					}
 			}
 	}

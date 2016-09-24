@@ -31,6 +31,6 @@ public interface PreferredDimension extends PLCConstant
 		Dimension	MINIMUM_FRAME_SIZE		= new Dimension(1200, 700);
 		Dimension	CELL_SIZE				= new Dimension(SECTION_WIDTH, SECTION_HEIGHT);
 		Dimension	RUNG_SIZE				= new Dimension(20, SECTION_HEIGHT);
-		Dimension	CONFIGURATION_SCREEN	= new Dimension(350, 250);
+		Dimension	CONFIGURATION_SCREEN	= new Dimension(350, 300);
 		//Dimension	CONFIGURATION_SCREEN	= new Dimension(500, 200);
 	}

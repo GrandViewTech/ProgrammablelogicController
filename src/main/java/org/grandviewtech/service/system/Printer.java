@@ -31,10 +31,13 @@ final public class Printer
 		
 		public static void print(String param)
 			{
+				isDebugPrintingEnabled = false;
 				if (isDebugPrintingEnabled == true)
 					{
 						if (param != null && param != "")
-							logger.info(param);
+							{
+								logger.info(param);
+							}
 					}
 			}
 	}

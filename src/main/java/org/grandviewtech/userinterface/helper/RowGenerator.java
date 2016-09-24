@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.grandviewtech.entity.bo.Screen;
-import org.grandviewtech.service.searching.SearchEngine;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 import org.grandviewtech.userinterface.screen.RowScreen;
 import org.grandviewtech.userinterface.screen.Rung;
@@ -59,7 +58,7 @@ public class RowGenerator
 				sheet.repaint();
 			}
 			
-		public static void regenerateRow(int rowNumber)
+		public static void regenerateRow(int rowNumber, boolean add)
 			{
 				List<RowScreen> updatedRowScreen = new ArrayList<RowScreen>();
 				List<RowScreen> rowScreens = screen.getRows();
@@ -73,7 +72,6 @@ public class RowGenerator
 								return r1.compareTo(r2);
 							}
 					});
-				System.out.println("Total Rows :" + rowScreens.size());
 				for (RowScreen rowScreen : rowScreens)
 					{
 						int currentRowNumber = rowScreen.getRowNumber();
@@ -81,28 +79,62 @@ public class RowGenerator
 						if (currentRowNumber < rowNumber)
 							{
 								updatedRowScreen.add(rowScreen);
-								System.out.println(currentRowNumber);
 							}
 						else if (currentRowNumber > rowNumber)
 							{
-								currentRowNumber = currentRowNumber + 1;
-								System.out.println(currentRowNumber);
-								rowScreen.resetColumnScreen(currentRowNumber);
-								updatedRowScreen.add(rowScreen);
+								if (add)
+									{
+										currentRowNumber = currentRowNumber + 1;
+										rowScreen.resetColumnScreen(currentRowNumber);
+										updatedRowScreen.add(rowScreen);
+									}
+								else
+									{
+										currentRowNumber = currentRowNumber - 1;
+										rowScreen.resetColumnScreen(currentRowNumber);
+										updatedRowScreen.add(rowScreen);
+									}
 							}
 						else if (currentRowNumber == rowNumber)
 							{
-								updatedRowScreen.add(rowScreen);
-								System.out.println(currentRowNumber);
-								currentRowNumber = currentRowNumber + 1;
-								System.out.println(currentRowNumber);
-								updatedRowScreen.add(new RowScreen(currentRowNumber));
-								//updatedRowScreen.add(updateColumnNumber(rowScreen, currentRowNumber + 1));
+								if (add)
+									{
+										updatedRowScreen.add(rowScreen);
+										currentRowNumber = currentRowNumber + 1;
+										updatedRowScreen.add(new RowScreen(currentRowNumber));
+									}
 							}
 							
 					}
 				repaintScreen(updatedRowScreen);
-				
+			}
+			
+		public static void deleteRows(Set<Integer> rowNumbers)
+			{
+				List<RowScreen> updatedRowScreen = new ArrayList<RowScreen>();
+				List<RowScreen> rowScreens = screen.getRows();
+				Collections.sort(rowScreens, new Comparator<RowScreen>()
+					{
+						@Override
+						public int compare(RowScreen o1, RowScreen o2)
+							{
+								Integer r1 = o1.getRowNumber();
+								Integer r2 = o2.getRowNumber();
+								return r1.compareTo(r2);
+							}
+					});
+				int updatedRowNumber = 1;
+				for (RowScreen rowScreen : rowScreens)
+					{
+						int currentRowNumber = rowScreen.getRowNumber();
+						if (rowNumbers.contains(currentRowNumber) == false)
+							{
+								rowScreen.resetColumnScreen(updatedRowNumber);
+								updatedRowScreen.add(rowScreen);
+								updatedRowNumber = updatedRowNumber + 1;
+							}
+					}
+				repaintScreen(updatedRowScreen);
 			}
 			
 		public static void repaintScreen(List<RowScreen> rowScreens)
@@ -130,43 +162,6 @@ public class RowGenerator
 						screen.addRow(rowScreen.getRowNumber(), rowScreen);
 						i$ = i$ + 1;
 					}
-				sheet.repaint();
-			}
-			
-		public static void deleteRow(Set<Integer> deletedRowNumbers)
-			{
-				List<RowScreen> updatedRowScreen = new ArrayList<RowScreen>();
-				for (RowScreen rowScreen : screen.getRows())
-					{
-						int currentRowNumber = rowScreen.getRowNumber();
-						if (deletedRowNumbers.contains(currentRowNumber) == false)
-							{
-								updatedRowScreen.add(rowScreen);
-							}
-						else
-							{
-								for (ColumnScreen columnScreen : rowScreen.getAllColumnScreens())
-									{
-										columnScreen.setBlank(true);
-										SearchEngine.index(columnScreen);
-									}
-							}
-					}
-				gridBagConstraints.gridx = 1;
-				screen.getRows().clear();
-				sheet.removeAll();
-				screen.setTotalRow(updatedRowScreen.size());
-				int i$ = 1;
-				Collections.sort(updatedRowScreen);
-				for (RowScreen rowScreen : updatedRowScreen)
-					{
-						gridBagConstraints.gridy = i$;
-						updateColumnNumber(rowScreen, i$);
-						sheet.add(rowScreen, gridBagConstraints);
-						screen.addRow(rowScreen.getRowNumber(), rowScreen);
-						i$ = i$ + 1;
-					}
-				sheet.revalidate();
 				sheet.repaint();
 			}
 			

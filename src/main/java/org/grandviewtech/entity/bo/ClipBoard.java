@@ -90,6 +90,17 @@ final public class ClipBoard implements Borders
 				return copiedRung;
 			}
 			
+		public static void resetSelectRung()
+			{
+				copiedTempRung.clear();
+				copiedRung.clear();
+			}
+			
+		public static List<Rung> getSelectedRung()
+			{
+				return copiedTempRung;
+			}
+			
 		public static void addTempRung(Rung rung)
 			{
 				if (copiedTempRung.contains(rung) == false)
@@ -118,6 +129,10 @@ final public class ClipBoard implements Borders
 								rowScreen.setBackground(java.awt.Color.GREEN);
 							}
 						else if (clipboardAction == CLIPBOARD_ACTION.CUT)
+							{
+								rowScreen.setBackground(java.awt.Color.RED);
+							}
+						else
 							{
 								rowScreen.setBackground(java.awt.Color.RED);
 							}
