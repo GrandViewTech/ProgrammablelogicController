@@ -29,6 +29,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DragSource;
 import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetContext;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
@@ -67,6 +68,7 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 		private JLabel				setting				= new JLabel(SETTING);
 		private JLabel				valueLabel			= new JLabel("");
 		private boolean				isBlank				= true;
+		private JLabel				tagLabel			= new JLabel();
 		private String				tag					= "";
 		private String				value;
 		private String				coil;
@@ -82,6 +84,8 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 				setLayout(null);
 				valueLabel.setBounds(35, 6, 50, 20);
 				add(valueLabel);
+				tagLabel.setBounds(10, 40, 50, 20);
+				add(tagLabel);
 				setPreferredSize(CELL_SIZE);
 				setting.setBounds(getX() + 55, 0, 50, 20);
 				setting.addMouseListener(new SettingsMouseClickListener(this));
@@ -135,17 +139,17 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 								if (validateDragOption == true)
 									{
 										dropTargetDragEvent.getDropTargetContext().getComponent().setCursor(DragSource.DefaultCopyDrop);
-										dropTargetDragEvent.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+										dropTargetDragEvent.acceptDrop(DnDConstants.ACTION_MOVE);
 										selectTheRigthCoilUsingDragOption(dragContents);
 										Graphics graphics = getGraphics();
 										paintComponent(graphics);
-										dropTargetDragEvent.getDropTargetContext().dropComplete(true);
+										DropTargetContext dropTargetContext = dropTargetDragEvent.getDropTargetContext();
+										dropTargetContext.dropComplete(true);
 									}
 								else
 									{
 										dropTargetDragEvent.getDropTargetContext().getComponent().setCursor(DragSource.DefaultCopyNoDrop);
 										dropTargetDragEvent.rejectDrop();
-										//dropTargetDragEvent.getDropTargetContext().dropComplete(false);
 									}
 									
 							}
@@ -374,6 +378,9 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 		public void setTag(String tag)
 			{
 				this.tag = tag;
+				String tempText = (tag.length() > 20) ? tag.substring(0, 16) + "..." : tag;
+				this.tagLabel.setText(tempText);
+				this.tagLabel.setToolTipText(tag);
 			}
 			
 		@Override
