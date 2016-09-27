@@ -7,6 +7,7 @@ import javax.swing.ImageIcon;
 public interface Icons
 	{
 		ImageIcon	NEW		= new ImageIcon("icons" + File.separator + "new.png");
+		ImageIcon	COMMENT	= new ImageIcon("icons" + File.separator + "comment.png");
 		ImageIcon	DELETE	= new ImageIcon("icons" + File.separator + "delete.png");
 		ImageIcon	COPY	= new ImageIcon("icons" + File.separator + "copy.png");
 		ImageIcon	PASTE	= new ImageIcon("icons" + File.separator + "paste.png");

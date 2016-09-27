@@ -39,6 +39,7 @@ import org.grandviewtech.userinterface.helper.RowGenerator;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 import org.grandviewtech.userinterface.screen.RowScreen;
 import org.grandviewtech.userinterface.screen.Rung;
+import org.grandviewtech.userinterface.screen.RungComment;
 
 public class RungActionListerner implements ActionListener
 	{
@@ -48,7 +49,7 @@ public class RungActionListerner implements ActionListener
 		
 		public static enum RungAction
 			{
-			CUT, COPY, PASTE, NEW, DELETE;
+			CUT, COPY, PASTE, NEW, DELETE, COMMENT;
 			}
 			
 		public RungActionListerner(RungAction rungAction, int currentRungNumber)
@@ -90,6 +91,16 @@ public class RungActionListerner implements ActionListener
 								paste();
 								break;
 							}
+						case COMMENT:
+							{
+								RungComment rungComment = new RungComment();
+								RowScreen rowScreen = screen.getRow(currentRungNumber);
+								if ( rowScreen != null )
+									{
+										rungComment.initiateRungComment(rowScreen.getRung());
+									}
+								break;
+							}
 							
 					}
 					
@@ -99,7 +110,7 @@ public class RungActionListerner implements ActionListener
 			{
 				int newRungNumber = currentRungNumber;
 				List<Rung> rungs = ClipBoard.getSelectedRung();
-				if (rungs.size() == 0)
+				if ( rungs.size() == 0 )
 					{
 						RowGenerator.regenerateRow(newRungNumber, false);
 					}
@@ -109,7 +120,7 @@ public class RungActionListerner implements ActionListener
 						for (Rung rung : rungs)
 							{
 								Integer rowNumber = rung.getRowNumber();
-								if (rowNumber != null)
+								if ( rowNumber != null )
 									{
 										rowNumbers.add(rowNumber);
 									}
@@ -141,7 +152,7 @@ public class RungActionListerner implements ActionListener
 						for (ColumnScreen pasteColumn : pasteRow.getAllColumnScreens())
 							{
 								ColumnScreen copiedColumn = copiedRow.getColumnScreens(columnIndex);
-								if (copiedColumn.isBlank() == false)
+								if ( copiedColumn.isBlank() == false )
 									{
 										pasteColumn.setCoil(copiedColumn.getCoil());
 										pasteColumn.setValue(copiedColumn.getValue());
@@ -154,7 +165,7 @@ public class RungActionListerner implements ActionListener
 							}
 						i$ = i$ + 1;
 					}
-				if (ClipBoard.getClipboardAction() == CLIPBOARD_ACTION.CUT)
+				if ( ClipBoard.getClipboardAction() == CLIPBOARD_ACTION.CUT )
 					{
 						Set<Integer> deletedRowNumbers = new LinkedHashSet<Integer>();
 						List<Rung> copiedRungs = ClipBoard.getCopiedRung();

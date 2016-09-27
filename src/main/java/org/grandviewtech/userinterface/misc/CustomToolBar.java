@@ -23,7 +23,6 @@ package org.grandviewtech.userinterface.misc;
  */
 
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Dimension;
 
 import javax.swing.Box;
@@ -43,29 +42,40 @@ import org.grandviewtech.userinterface.ui.ToolBarLabel;
 
 public class CustomToolBar
 	{
-		final static JToolBar	toolBar			= new JToolBar("Ribbon");
-		final static JToolBar	columnsBar		= new JToolBar("Columns");
-		private static JLabel	pointerValue	= new JLabel("");
+		final static JToolBar	toolBar				= new JToolBar("Ribbon");
+		final static JToolBar	columnsBar			= new JToolBar("Columns");
+		private static JLabel	pointerValue		= new JLabel("");
+		private static JLabel	rungComment			= new JLabel("Comment : ");
+		private static JLabel	rungCommentValue	= new JLabel("");
+		private static JLabel	pointerLabel		= new JLabel("Pointer : ");
 		
 		public static JToolBar getToolBar()
 			{
+				// toolBar.setLayout(null);
 				toolBar.setPreferredSize(new Dimension(1200, 25));
 				toolBar.setBackground(Color.white);
 				toolBar.setRollover(true);
 				toolBar.setFloatable(false);
-				toolBar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+				// toolBar.setCursor(new Cursor(Cursor.HAND_CURSOR));
 				Helper.setCursor(toolBar);
 				setDefaultFunction();
 				toolBar.addSeparator();
 				setCoilsFunctions();
 				toolBar.add(Box.createHorizontalGlue());
-				toolBar.add(ClipBoard.getSelection());
-				JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
+				// toolBar.add(separator);
+				toolBar.add(rungComment);
+				toolBar.add(rungCommentValue);
+				JSeparator separator2 = new JSeparator(SwingConstants.VERTICAL);
 				Dimension dimension = new Dimension(1, 20);
+				separator2.setMaximumSize(dimension);
+				separator2.setBackground(Color.BLACK);
+				toolBar.add(separator2);
+				JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
 				separator.setMaximumSize(dimension);
 				separator.setBackground(Color.BLACK);
+				toolBar.add(ClipBoard.getSelection());
 				toolBar.add(separator);
-				toolBar.add(new JLabel("Pointer : "));
+				toolBar.add(pointerLabel);
 				toolBar.add(pointerValue);
 				return toolBar;
 			}
@@ -75,7 +85,7 @@ public class CustomToolBar
 				columnsBar.setPreferredSize(new Dimension(1200, 20));
 				columnsBar.setBackground(Color.white);
 				columnsBar.setRollover(true);
-				columnsBar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+				// columnsBar.setCursor(new Cursor(Cursor.HAND_CURSOR));
 				Helper.setCursor(toolBar);
 				return columnsBar;
 			}
@@ -84,19 +94,25 @@ public class CustomToolBar
 			{
 				
 				ToolBarLabel cut = new ToolBarLabel(Icons.CUT);
+				// cut.setBounds(5, 5, 25, 25);
 				cut.setToolTipText("cut");
 				ToolBarLabel copy = new ToolBarLabel(Icons.COPY);
+				// copy.setBounds(30, 5, 25, 25);
 				copy.setToolTipText("copy");
 				ToolBarLabel paste = new ToolBarLabel(Icons.PASTE);
 				paste.setToolTipText("paste");
+				// paste.setBounds(55, 5, 25, 25);
 				cut.addMouseListener(new CutButtonListener());
 				copy.addMouseListener(new CopyButtonListerner());
 				paste.addMouseListener(new PasteButtonListener());
 				toolBar.add(cut);
-				//toolBar.addSeparator();
+				// toolBar.addSeparator();
 				toolBar.add(copy);
-				//toolBar.addSeparator();
+				// toolBar.addSeparator();
 				toolBar.add(paste);
+				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
+				separator.setBounds(3, toolBar.getPreferredSize().height / 2, 600, 10);
+				// toolBar.add(separator);
 				ClipBoard.cutLabel = cut;
 				ClipBoard.copyLabel = copy;
 				ClipBoard.pasteLabel = paste;
@@ -126,6 +142,30 @@ public class CustomToolBar
 		public static void setPointerValue(String pointerValue)
 			{
 				CustomToolBar.pointerValue.setText(pointerValue);
+			}
+			
+		public static JLabel getRungComment()
+			{
+				return rungComment;
+			}
+			
+		public static void setRungComment(int rungNumber, String rungComment)
+			{
+				if ( rungComment != null && rungComment.trim().length() > 0 )
+					{
+						String tempText = rungComment;
+						if ( rungComment.length() > 200 )
+							{
+								tempText = rungComment.substring(0, 199);
+							}
+						CustomToolBar.rungCommentValue.setText(tempText);
+						CustomToolBar.rungCommentValue.setForeground(Color.RED);
+						CustomToolBar.rungCommentValue.setToolTipText(rungComment);
+					}
+				else
+					{
+						CustomToolBar.rungCommentValue.setText("");
+					}
 			}
 			
 	}

@@ -33,11 +33,11 @@ public class DefaultKeyListener implements KeyListener, Borders
 		@Override
 		public void keyTyped(KeyEvent keyEvent)
 			{
-				if (keyEvent.getKeyCode() == KeyEvent.VK_CONTROL)
+				if ( keyEvent.getKeyCode() == KeyEvent.VK_CONTROL )
 					{
 						ClipBoard.setControlKeyActive(true);
 					}
-				else if (keyEvent.getKeyCode() == KeyEvent.VK_ESCAPE)
+				else if ( keyEvent.getKeyCode() == KeyEvent.VK_ESCAPE )
 					{
 						actionOnEscape();
 					}
@@ -46,11 +46,11 @@ public class DefaultKeyListener implements KeyListener, Borders
 		@Override
 		public void keyPressed(KeyEvent keyEvent)
 			{
-				if (keyEvent.getKeyCode() == KeyEvent.VK_CONTROL)
+				if ( keyEvent.getKeyCode() == KeyEvent.VK_CONTROL )
 					{
 						ClipBoard.setControlKeyActive(true);
 					}
-				else if (keyEvent.getKeyCode() == KeyEvent.VK_ESCAPE)
+				else if ( keyEvent.getKeyCode() == KeyEvent.VK_ESCAPE )
 					{
 						actionOnEscape();
 					}
@@ -59,7 +59,7 @@ public class DefaultKeyListener implements KeyListener, Borders
 		@Override
 		public void keyReleased(KeyEvent keyEvent)
 			{
-				if (keyEvent.getKeyCode() == KeyEvent.VK_CONTROL)
+				if ( keyEvent.getKeyCode() == KeyEvent.VK_CONTROL )
 					{
 						ClipBoard.setControlKeyActive(false);
 					}
@@ -73,6 +73,6 @@ public class DefaultKeyListener implements KeyListener, Borders
 				ClipBoard.cutLabel.setBorder(PADDED_DEFAULT);
 				ClipBoard.copyLabel.setBorder(PADDED_DEFAULT);
 				ClipBoard.pasteLabel.setBorder(PADDED_DEFAULT);
-				ClipBoard.resetClipBoardColumnSelection();
+				ClipBoard.resetClipBoardSelection();
 			}
 	}

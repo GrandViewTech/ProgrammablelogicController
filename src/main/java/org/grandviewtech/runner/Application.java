@@ -26,8 +26,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.PropertySources;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -35,8 +33,12 @@ import org.springframework.util.StringUtils;
 
 @Configuration
 @SpringBootApplication
-@PropertySources(value =
-	{ @PropertySource("classpath:properties/input.properties"), @PropertySource("classpath:properties/database.properties"), @PropertySource("classpath:properties/query.properties") })
+/*
+ * @PropertySources(value =
+ * { @PropertySource("classpath:properties/input.properties"), @PropertySource(
+ * "classpath:properties/database.properties"), @PropertySource(
+ * "classpath:properties/query.properties") })
+ */
 @ComponentScan(basePackages =
 	{ "com.grandviewtech" })
 public class Application implements CommandLineRunner
@@ -114,7 +116,20 @@ public class Application implements CommandLineRunner
 					}
 			}
 			
-		private static void deletePreviousIndexes()
+		private static void addHockToShutdownListener()
+			{
+				Runtime.getRuntime().addShutdownHook(new Thread()
+					{
+						@Override
+						public void run()
+							{
+								super.run();
+								Application.deletePreviousIndexes();
+							}
+					});
+			}
+			
+		public static void deletePreviousIndexes()
 			{
 				try
 					{
@@ -195,6 +210,7 @@ public class Application implements CommandLineRunner
 					{
 						deletePreviousIndexes();
 						getSystemInfomation();
+						addHockToShutdownListener();
 						BackGroundLayer backGroundLayer = new BackGroundLayer();
 						backGroundLayer.init();
 					}

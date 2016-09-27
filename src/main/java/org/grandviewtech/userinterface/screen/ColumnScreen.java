@@ -41,7 +41,10 @@ import javax.swing.JPanel;
 import javax.swing.TransferHandler;
 
 import org.grandviewtech.constants.Coils;
+import org.grandviewtech.constants.Edge;
 import org.grandviewtech.constants.Icons;
+import org.grandviewtech.constants.InputType;
+import org.grandviewtech.constants.NoNc;
 import org.grandviewtech.constants.PreferredDimension;
 import org.grandviewtech.entity.bo.ClipBoard;
 import org.grandviewtech.entity.bo.Screen;
@@ -73,6 +76,9 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 		private String				value;
 		private String				coil;
 		private String				comment;
+		private InputType			inputType;
+		private NoNc				nonc;
+		private Edge				edge;
 		
 		public ColumnScreen()
 			{
@@ -131,12 +137,12 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 				try
 					{
 						Transferable transferable = dropTargetDragEvent.getTransferable();
-						if (transferable.isDataFlavorSupported(DataFlavor.stringFlavor))
+						if ( transferable.isDataFlavorSupported(DataFlavor.stringFlavor) )
 							{
 								String dragContents = (String) transferable.getTransferData(DataFlavor.stringFlavor);
 								ColumnScreenGenerator.createColumnNeighbourHood(SCREEN.getRow(getRowNumber()), this);
 								boolean validateDragOption = ValidateDragOption.validateDragOption(this, dragContents);
-								if (validateDragOption == true)
+								if ( validateDragOption == true )
 									{
 										dropTargetDragEvent.getDropTargetContext().getComponent().setCursor(DragSource.DefaultCopyDrop);
 										dropTargetDragEvent.acceptDrop(DnDConstants.ACTION_MOVE);
@@ -182,9 +188,9 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 			
 		public ColumnScreen getPrevious(boolean isFocusRequired)
 			{
-				if (previous != null)
+				if ( previous != null )
 					{
-						if (isFocusRequired == true)
+						if ( isFocusRequired == true )
 							{
 								previous.requestFocus();
 							}
@@ -199,9 +205,9 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 			
 		public ColumnScreen getNext(boolean isFocusRequired)
 			{
-				if (next != null)
+				if ( next != null )
 					{
-						if (isFocusRequired == true)
+						if ( isFocusRequired == true )
 							{
 								next.requestFocus();
 							}
@@ -216,9 +222,9 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 			
 		public ColumnScreen getAbove(boolean isFocusRequired)
 			{
-				if (above != null)
+				if ( above != null )
 					{
-						if (isFocusRequired == true)
+						if ( isFocusRequired == true )
 							{
 								above.requestFocus();
 							}
@@ -233,9 +239,9 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 			
 		public ColumnScreen getBelow(boolean isFocusRequired)
 			{
-				if (below != null)
+				if ( below != null )
 					{
-						if (isFocusRequired == true)
+						if ( isFocusRequired == true )
 							{
 								below.requestFocus();
 							}
@@ -270,7 +276,7 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 			
 		public void setCoil(String coil)
 			{
-				if (coil != null)
+				if ( coil != null )
 					{
 						this.paintDefault = false;
 						this.coil = coil;
@@ -405,6 +411,36 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 		public void setComment(String comment)
 			{
 				this.comment = comment;
+			}
+			
+		public InputType getInputType()
+			{
+				return inputType;
+			}
+			
+		public void setInputType(InputType inputType)
+			{
+				this.inputType = inputType;
+			}
+			
+		public NoNc getNonc()
+			{
+				return nonc;
+			}
+			
+		public void setNonc(NoNc nonc)
+			{
+				this.nonc = nonc;
+			}
+			
+		public Edge getEdge()
+			{
+				return edge;
+			}
+			
+		public void setEdge(Edge edge)
+			{
+				this.edge = edge;
 			}
 			
 	}

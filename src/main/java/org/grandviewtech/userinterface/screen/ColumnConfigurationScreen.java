@@ -35,11 +35,13 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+import org.grandviewtech.constants.Edge;
+import org.grandviewtech.constants.InputType;
+import org.grandviewtech.constants.NoNc;
 import org.grandviewtech.constants.PreferredDimension;
 import org.grandviewtech.entity.helper.Dimension;
 import org.grandviewtech.runner.Application;
 import org.grandviewtech.service.searching.SearchEngine;
-import org.grandviewtech.service.system.Printer;
 
 public class ColumnConfigurationScreen extends JFrame implements PreferredDimension
 	{
@@ -118,78 +120,14 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 					{
 						setAlwaysOnTop(true);
 						setTitle("Configure Coil | Row : " + columnScreen.getRowNumber() + " Column Number : " + columnScreen.getColumnNumber());
-						addInputValueToScreen();
-						addInputOptionsToScreen();
-						addEdgeOptionToScreen();
-						// Edge
-						
-						// NO/NC
-						nc_noButtonGroup.add(NC);
-						nc_noButtonGroup.add(NO);
-						NO.setMnemonic(KeyEvent.VK_N);
-						NC.setMnemonic(KeyEvent.VK_C);
-						ncnoLabel.setBounds(X1, Y * 5, RADIO_WIDTH, HEIGHT);
-						NC.setBounds(X2, Y * 5, RADIO_WIDTH, HEIGHT);
-						NO.setBounds(X2 + (RADIO_WIDTH * 1), Y * 5, RADIO_WIDTH, HEIGHT);
-						JSeparator jvs5 = new JSeparator(SwingConstants.HORIZONTAL);
-						jvs5.setBounds(X1, Y * 5 + (20), CONFIGURATION_SCREEN.width - (X1 * 4), 10);
-						tagLabel.setBounds(X1, Y * 6, WIDTH, HEIGHT);
-						tagLabel.setEnabled(true);
-						tagLabel.setToolTipText("Add A Tag for Current Coil");
-						JSeparator jvs6 = new JSeparator(SwingConstants.HORIZONTAL);
-						jvs6.setBounds(X1, Y * 6 + (20), CONFIGURATION_SCREEN.width - (X1 * 4), 10);
-						tagValue.setBounds(X2, Y * 6, WIDTH, HEIGHT);
-						submit.setBounds(X1, Y * 7 + 20, WIDTH, HEIGHT);
-						submit.addActionListener(event ->
-							{
-								String optionType = "";
-								if (input.isSelected())
-									{
-										optionType = "I/";
-									}
-								else if (flag.isSelected())
-									{
-										optionType = "F/";
-									}
-								else if (word.isSelected())
-									{
-										optionType = "D/";
-									}
-								else if (output.isSelected())
-									{
-										optionType = "O/";
-									}
-								columnScreen.setValue(value.getText());
-								String valueLabel = optionType + columnScreen.getValue();
-								Printer.print("valueLabel " + valueLabel);
-								columnScreen.getValueLabel().setText(valueLabel);
-								String tag = (tagValue.getText() == null || tagValue.getText().trim().length() == 0) ? "" : tagValue.getText();
-								columnScreen.setTag(tag);
-								dispose();
-								SearchEngine.index(columnScreen);
-							});
-						cancel.setBounds(X2, Y * 7 + 20, WIDTH, HEIGHT);
-						cancel.addActionListener(event ->
-							{
-								dispose();
-							});
-						panel.setPreferredSize(CONFIGURATION_SCREEN);
-						panel.setLayout(null);
-						
-						panel.add(ncnoLabel);
-						panel.add(NC);
-						panel.add(NO);
-						panel.add(tagLabel);
-						panel.add(tagValue);
-						panel.add(submit);
-						panel.add(cancel);
-						getContentPane().add(scrollableConfigurationScreen);
-						Dimension dimension = Application.calculateCenterAlignment(getPreferredSize());
-						//logger.info("setting location relative to  X: " + dimension.getX() + " | Y :" + dimension.getY());
-						setLocation(dimension.getX(), dimension.getY());
-						setPreferredSize(CONFIGURATION_SCREEN);
-						pack();
-						setVisible(true);
+						addInputValueToScreen(columnScreen);
+						addInputOptionsToScreen(columnScreen);
+						addEdgeOptionToScreen(columnScreen);
+						addNcNoOptionToScreen(columnScreen);
+						addTagToScreen(columnScreen);
+						addSubmitToScreen(columnScreen);
+						addCancelToScreen();
+						invokeFrame();
 					}
 				catch (Exception exception)
 					{
@@ -197,10 +135,14 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 					}
 			}
 			
-		public void addInputValueToScreen()
+		public void addInputValueToScreen(ColumnScreen columnScreen)
 			{
 				inputValue.setBounds(X1, Y - 5, WIDTH, HEIGHT);
 				value.setBounds(X2, Y - 5, WIDTH, HEIGHT);
+				if ( columnScreen.getValue() != null && columnScreen.getValue().length() > 0 )
+					{
+						value.setText(columnScreen.getValue());
+					}
 				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
 				separator.setBounds(X1, Y * 1 + (20), CONFIGURATION_SCREEN.width - (X1 * 4), 10);
 				panel.add(inputValue);
@@ -208,7 +150,7 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 				panel.add(separator);
 			}
 			
-		public void addInputOptionsToScreen()
+		public void addInputOptionsToScreen(ColumnScreen columnScreen)
 			{
 				addRadioButtonsToOptionButtonGroup();
 				type.setBounds(X1, Y * 2, RADIO_WIDTH, HEIGHT);
@@ -218,6 +160,7 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 				output.setBounds(X2 + (RADIO_WIDTH * 1), Y * 3, RADIO_WIDTH, HEIGHT);
 				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
 				separator.setBounds(X1, Y * 3 + (20), CONFIGURATION_SCREEN.width - (X1 * 4), 10);
+				setDefaultInputOption(columnScreen);
 				panel.add(type);
 				panel.add(input);
 				panel.add(flag);
@@ -256,7 +199,7 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 				fallingEdge.setMnemonic(KeyEvent.VK_G);
 			}
 			
-		public void addEdgeOptionToScreen()
+		public void addEdgeOptionToScreen(ColumnScreen columnScreen)
 			{
 				addRadioButtonsToEdgeButtonGroup();
 				edgeLabel.setBounds(X1, Y * 4, RADIO_WIDTH, HEIGHT);
@@ -264,10 +207,278 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 				fallingEdge.setBounds(X2 + (RADIO_WIDTH * 1), Y * 4, RADIO_WIDTH, HEIGHT);
 				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
 				separator.setBounds(X1, Y * 4 + (20), CONFIGURATION_SCREEN.width - (X1 * 4), 10);
+				setDefaultEdgeOption(columnScreen);
 				panel.add(edgeLabel);
 				panel.add(risingEdge);
 				panel.add(fallingEdge);
 				panel.add(separator);
+			}
+			
+		// NC
+		public void addRadioButtonsToNoNcButtonGroup()
+			{
+				nc_noButtonGroup.add(NC);
+				nc_noButtonGroup.add(NO);
+				addMnemonicToNoNcRadioButton();
+			}
+			
+		public void addMnemonicToNoNcRadioButton()
+			{
+				NO.setMnemonic(KeyEvent.VK_N);
+				NC.setMnemonic(KeyEvent.VK_C);
+			}
+			
+		public void addNcNoOptionToScreen(ColumnScreen columnScreen)
+			{
+				ncnoLabel.setBounds(X1, Y * 5, RADIO_WIDTH, HEIGHT);
+				NC.setBounds(X2, Y * 5, RADIO_WIDTH, HEIGHT);
+				NO.setBounds(X2 + (RADIO_WIDTH * 1), Y * 5, RADIO_WIDTH, HEIGHT);
+				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
+				separator.setBounds(X1, Y * 5 + (20), CONFIGURATION_SCREEN.width - (X1 * 4), 10);
+				setDefaultNoNcOption(columnScreen);
+				panel.add(ncnoLabel);
+				panel.add(NC);
+				panel.add(NO);
+				panel.add(separator);
+			}
+			
+		public void addTagToScreen(ColumnScreen columnScreen)
+			{
+				tagLabel.setBounds(X1, Y * 6, WIDTH, HEIGHT);
+				tagLabel.setEnabled(true);
+				tagLabel.setToolTipText("Add A Tag for Current Coil");
+				tagValue.setBounds(X2, Y * 6, WIDTH, HEIGHT);
+				String tag = columnScreen.getTag();
+				if ( tag != null && tag.trim().length() > 0 )
+					{
+						tagValue.setText(tag);
+					}
+				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
+				separator.setBounds(X1, Y * 6 + (20), CONFIGURATION_SCREEN.width - (X1 * 4), 10);
+				panel.add(tagLabel);
+				panel.add(tagValue);
+				panel.add(separator);
+			}
+			
+		private void addSubmitToScreen(ColumnScreen columnScreen)
+			{
+				submit.setBounds(X1, Y * 7 + 20, WIDTH, HEIGHT);
+				panel.add(submit);
 				
+				submit.addActionListener(event -> {
+					setInputTagAndValue(columnScreen);
+					setNoNcValue(columnScreen);
+					setEdgeValue(columnScreen);
+					SearchEngine.index(columnScreen);
+					dispose();
+				});
+			}
+			
+		private void addCancelToScreen()
+			{
+				cancel.setBounds(X2, Y * 7 + 20, WIDTH, HEIGHT);
+				panel.add(cancel);
+				cancel.addActionListener(event -> {
+					dispose();
+				});
+			}
+			
+		private void invokeFrame()
+			{
+				panel.setPreferredSize(CONFIGURATION_SCREEN);
+				panel.setLayout(null);
+				getContentPane().add(scrollableConfigurationScreen);
+				Dimension dimension = Application.calculateCenterAlignment(getPreferredSize());
+				setLocation(dimension.getX(), dimension.getY());
+				setPreferredSize(CONFIGURATION_SCREEN);
+				pack();
+				setVisible(true);
+			}
+			
+		private void setInputTagAndValue(ColumnScreen columnScreen)
+			{
+				InputType inputType = null;
+				String optionType = "";
+				if ( input.isSelected() )
+					{
+						inputType = InputType.INPUT;
+						optionType = "I/";
+					}
+				else if ( flag.isSelected() )
+					{
+						inputType = InputType.FLAG;
+						optionType = "F/";
+					}
+				else if ( word.isSelected() )
+					{
+						inputType = InputType.WORD;
+						optionType = "D/";
+					}
+				else if ( output.isSelected() )
+					{
+						inputType = InputType.OUTPUT;
+						optionType = "O/";
+					}
+				columnScreen.setInputType(inputType);
+				columnScreen.setValue(value.getText());
+				String valueLabel = optionType + columnScreen.getValue();
+				columnScreen.getValueLabel().setText(valueLabel);
+				String tag = (tagValue.getText() == null || tagValue.getText().trim().length() == 0) ? "" : tagValue.getText();
+				columnScreen.setTag(tag);
+			}
+			
+		private void setNoNcValue(ColumnScreen columnScreen)
+			{
+				NoNc nonc = null;
+				if ( NO.isSelected() )
+					{
+						nonc = NoNc.NO;
+					}
+				else if ( NC.isSelected() )
+					{
+						nonc = NoNc.NC;
+					}
+				columnScreen.setNonc(nonc);
+			}
+			
+		private void setEdgeValue(ColumnScreen columnScreen)
+			{
+				Edge edge = null;
+				if ( risingEdge.isSelected() )
+					{
+						edge = Edge.RISING;
+					}
+				else if ( fallingEdge.isSelected() )
+					{
+						edge = Edge.FALLING;
+					}
+				columnScreen.setEdge(edge);
+			}
+			
+		private void setDefaultInputOption(ColumnScreen columnScreen)
+			{
+				InputType inputType = columnScreen.getInputType();
+				if ( inputType == null )
+					{
+						input.setSelected(true);
+						flag.setSelected(false);
+						output.setSelected(false);
+						word.setSelected(false);
+					}
+				else
+					{
+						switch (inputType)
+							{
+								case FLAG:
+									{
+										input.setSelected(false);
+										flag.setSelected(true);
+										output.setSelected(false);
+										word.setSelected(false);
+										break;
+									}
+								case INPUT:
+									{
+										input.setSelected(true);
+										flag.setSelected(false);
+										output.setSelected(false);
+										word.setSelected(false);
+										break;
+									}
+								case OUTPUT:
+									{
+										input.setSelected(false);
+										flag.setSelected(false);
+										output.setSelected(true);
+										word.setSelected(false);
+										break;
+									}
+								case WORD:
+									{
+										input.setSelected(false);
+										flag.setSelected(false);
+										output.setSelected(false);
+										word.setSelected(true);
+										break;
+									}
+								default:
+									{
+										input.setSelected(true);
+										flag.setSelected(false);
+										output.setSelected(false);
+										word.setSelected(false);
+										break;
+									}
+							}
+					}
+			}
+			
+		private void setDefaultNoNcOption(ColumnScreen columnScreen)
+			{
+				NoNc nonc = columnScreen.getNonc();
+				if ( nonc == null )
+					{
+						NO.setSelected(true);
+						NC.setSelected(false);
+					}
+				else
+					{
+						switch (nonc)
+							{
+								case NC:
+									{
+										NO.setSelected(false);
+										NC.setSelected(true);
+										break;
+									}
+								case NO:
+									{
+										NO.setSelected(true);
+										NC.setSelected(false);
+										break;
+									}
+								default:
+									{
+										NO.setSelected(true);
+										NC.setSelected(false);
+										break;
+									}
+							}
+					}
+			}
+			
+		private void setDefaultEdgeOption(ColumnScreen columnScreen)
+			{
+				Edge edge = columnScreen.getEdge();
+				if ( edge == null )
+					{
+						risingEdge.setSelected(true);
+						fallingEdge.setSelected(false);
+					}
+				else
+					{
+						switch (edge)
+							{
+								case FALLING:
+									{
+										risingEdge.setSelected(false);
+										fallingEdge.setSelected(true);
+										break;
+									}
+								case RISING:
+									{
+										risingEdge.setSelected(true);
+										fallingEdge.setSelected(false);
+										break;
+									}
+								default:
+									{
+										risingEdge.setSelected(true);
+										fallingEdge.setSelected(false);
+										break;
+									}
+									
+							}
+					}
 			}
 	}

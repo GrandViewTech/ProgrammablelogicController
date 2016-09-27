@@ -46,6 +46,8 @@ public class Rung extends JPanel implements PreferredDimension, Comparable<Rung>
 		
 		int							rowNumber;
 		
+		private String				comment;
+		
 		public Rung(int rowNumber)
 			{
 				this.rowNumber = rowNumber;
@@ -109,17 +111,24 @@ public class Rung extends JPanel implements PreferredDimension, Comparable<Rung>
 		@Override
 		public boolean equals(Object comparableRung)
 			{
-				if (comparableRung instanceof Rung)
+				if ( comparableRung instanceof Rung )
 					{
 						int currentRowNumber = rowNumber;
 						int comparableRowNumber = ((Rung) comparableRung).getRowNumber();
-						if (currentRowNumber == comparableRowNumber)
-							{
-								return true;
-							}
+						if ( currentRowNumber == comparableRowNumber ) { return true; }
 						return false;
 					}
 				return false;
+			}
+			
+		public String getComment()
+			{
+				return comment;
+			}
+			
+		public void setComment(String comment)
+			{
+				this.comment = comment;
 			}
 			
 	}

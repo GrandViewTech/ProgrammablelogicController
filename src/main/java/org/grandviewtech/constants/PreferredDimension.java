@@ -32,5 +32,6 @@ public interface PreferredDimension extends PLCConstant
 		Dimension	CELL_SIZE				= new Dimension(SECTION_WIDTH, SECTION_HEIGHT);
 		Dimension	RUNG_SIZE				= new Dimension(20, SECTION_HEIGHT);
 		Dimension	CONFIGURATION_SCREEN	= new Dimension(350, 300);
-		//Dimension	CONFIGURATION_SCREEN	= new Dimension(500, 200);
+		Dimension	RUNG_COMMENT_SCREEN		= new Dimension(400, 250);
+		// Dimension CONFIGURATION_SCREEN = new Dimension(500, 200);
 	}
