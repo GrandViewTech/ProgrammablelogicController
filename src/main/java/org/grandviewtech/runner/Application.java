@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.PropertyConfigurator;
 import org.grandviewtech.service.system.Printer;
 import org.grandviewtech.userinterface.screen.BackGroundLayer;
@@ -34,8 +35,10 @@ import org.springframework.util.StringUtils;
 
 @Configuration
 @SpringBootApplication
-@PropertySources(value = { @PropertySource("classpath:properties/input.properties"), @PropertySource("classpath:properties/database.properties"), @PropertySource("classpath:properties/query.properties") })
-@ComponentScan(basePackages = { "com.grandviewtech" })
+@PropertySources(value =
+	{ @PropertySource("classpath:properties/input.properties"), @PropertySource("classpath:properties/database.properties"), @PropertySource("classpath:properties/query.properties") })
+@ComponentScan(basePackages =
+	{ "com.grandviewtech" })
 public class Application implements CommandLineRunner
 	{
 		
@@ -50,7 +53,8 @@ public class Application implements CommandLineRunner
 			
 		private static Properties	properties;
 		
-		private static String		fileName	= "output" + java.io.File.separator + "system" + java.io.File.separator + "system.properties";
+		private final static String	FOLDER		= "output" + java.io.File.separator + "system";
+		private static String		FILENAME	= FOLDER + java.io.File.separator + "system.properties";
 		
 		private static Dimension	screenSize	= Toolkit.getDefaultToolkit().getScreenSize();
 		
@@ -84,9 +88,9 @@ public class Application implements CommandLineRunner
 						
 						properties = new Properties();
 						String pid_HostName = ManagementFactory.getRuntimeMXBean().getName();
-						if (pid_HostName != null)
+						if ( pid_HostName != null )
 							{
-								if (pid_HostName.contains("@"))
+								if ( pid_HostName.contains("@") )
 									{
 										String[] data = StringUtils.split(pid_HostName, "@");
 										properties.put("pId".toLowerCase(), data[0]);
@@ -94,7 +98,12 @@ public class Application implements CommandLineRunner
 										properties.put("serialNumber".toLowerCase(), "" + (new BigInteger(data[1].getBytes())));
 									}
 							}
-						File file = new File(fileName);
+						File folder = new File(FOLDER);
+						if ( !folder.exists() )
+							{
+								FileUtils.forceMkdir(folder);
+							}
+						File file = new File(FILENAME);
 						OutputStream output = new FileOutputStream(file);
 						DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 						properties.store(output, "updating system properties on " + dateFormat.format(new Date()));
@@ -105,22 +114,42 @@ public class Application implements CommandLineRunner
 					}
 			}
 			
+		private static void deletePreviousIndexes()
+			{
+				try
+					{
+						File folder = new File("indexes");
+						if ( folder.exists() )
+							{
+								File[] files = folder.listFiles();
+								for (File file : files)
+									{
+										FileUtils.forceDelete(file);
+									}
+							}
+					}
+				catch (Exception exception)
+					{
+						logger.error(exception.getLocalizedMessage(), exception);
+					}
+			}
+			
 		private static String getNetworkCardInformationToGetMACAddress() throws UnknownHostException, SocketException
 			{
-				//	InetAddress inetAddress = InetAddress.getLocalHost();
+				// InetAddress inetAddress = InetAddress.getLocalHost();
 				NetworkInterface networkInterface = null;
 				boolean isMacFound = false;
 				for (Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces(); enumeration.hasMoreElements();)
 					{
 						NetworkInterface netInterface = enumeration.nextElement();
-						if (netInterface.getHardwareAddress() != null)
+						if ( netInterface.getHardwareAddress() != null )
 							{
 								isMacFound = true;
 								networkInterface = netInterface;
 								break;
 							}
 					}
-				if (isMacFound == true)
+				if ( isMacFound == true )
 					{
 						byte[] mac = networkInterface.getHardwareAddress();
 						StringBuilder stringBuilder = new StringBuilder();
@@ -149,7 +178,7 @@ public class Application implements CommandLineRunner
 			{
 				key = key.trim().toLowerCase();
 				Object object = properties.get(key);
-				if (object != null)
+				if ( object != null )
 					{
 						return (String) object;
 					}
@@ -164,6 +193,7 @@ public class Application implements CommandLineRunner
 			{
 				try
 					{
+						deletePreviousIndexes();
 						getSystemInfomation();
 						BackGroundLayer backGroundLayer = new BackGroundLayer();
 						backGroundLayer.init();

@@ -48,30 +48,30 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.Lock;
-import org.grandviewtech.entity.bo.PlcFile;
 import org.grandviewtech.entity.bo.SearchResult;
 import org.grandviewtech.runner.Application;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 
 public class SearchEngine
 	{
-		private static Analyzer	standardAnalyzer	= new StandardAnalyzer();
+		private static org.apache.log4j.Logger	logger				= org.apache.log4j.Logger.getLogger(Application.class);
 		
-		private static PlcFile	plcFile				= PlcFile.getInstance();
-		private static String	fileLocation		= "indexes" + File.separator + Application.getProperties("pId");
+		private static Analyzer					standardAnalyzer	= new StandardAnalyzer();
+		
+		private static String					fileLocation		= "indexes" + File.separator + Application.getProperties("pId");
 		
 		public static void index(ColumnScreen columnScreen)
 			{
 				try
 					{
-						if (columnScreen == null || columnScreen.isBlank() == true)
+						if ( columnScreen == null || columnScreen.isBlank() == true )
 							{
 								return;
 							}
 						else
 							{
 								File file = new File(fileLocation);
-								if (file.exists() == false)
+								if ( file.exists() == false )
 									{
 										file.mkdirs();
 									}
@@ -83,7 +83,7 @@ public class SearchEngine
 									{
 										indexWriter.deleteDocuments(new QueryParser("columnId", standardAnalyzer).parse("" + columnScreen.getRowNumber() + "." + columnScreen.getColumnNumber()));
 										indexWriter.commit();
-										if (columnScreen.isBlank() == false)
+										if ( columnScreen.isBlank() == false )
 											{
 												Document document = new Document();
 												document.add(new TextField("columnId", "" + columnScreen.getRowNumber() + "." + columnScreen.getColumnNumber(), Field.Store.YES));
@@ -190,7 +190,7 @@ public class SearchEngine
 			{
 				try
 					{
-						if (indexWriter != null)
+						if ( indexWriter != null )
 							{
 								indexWriter.flush();
 								indexWriter.close();
