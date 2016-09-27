@@ -95,14 +95,11 @@ public class RowGenerator
 										updatedRowScreen.add(rowScreen);
 									}
 							}
-						else if (currentRowNumber == rowNumber)
+						else if (add && (currentRowNumber == rowNumber))
 							{
-								if (add)
-									{
-										updatedRowScreen.add(rowScreen);
-										currentRowNumber = currentRowNumber + 1;
-										updatedRowScreen.add(new RowScreen(currentRowNumber));
-									}
+								updatedRowScreen.add(rowScreen);
+								currentRowNumber = currentRowNumber + 1;
+								updatedRowScreen.add(new RowScreen(currentRowNumber));
 							}
 							
 					}
@@ -127,7 +124,7 @@ public class RowGenerator
 				for (RowScreen rowScreen : rowScreens)
 					{
 						int currentRowNumber = rowScreen.getRowNumber();
-						if (rowNumbers.contains(currentRowNumber) == false)
+						if (!rowNumbers.contains(currentRowNumber))
 							{
 								rowScreen.resetColumnScreen(updatedRowNumber);
 								updatedRowScreen.add(rowScreen);

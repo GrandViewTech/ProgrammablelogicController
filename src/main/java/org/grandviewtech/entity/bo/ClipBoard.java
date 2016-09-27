@@ -90,12 +90,6 @@ final public class ClipBoard implements Borders
 				return copiedRung;
 			}
 			
-		public static void resetSelectRung()
-			{
-				copiedTempRung.clear();
-				copiedRung.clear();
-			}
-			
 		public static List<Rung> getSelectedRung()
 			{
 				return copiedTempRung;
@@ -211,7 +205,7 @@ final public class ClipBoard implements Borders
 					}
 			}
 			
-		public static void resetClipBoardColumnSelection()
+		public static void resetClipBoardSelection()
 			{
 				if (ClipBoard.copiedCell.isEmpty() == false)
 					{
@@ -228,6 +222,14 @@ final public class ClipBoard implements Borders
 								copiedRung.setBackground(null);
 							}
 						ClipBoard.copiedCell.clear();
+					}
+				if (ClipBoard.copiedTempRung.isEmpty() == false)
+					{
+						for (Rung copiedRung : ClipBoard.copiedRung)
+							{
+								copiedRung.setBackground(null);
+							}
+						ClipBoard.copiedTempRung.clear();
 					}
 			}
 			

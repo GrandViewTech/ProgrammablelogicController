@@ -116,8 +116,7 @@ public class RungActionListerner implements ActionListener
 							}
 						RowGenerator.deleteRows(rowNumbers);
 					}
-				List<Rung> tempRungs = ClipBoard.getSelectedRung();
-				
+				ClipBoard.resetClipBoardSelection();
 			}
 			
 		private void _new()

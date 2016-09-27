@@ -43,9 +43,60 @@ import org.grandviewtech.service.system.Printer;
 
 public class ColumnConfigurationScreen extends JFrame implements PreferredDimension
 	{
-		private static org.apache.log4j.Logger	logger				= org.apache.log4j.Logger.getLogger(ColumnConfigurationScreen.class);
+		private static org.apache.log4j.Logger	logger							= org.apache.log4j.Logger.getLogger(ColumnConfigurationScreen.class);
 		
-		private static final long				serialVersionUID	= 1L;
+		private static final long				serialVersionUID				= 1L;
+		
+		private ButtonGroup						buttonGroup						= new ButtonGroup();
+		
+		private JRadioButton					input							= new JRadioButton("Input", true);
+		
+		private JRadioButton					flag							= new JRadioButton("Flag");
+		
+		private JRadioButton					word							= new JRadioButton("Word");
+		
+		private JRadioButton					output							= new JRadioButton("Output");
+		
+		private ButtonGroup						edgeButtonGroup					= new ButtonGroup();
+		
+		private JRadioButton					risingEdge						= new JRadioButton("Rising", true);
+		
+		private JRadioButton					fallingEdge						= new JRadioButton("Falling");
+		
+		private ButtonGroup						nc_noButtonGroup				= new ButtonGroup();
+		
+		private JRadioButton					NC								= new JRadioButton("NC", true);
+		
+		private JRadioButton					NO								= new JRadioButton("NO");
+		
+		private JPanel							panel							= new JPanel();
+		
+		private JLabel							edgeLabel						= new JLabel("Edge");
+		
+		private JLabel							ncnoLabel						= new JLabel("NC/NO");
+		
+		private JLabel							inputValue						= new JLabel("Input");
+		
+		private JTextField						value							= new JTextField();
+		
+		private JLabel							type							= new JLabel("Type");
+		
+		private JLabel							tagLabel						= new JLabel("Tag");
+		
+		private JTextField						tagValue						= new JTextField();
+		
+		private JButton							submit							= new JButton("Submit");
+		
+		private JButton							cancel							= new JButton("Canel");
+		
+		private JScrollPane						scrollableConfigurationScreen	= null;
+		
+		private static final int				X1								= 10;
+		private static final int				X2								= 150;
+		private static final int				Y								= 30;
+		private static final int				WIDTH							= 120;
+		private static final int				RADIO_WIDTH						= 80;
+		private static final int				HEIGHT							= 20;
 		
 		public ColumnConfigurationScreen()
 			{
@@ -55,111 +106,23 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 				scrollableConfigurationScreen.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 			}
 			
-		private ColumnScreen columnScreen;
-		
 		private void reset()
 			{
 				value.setText("");
 				tagValue.setText("");
 			}
 			
-		private ButtonGroup			buttonGroup						= new ButtonGroup();
-		
-		private JRadioButton		input							= new JRadioButton("Input", true);
-		
-		private JRadioButton		flag							= new JRadioButton("Flag");
-		
-		private JRadioButton		word							= new JRadioButton("Word");
-		
-		private JRadioButton		output							= new JRadioButton("Output");
-		
-		private ButtonGroup			edgeButtonGroup					= new ButtonGroup();
-		
-		private JRadioButton		risingEdge						= new JRadioButton("Rising", true);
-		
-		private JRadioButton		fallingEdge						= new JRadioButton("Falling");
-		
-		private ButtonGroup			nc_noButtonGroup				= new ButtonGroup();
-		
-		private JRadioButton		NC								= new JRadioButton("NC", true);
-		
-		private JRadioButton		NO								= new JRadioButton("NO");
-		
-		private JPanel				panel							= new JPanel();
-		
-		private JLabel				edgeLabel						= new JLabel("Edge");
-		
-		private JLabel				ncnoLabel						= new JLabel("NC/NO");
-		
-		private JLabel				inputValue						= new JLabel("Input");
-		
-		private JTextField			value							= new JTextField();
-		
-		private JLabel				type							= new JLabel("Type");
-		
-		private JLabel				tagLabel						= new JLabel("Tag");
-		
-		private JTextField			tagValue						= new JTextField();
-		
-		private JButton				submit							= new JButton("Submit");
-		
-		private JButton				cancel							= new JButton("Canel");
-		
-		private JScrollPane			scrollableConfigurationScreen	= null;
-		
-		private static final int	X1								= 10;
-		private static final int	X2								= 150;
-		private static final int	Y								= 30;
-		private static final int	WIDTH							= 120;
-		private static final int	RADIO_WIDTH						= 80;
-		private static final int	HEIGHT							= 20;
-		
-		public void setValues()
-			{
-				
-			}
-			
 		public void initiateInstance(ColumnScreen columnScreen)
 			{
 				try
 					{
-						setTitle("Configure Coil | Row : " + columnScreen.getRowNumber() + " Column Number : " + columnScreen.getColumnNumber());
-						input.setMnemonic(KeyEvent.VK_I);
-						flag.setMnemonic(KeyEvent.VK_F);
-						word.setMnemonic(KeyEvent.VK_W);
-						output.setMnemonic(KeyEvent.VK_O);
-						
-						buttonGroup.add(input);
-						buttonGroup.add(flag);
-						buttonGroup.add(word);
-						buttonGroup.add(output);
-						
 						setAlwaysOnTop(true);
-						this.columnScreen = columnScreen;
-						inputValue.setBounds(X1, Y - 5, WIDTH, HEIGHT);
-						value.setBounds(X2, Y - 5, WIDTH, HEIGHT);
-						JSeparator jvs1 = new JSeparator(SwingConstants.HORIZONTAL);
-						jvs1.setBounds(X1, Y * 1 + (20), CONFIGURATION_SCREEN.width - (X1 * 4), 10);
-						//
-						type.setBounds(X1, Y * 2, RADIO_WIDTH, HEIGHT);
-						input.setBounds(X2, Y * 2, RADIO_WIDTH, HEIGHT);
-						JSeparator jvs2 = new JSeparator(SwingConstants.HORIZONTAL);
-						jvs2.setBounds(X1, Y * 2 + (20), CONFIGURATION_SCREEN.width - (X1 * 4), 10);
-						flag.setBounds(X2 + (RADIO_WIDTH * 1), Y * 2, RADIO_WIDTH, HEIGHT);
-						word.setBounds(X2, Y * 3, RADIO_WIDTH, HEIGHT);
-						output.setBounds(X2 + (RADIO_WIDTH * 1), Y * 3, RADIO_WIDTH, HEIGHT);
-						JSeparator jvs3 = new JSeparator(SwingConstants.HORIZONTAL);
-						jvs3.setBounds(X1, Y * 3 + (20), CONFIGURATION_SCREEN.width - (X1 * 4), 10);
+						setTitle("Configure Coil | Row : " + columnScreen.getRowNumber() + " Column Number : " + columnScreen.getColumnNumber());
+						addInputValueToScreen();
+						addInputOptionsToScreen();
+						addEdgeOptionToScreen();
 						// Edge
-						edgeButtonGroup.add(risingEdge);
-						edgeButtonGroup.add(fallingEdge);
-						risingEdge.setMnemonic(KeyEvent.VK_R);
-						fallingEdge.setMnemonic(KeyEvent.VK_G);
-						edgeLabel.setBounds(X1, Y * 4, RADIO_WIDTH, HEIGHT);
-						risingEdge.setBounds(X2, Y * 4, RADIO_WIDTH, HEIGHT);
-						fallingEdge.setBounds(X2 + (RADIO_WIDTH * 1), Y * 4, RADIO_WIDTH, HEIGHT);
-						JSeparator jvs4 = new JSeparator(SwingConstants.HORIZONTAL);
-						jvs4.setBounds(X1, Y * 4 + (20), CONFIGURATION_SCREEN.width - (X1 * 4), 10);
+						
 						// NO/NC
 						nc_noButtonGroup.add(NC);
 						nc_noButtonGroup.add(NO);
@@ -196,12 +159,12 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 									{
 										optionType = "O/";
 									}
-								this.columnScreen.setValue(value.getText());
-								String valueLabel = optionType + this.columnScreen.getValue();
+								columnScreen.setValue(value.getText());
+								String valueLabel = optionType + columnScreen.getValue();
 								Printer.print("valueLabel " + valueLabel);
-								this.columnScreen.getValueLabel().setText(valueLabel);
+								columnScreen.getValueLabel().setText(valueLabel);
 								String tag = (tagValue.getText() == null || tagValue.getText().trim().length() == 0) ? "" : tagValue.getText();
-								this.columnScreen.setTag(tag);
+								columnScreen.setTag(tag);
 								dispose();
 								SearchEngine.index(columnScreen);
 							});
@@ -212,22 +175,7 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 							});
 						panel.setPreferredSize(CONFIGURATION_SCREEN);
 						panel.setLayout(null);
-						panel.add(inputValue);
-						panel.add(value);
-						panel.add(type);
-						panel.add(input);
-						panel.add(flag);
-						panel.add(word);
-						panel.add(output);
-						panel.add(jvs1);
-						panel.add(jvs2);
-						panel.add(jvs3);
-						panel.add(jvs4);
-						panel.add(jvs5);
-						panel.add(jvs6);
-						panel.add(edgeLabel);
-						panel.add(risingEdge);
-						panel.add(fallingEdge);
+						
 						panel.add(ncnoLabel);
 						panel.add(NC);
 						panel.add(NO);
@@ -249,4 +197,77 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 					}
 			}
 			
+		public void addInputValueToScreen()
+			{
+				inputValue.setBounds(X1, Y - 5, WIDTH, HEIGHT);
+				value.setBounds(X2, Y - 5, WIDTH, HEIGHT);
+				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
+				separator.setBounds(X1, Y * 1 + (20), CONFIGURATION_SCREEN.width - (X1 * 4), 10);
+				panel.add(inputValue);
+				panel.add(value);
+				panel.add(separator);
+			}
+			
+		public void addInputOptionsToScreen()
+			{
+				addRadioButtonsToOptionButtonGroup();
+				type.setBounds(X1, Y * 2, RADIO_WIDTH, HEIGHT);
+				input.setBounds(X2, Y * 2, RADIO_WIDTH, HEIGHT);
+				flag.setBounds(X2 + (RADIO_WIDTH * 1), Y * 2, RADIO_WIDTH, HEIGHT);
+				word.setBounds(X2, Y * 3, RADIO_WIDTH, HEIGHT);
+				output.setBounds(X2 + (RADIO_WIDTH * 1), Y * 3, RADIO_WIDTH, HEIGHT);
+				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
+				separator.setBounds(X1, Y * 3 + (20), CONFIGURATION_SCREEN.width - (X1 * 4), 10);
+				panel.add(type);
+				panel.add(input);
+				panel.add(flag);
+				panel.add(word);
+				panel.add(output);
+				panel.add(separator);
+			}
+			
+		public void addRadioButtonsToOptionButtonGroup()
+			{
+				buttonGroup.add(input);
+				buttonGroup.add(flag);
+				buttonGroup.add(word);
+				buttonGroup.add(output);
+				addMnemonicToOptionRadioButton();
+			}
+			
+		public void addMnemonicToOptionRadioButton()
+			{
+				input.setMnemonic(KeyEvent.VK_I);
+				flag.setMnemonic(KeyEvent.VK_F);
+				word.setMnemonic(KeyEvent.VK_W);
+				output.setMnemonic(KeyEvent.VK_O);
+			}
+			
+		public void addRadioButtonsToEdgeButtonGroup()
+			{
+				edgeButtonGroup.add(risingEdge);
+				edgeButtonGroup.add(fallingEdge);
+				addMnemonicToEdgeRadioButton();
+			}
+			
+		public void addMnemonicToEdgeRadioButton()
+			{
+				risingEdge.setMnemonic(KeyEvent.VK_R);
+				fallingEdge.setMnemonic(KeyEvent.VK_G);
+			}
+			
+		public void addEdgeOptionToScreen()
+			{
+				addRadioButtonsToEdgeButtonGroup();
+				edgeLabel.setBounds(X1, Y * 4, RADIO_WIDTH, HEIGHT);
+				risingEdge.setBounds(X2, Y * 4, RADIO_WIDTH, HEIGHT);
+				fallingEdge.setBounds(X2 + (RADIO_WIDTH * 1), Y * 4, RADIO_WIDTH, HEIGHT);
+				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
+				separator.setBounds(X1, Y * 4 + (20), CONFIGURATION_SCREEN.width - (X1 * 4), 10);
+				panel.add(edgeLabel);
+				panel.add(risingEdge);
+				panel.add(fallingEdge);
+				panel.add(separator);
+				
+			}
 	}
