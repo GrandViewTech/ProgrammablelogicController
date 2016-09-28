@@ -7,7 +7,7 @@
 	<description>Programmable Logic Controller Interface for 8085 Complier</description>
 	<inceptionYear>2016</inceptionYear>
 	<organization>
-		<name>GrandViewTech</name>
+		<name>gRandViewTech</name>
 	</organization>
 	<contributors>
 		<contributor>
@@ -17,7 +17,6 @@
 			<roles>
 				<role>CEO</role>
 				<role>Tech Lead</role>
-				<role>Test Engineer</role>
 				<role>Software Architech</role>
 				<role>Technical Administrator</role>
 			</roles>
