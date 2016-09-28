@@ -3,7 +3,6 @@ package org.grandviewtech.userinterface.screen;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
@@ -118,7 +117,7 @@ public class RungComment extends JFrame implements PreferredDimension
 				submit.addActionListener(event -> {
 					String comment = textArea.getText();
 					rung.setComment(comment);
-					JOptionPane.showMessageDialog(frame, "Comment Successfully Added");
+					// http://docs.oracle.com/javase/tutorial/uiswing/components/dialog.html#stayup
 					CustomToolBar.setRungComment(rung.getRowNumber(), comment);
 					frame.dispose();
 				});

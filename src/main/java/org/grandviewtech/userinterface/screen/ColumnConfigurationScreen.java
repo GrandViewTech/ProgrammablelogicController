@@ -230,6 +230,7 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 			
 		public void addNcNoOptionToScreen(ColumnScreen columnScreen)
 			{
+				addRadioButtonsToNoNcButtonGroup();
 				ncnoLabel.setBounds(X1, Y * 5, RADIO_WIDTH, HEIGHT);
 				NC.setBounds(X2, Y * 5, RADIO_WIDTH, HEIGHT);
 				NO.setBounds(X2 + (RADIO_WIDTH * 1), Y * 5, RADIO_WIDTH, HEIGHT);

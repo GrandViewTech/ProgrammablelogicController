@@ -2,7 +2,7 @@ package org.grandviewtech.constants;
 
 public enum Edge
 	{
-	RISING("INPUT"), FALLING("FLAG");
+	RISING("INPUT"), FALLING("FLAG"), DEFAULT("DEFAULT");
 		
 		private String edge;
 		

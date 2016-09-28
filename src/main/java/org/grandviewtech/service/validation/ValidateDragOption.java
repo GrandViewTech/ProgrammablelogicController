@@ -23,112 +23,125 @@ package org.grandviewtech.service.validation;
  */
 
 import org.grandviewtech.constants.Coils;
+import org.grandviewtech.entity.bo.Response;
+import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 
 public class ValidateDragOption
 	{
+		static Screen screen = Screen.getInstance();
 		
-		public static boolean validateDragOption(ColumnScreen columnScreen, String dragOption)
+		public static Response validateDragOption(ColumnScreen columnScreen, String dragOption)
 			{
-				boolean isDragOptionAllowed = false;
-				switch (dragOption)
+				Response response = new Response();
+				response = validateEndCase(response, dragOption, columnScreen);
+				if ( !response.isError() )
 					{
-						case Coils.LINE:
+						switch (dragOption)
 							{
-								isDragOptionAllowed = validateLineDrag(columnScreen);
-								break;
-							}
-						case Coils.OUTPUT:
-							{
-								isDragOptionAllowed = validateOutputDrag(columnScreen);
-								break;
-							}
-						case Coils.LOAD:
-							{
-								isDragOptionAllowed = validateLoadtDrag(columnScreen);
-								break;
-							}
-						case Coils.JUMP:
-							{
-								isDragOptionAllowed = true;
-								break;
+								case Coils.LINE:
+									{
+										response = validateLineDrag(response, Coils.LINE, columnScreen);
+										break;
+									}
+								case Coils.OUTPUT:
+									{
+										response = validateOutputDrag(response, Coils.OUTPUT, columnScreen);
+										break;
+									}
+								case Coils.LOAD:
+									{
+										response = validateLoadtDrag(response, Coils.LOAD, columnScreen);
+										break;
+									}
+								case Coils.JUMP:
+									{
+										
+										response = validateCoil(response, Coils.JUMP, columnScreen);
+										break;
+									}
 							}
 					}
-				return isDragOptionAllowed;
+				return response;
 			}
 			
-		private static boolean validateLoadtDrag(ColumnScreen columnScreen)
+		private static Response validateLoadtDrag(Response response, String dragOption, ColumnScreen columnScreen)
 			{
-				ColumnScreen previous = columnScreen.getPrevious(false);
-				if (previous == null)
+				return validateCoil(response, dragOption, columnScreen);
+			}
+			
+		private static Response validateOutputDrag(Response response, String dragOption, ColumnScreen columnScreen)
+			{
+				return validateCoil(response, dragOption, columnScreen);
+			}
+			
+		private static Response validateLineDrag(Response response, String dragOption, ColumnScreen columnScreen)
+			{
+				return validateCoil(response, dragOption, columnScreen);
+			}
+			
+		private static Response validateEndCase(Response response, String dragOption, ColumnScreen columnScreen)
+			{
+				if ( columnScreen.getRowNumber() == 1 && columnScreen.getColumnNumber() == 1 )
 					{
-						return true;
+						String coil = dragOption;
+						if ( !coil.equalsIgnoreCase(Coils.LOAD) )
+							{
+								response.setError(true);
+								response.addMessage("cannot " + dragOption.toUpperCase() + " in Row 1 , column 1");
+							}
+					}
+				else if ( columnScreen.getRowNumber() > screen.getEndRowNumber() || columnScreen.getColumnNumber() > screen.getEndColumnNumber() )
+					{
+						response.setError(true);
+						response.addMessage("Cannot Place Coil After End of File | Row : " + screen.getEndRowNumber() + " | Column : " + screen.getEndColumnNumber());
+					}
+				return response;
+			}
+			
+		private static Response validatePreviousOption(Response response, ColumnScreen previous, ColumnScreen columnScreen)
+			{
+				String previousOption = previous.getCoil();
+				if ( previousOption == null || previousOption.trim().length() == 0 )
+					{
+						response.addMessage("cannot place coil in between , previous option is undefined");
 					}
 				else
 					{
-						String previousOption = previous.getCoil();
-						if (previousOption == null || previousOption.trim().length() == 0)
+						if ( previousOption.equalsIgnoreCase(Coils.OUTPUT) )
 							{
-								return false;
+								response.addMessage("Cannot place coil after OUTPUT coil");
 							}
-						if (previousOption.equalsIgnoreCase(Coils.OUTPUT) || previousOption.equalsIgnoreCase(Coils.JUMP))
+						else if ( previousOption.equalsIgnoreCase(Coils.JUMP) )
 							{
-								return false;
-							}
-						else
-							{
-								return true;
+								response.addMessage("Cannot place coil after JUMP coil");
 							}
 					}
+				return response;
 			}
 			
-		private static boolean validateOutputDrag(ColumnScreen columnScreen)
+		private static Response validateCoil(Response response, String coil, ColumnScreen columnScreen)
 			{
 				ColumnScreen previous = columnScreen.getPrevious(false);
-				if (previous == null)
-					{
-						return false;
-					}
-				else
+				if ( previous != null )
 					{
 						String previousOption = previous.getCoil();
-						if (previousOption == null || previousOption.trim().length() == 0)
+						if ( previousOption == null || previousOption.trim().length() == 0 )
 							{
-								return false;
-							}
-						if (previousOption.equalsIgnoreCase(Coils.OUTPUT) || previousOption.equalsIgnoreCase(Coils.JUMP))
-							{
-								return false;
+								if ( coil == null || coil.trim().length() == 0 )
+									{
+										response.addMessage("cannot place coil in between , previous option is undefined");
+									}
+								else if ( !coil.equalsIgnoreCase(Coils.LOAD) && !coil.equalsIgnoreCase(Coils.END) )
+									{
+										response.addMessage("cannot place coil in between , previous option is undefined");
+									}
 							}
 						else
 							{
-								return true;
+								response = validatePreviousOption(response, previous, columnScreen);
 							}
 					}
-			}
-			
-		private static boolean validateLineDrag(ColumnScreen columnScreen)
-			{
-				ColumnScreen previous = columnScreen.getPrevious(false);
-				if (previous == null)
-					{
-						return true;
-					}
-				else
-					{
-						String previousOption = previous.getCoil();
-						if (previousOption == null || previousOption.trim().length() == 0)
-							{
-								return false;
-							}
-						if (previousOption.equalsIgnoreCase(Coils.OUTPUT) || previousOption.equalsIgnoreCase(Coils.JUMP))
-							{
-								return false;
-							}
-						else
-							{
-								return true;
-							}
-					}
+				return response;
 			}
 	}

@@ -37,6 +37,7 @@ import java.awt.dnd.DropTargetListener;
 import java.io.IOException;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.TransferHandler;
 
@@ -47,6 +48,7 @@ import org.grandviewtech.constants.InputType;
 import org.grandviewtech.constants.NoNc;
 import org.grandviewtech.constants.PreferredDimension;
 import org.grandviewtech.entity.bo.ClipBoard;
+import org.grandviewtech.entity.bo.Response;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.service.validation.ValidateDragOption;
 import org.grandviewtech.userinterface.coils.PaintCoilsOnScreen;
@@ -67,7 +69,7 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 		private int					rowNumber;
 		private int					columnNumber;
 		private boolean				paintDefault		= true;
-		final static Screen			SCREEN				= Screen.getInstance();
+		static Screen				SCREEN				= Screen.getInstance();
 		private JLabel				setting				= new JLabel(SETTING);
 		private JLabel				valueLabel			= new JLabel("");
 		private boolean				isBlank				= true;
@@ -77,8 +79,8 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 		private String				coil;
 		private String				comment;
 		private InputType			inputType;
-		private NoNc				nonc;
-		private Edge				edge;
+		private NoNc				nonc				= NoNc.DEFAULT;
+		private Edge				edge				= Edge.DEFAULT;
 		
 		public ColumnScreen()
 			{
@@ -141,8 +143,9 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 							{
 								String dragContents = (String) transferable.getTransferData(DataFlavor.stringFlavor);
 								ColumnScreenGenerator.createColumnNeighbourHood(SCREEN.getRow(getRowNumber()), this);
-								boolean validateDragOption = ValidateDragOption.validateDragOption(this, dragContents);
-								if ( validateDragOption == true )
+								Response response = ValidateDragOption.validateDragOption(this, dragContents);
+								boolean isError = response.isError();
+								if ( !isError )
 									{
 										dropTargetDragEvent.getDropTargetContext().getComponent().setCursor(DragSource.DefaultCopyDrop);
 										dropTargetDragEvent.acceptDrop(DnDConstants.ACTION_MOVE);
@@ -156,6 +159,28 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 									{
 										dropTargetDragEvent.getDropTargetContext().getComponent().setCursor(DragSource.DefaultCopyNoDrop);
 										dropTargetDragEvent.rejectDrop();
+										StringBuffer stringBuffer = new StringBuffer();
+										int i = 1;
+										for (String message : response.getMessages())
+											{
+												String text = "";
+												if ( i > 1 )
+													{
+														text = "\n";
+													}
+												if ( i <= 9 )
+													{
+														text += ("0" + i + " : ");
+													}
+												else
+													{
+														text += (i + " : ");
+													}
+													
+												stringBuffer.append(text + message);
+												i = i + 1;
+											}
+										JOptionPane.showMessageDialog(null, stringBuffer.toString());
 									}
 									
 							}
@@ -328,6 +353,13 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 						case Coils.JUMP:
 							{
 								setCoil(Coils.JUMP);
+								break;
+							}
+						case Coils.END:
+							{
+								SCREEN.setEndRowNumber(rowNumber);
+								SCREEN.setEndColumnNumber(columnNumber);
+								setCoil(Coils.END);
 								break;
 							}
 					}

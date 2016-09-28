@@ -4,7 +4,6 @@
 	<artifactId>ProgrammableLogicController-RELEASE</artifactId>
 	<version>1.0</version>
 	<name>Programmable Logic Controller Interface for 8058 Compiler</name>
-	<description>Programmable Logic Controller Interface for 8085 Complier</description>
 	<inceptionYear>2016</inceptionYear>
 	<organization>
 		<name>gRandViewTech</name>
@@ -147,4 +146,5 @@
 			<version>2.5</version>
 		</dependency>
 	</dependencies>
+	<description>Programmable Logic Controller Interface for 8085 Compiler</description>
 </project>

@@ -2,7 +2,7 @@ package org.grandviewtech.constants;
 
 public enum NoNc
 	{
-	NO("NO"), NC("NC");
+	NO("NO"), NC("NC"), DEFAULT("DEFAULT");
 		
 		private String type;
 		

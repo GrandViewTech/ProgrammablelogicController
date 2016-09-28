@@ -76,13 +76,13 @@ public class RowGenerator
 					{
 						int currentRowNumber = rowScreen.getRowNumber();
 						
-						if (currentRowNumber < rowNumber)
+						if ( currentRowNumber < rowNumber )
 							{
 								updatedRowScreen.add(rowScreen);
 							}
-						else if (currentRowNumber > rowNumber)
+						else if ( currentRowNumber > rowNumber )
 							{
-								if (add)
+								if ( add )
 									{
 										currentRowNumber = currentRowNumber + 1;
 										rowScreen.resetColumnScreen(currentRowNumber);
@@ -95,7 +95,7 @@ public class RowGenerator
 										updatedRowScreen.add(rowScreen);
 									}
 							}
-						else if (add && (currentRowNumber == rowNumber))
+						else if ( add && (currentRowNumber == rowNumber) )
 							{
 								updatedRowScreen.add(rowScreen);
 								currentRowNumber = currentRowNumber + 1;
@@ -124,7 +124,7 @@ public class RowGenerator
 				for (RowScreen rowScreen : rowScreens)
 					{
 						int currentRowNumber = rowScreen.getRowNumber();
-						if (!rowNumbers.contains(currentRowNumber))
+						if ( !rowNumbers.contains(currentRowNumber) )
 							{
 								rowScreen.resetColumnScreen(updatedRowNumber);
 								updatedRowScreen.add(rowScreen);
@@ -137,7 +137,7 @@ public class RowGenerator
 		public static void repaintScreen(List<RowScreen> rowScreens)
 			{
 				sheet.removeAll();
-				//sheet.repaint();
+				// sheet.repaint();
 				
 				screen.setTotalRow(rowScreens.size());
 				Collections.sort(rowScreens, new Comparator<RowScreen>()
@@ -168,11 +168,11 @@ public class RowGenerator
 				for (RowScreen rowScreen : screen.getRows())
 					{
 						int currentRowNumber = rowScreen.getRowNumber();
-						if (currentRowNumber < rowNumber)
+						if ( currentRowNumber < rowNumber )
 							{
 								updatedRowScreen.add(rowScreen);
 							}
-						else if (currentRowNumber > rowNumber)
+						else if ( currentRowNumber > rowNumber )
 							{
 								updatedRowScreen.add(updateColumnNumber(rowScreen, currentRowNumber - 1));
 							}
@@ -194,27 +194,27 @@ public class RowGenerator
 					
 				rowScreen.setRung(rung);
 				rowScreen.setRowNumber(rowNumber);
-				//rowScreen.revalidate();
-				//rowScreen.repaint();
+				// rowScreen.revalidate();
+				// rowScreen.repaint();
 				return rowScreen;
 			}
 			
 		private static void updateScreen(List<RowScreen> updatedRowScreen)
 			{
 				gridBagConstraints.gridx = 1;
-				//screen.getRows().clear();
-				//sheet.removeAll();
-				//sheet.revalidate();
-				//sheet.repaint();
+				// screen.getRows().clear();
+				// sheet.removeAll();
+				// sheet.revalidate();
+				// sheet.repaint();
 				screen.setTotalRow(updatedRowScreen.size());
 				int i$ = 1;
 				for (RowScreen rowScreen : updatedRowScreen)
 					{
-						//int i$ = rowScreen.getRowNumber();
+						// int i$ = rowScreen.getRowNumber();
 						gridBagConstraints.gridy = i$;
 						rowScreen.revalidate();
 						rowScreen.repaint();
-						//sheet.add(rowScreen, gridBagConstraints);
+						// sheet.add(rowScreen, gridBagConstraints);
 						screen.addRow(rowScreen.getRowNumber(), rowScreen);
 						i$ = i$ + 1;
 					}
