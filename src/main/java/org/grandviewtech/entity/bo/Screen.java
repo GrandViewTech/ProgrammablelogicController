@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.grandviewtech.constants.PLCConstant;
 import org.grandviewtech.service.system.Printer;
 import org.grandviewtech.userinterface.screen.RowScreen;
 import org.grandviewtech.userinterface.screen.Sheet;
@@ -42,19 +43,50 @@ public class Screen implements Serializable
 		private static class ScreenFactoryInstance
 			{
 				final static Screen instance = new Screen();
-			};
+			}
 			
 		public static Screen getInstance()
 			{
 				return ScreenFactoryInstance.instance;
 			}
 			
-		final private Sheet	sheet			= new Sheet();
+		private Sheet	sheet			= new Sheet();
+		private int		totalRow		= 1;
+		private int		endColumnNumber	= PLCConstant.MAX_CELL;
 		
-		private int			totalRow		= 1;
+		private int		maxNumberOffRow	= 50;
+		private int		endRowNumber	= maxNumberOffRow;
 		
-		final private int	maxNumberOffRow	= 50;
-		
+		public Sheet getSheet()
+			{
+				return sheet;
+			}
+			
+		public void setSheet(Sheet sheet)
+			{
+				this.sheet = sheet;
+			}
+			
+		public int getEndRowNumber()
+			{
+				return endRowNumber;
+			}
+			
+		public void setEndRowNumber(int endRowNumber)
+			{
+				this.endRowNumber = endRowNumber;
+			}
+			
+		public int getEndColumnNumber()
+			{
+				return endColumnNumber;
+			}
+			
+		public void setEndColumnNumber(int endColumnNumber)
+			{
+				this.endColumnNumber = endColumnNumber;
+			}
+			
 		public int getMaxNumberOffRow()
 			{
 				return maxNumberOffRow;
@@ -70,11 +102,6 @@ public class Screen implements Serializable
 				this.totalRow = totalRow;
 			}
 			
-		public Sheet getSheet()
-			{
-				return sheet;
-			}
-			
 		private List<RowScreen> rows = new ArrayList<RowScreen>();
 		
 		/**
@@ -86,7 +113,9 @@ public class Screen implements Serializable
 		 * @methodName : getRow <br>
 		 * @methodPackage : org.grandviewtech.entity.bo <br>
 		 * @Description : <br>
-		 *              Do not modify the index before retriving the reduction of index from n to n-1 is taken care by the method itself.
+		 *              Do not modify the index before retriving the reduction
+		 *              of index from n to n-1 is taken care by the method
+		 *              itself.
 		 * @StepsWithExplanation : <br>
 		 * @TODO : <br>
 		 * @param index
@@ -96,7 +125,7 @@ public class Screen implements Serializable
 		public RowScreen getRow(int index)
 			{
 				int i$ = index - 1;
-				if (i$ >= 0)
+				if ( i$ >= 0 )
 					{
 						Printer.print("Retieving Row Number " + i$);
 						return rows.get(i$);
@@ -116,9 +145,9 @@ public class Screen implements Serializable
 		public void addRow(int index, RowScreen rowScreen)
 			{
 				int i$ = index - 1;
-				if (i$ <= getTotalRow())
+				if ( i$ <= getTotalRow() )
 					{
-						//Printer.print("Inserting Row Number " + i$);
+						// Printer.print("Inserting Row Number " + i$);
 						rows.add(i$, rowScreen);
 					}
 				else
