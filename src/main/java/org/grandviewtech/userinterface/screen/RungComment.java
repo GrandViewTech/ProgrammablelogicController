@@ -1,10 +1,14 @@
 package org.grandviewtech.userinterface.screen;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.DefaultStyledDocument;
@@ -30,10 +34,18 @@ public class RungComment extends JFrame implements PreferredDimension
 		
 		private JPanel					jpanel				= new JPanel();
 		
+		private JScrollPane				scrollPane			= new JScrollPane(textArea);
+		
 		private JLabel					remainingLabel		= new JLabel("" + maxLength + " characters remaining");
 		
 		private DefaultStyledDocument	defaultStyledDocument;
 		
+		public RungComment()
+			{
+				scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+				scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+			}
+			
 		public void initiateRungComment(Rung rung)
 			{
 				setTitle("Add Comment For Rung : " + rung.getRowNumber());
@@ -58,13 +70,12 @@ public class RungComment extends JFrame implements PreferredDimension
 			
 		private void addComment(Rung rung)
 			{
-				String comment = rung.getComment();
-				if ( comment != null && comment.trim().length() > 0 )
-					{
-						remainingLabel.setText((maxLength - textArea.getText().length()) + " characters remaining");
-						textArea.setText(comment);
-					}
 				commentLabel.setBounds(20, 10, 100, 25);
+				configureTextArea(rung);
+			}
+			
+		private void configureTextArea(Rung rung)
+			{
 				jpanel.add(commentLabel);
 				defaultStyledDocument = new DefaultStyledDocument();
 				defaultStyledDocument.setDocumentFilter(new DocumentSizeFilter(500));
@@ -91,8 +102,17 @@ public class RungComment extends JFrame implements PreferredDimension
 				textArea.setDocument(defaultStyledDocument);
 				textArea.setWrapStyleWord(true);
 				textArea.setLineWrap(true);
-				textArea.setBounds(150, 10, 200, 100);
-				jpanel.add(textArea);
+				
+				String comment = rung.getComment();
+				if ( comment != null && comment.trim().length() > 0 )
+					{
+						remainingLabel.setText((maxLength - comment.length()) + " characters remaining");
+						textArea.setText(comment);
+					}
+				scrollPane.setBounds(150, 10, 200, 100);
+				// scrollPane.add(textArea);
+				// scrollPane.set
+				jpanel.add(scrollPane);
 			}
 			
 		private void addRemainingLabel()
@@ -117,8 +137,17 @@ public class RungComment extends JFrame implements PreferredDimension
 				submit.addActionListener(event -> {
 					String comment = textArea.getText();
 					rung.setComment(comment);
+					JOptionPane optionPane = new JOptionPane("Comment submitted Successfully", JOptionPane.INFORMATION_MESSAGE);
+					JDialog dialog = optionPane.createDialog(null, "Rung Comment");
+					dialog.setModal(false);
+					dialog.setVisible(true);
 					// http://docs.oracle.com/javase/tutorial/uiswing/components/dialog.html#stayup
 					CustomToolBar.setRungComment(rung.getRowNumber(), comment);
+					Timer timer = new Timer(600, timerEvent -> {
+						dialog.setVisible(false);
+						dialog.dispose();
+					});
+					timer.start();
 					frame.dispose();
 				});
 				jpanel.add(submit);
