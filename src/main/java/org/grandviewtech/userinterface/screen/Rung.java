@@ -30,10 +30,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import org.grandviewtech.constants.PreferredDimension;
+import org.grandviewtech.constants.CustomDimension;
 import org.grandviewtech.userinterface.listeners.RungListener;
 
-public class Rung extends JPanel implements PreferredDimension, Comparable<Rung>
+public class Rung extends JPanel implements Comparable<Rung>
 	{
 		
 		private static final long	serialVersionUID	= -9169919756235566414L;
@@ -51,7 +51,7 @@ public class Rung extends JPanel implements PreferredDimension, Comparable<Rung>
 		public Rung(int rowNumber)
 			{
 				this.rowNumber = rowNumber;
-				setPreferredSize(RUNG_SIZE);
+				setPreferredSize(CustomDimension.RUNG_SIZE);
 				setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
 				RungListener rungListener = new RungListener(this);
 				addMouseListener(rungListener);
@@ -111,11 +111,14 @@ public class Rung extends JPanel implements PreferredDimension, Comparable<Rung>
 		@Override
 		public boolean equals(Object comparableRung)
 			{
-				if ( comparableRung instanceof Rung )
+				if (comparableRung instanceof Rung)
 					{
 						int currentRowNumber = rowNumber;
 						int comparableRowNumber = ((Rung) comparableRung).getRowNumber();
-						if ( currentRowNumber == comparableRowNumber ) { return true; }
+						if (currentRowNumber == comparableRowNumber)
+							{
+								return true;
+							}
 						return false;
 					}
 				return false;

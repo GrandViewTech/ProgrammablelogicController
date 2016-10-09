@@ -24,5 +24,17 @@ package org.grandviewtech.entity.enums;
 
 public enum CoilType
 	{
-	LOAD, LINE, LABEL, JUMP, ROUTINE;
+	END("End"), JUMP("Jump"), OUTPUT("Output"), LINE("Line"), LOAD("Load"), ROUTINE("Routine");
+		
+		private String coilType;
+		
+		private CoilType(String coilType)
+			{
+				this.coilType = coilType;
+			}
+			
+		public String getCoilType()
+			{
+				return coilType;
+			}
 	}

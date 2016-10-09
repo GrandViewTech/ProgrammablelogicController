@@ -34,14 +34,14 @@ import javax.swing.JScrollBar;
 import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 
-import org.grandviewtech.constants.PreferredDimension;
+import org.grandviewtech.constants.CustomDimension;
 import org.grandviewtech.entity.bo.PlcFile;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.userinterface.helper.RowGenerator;
 import org.grandviewtech.userinterface.listeners.DefaultKeyListener;
 import org.grandviewtech.userinterface.ui.Ruler;
 
-public class BackGroundLayer extends JFrame implements PreferredDimension
+public class BackGroundLayer extends JFrame
 	{
 		private static final long	serialVersionUID	= 1098998552962951470L;
 		
@@ -99,7 +99,7 @@ public class BackGroundLayer extends JFrame implements PreferredDimension
 		public void setMinMaxDimension()
 			{
 				setExtendedState(JFrame.MAXIMIZED_BOTH);
-				setMinimumSize(MINIMUM_FRAME_SIZE);
+				setMinimumSize(CustomDimension.MINIMUM_FRAME_SIZE);
 			}
 			
 		public void init()

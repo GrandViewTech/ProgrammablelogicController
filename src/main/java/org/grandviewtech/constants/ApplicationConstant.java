@@ -22,13 +22,10 @@ package org.grandviewtech.constants;
  * #L%
  */
 
-public interface Coils
+public class ApplicationConstant
 	{
-		String	DELETE	= "Delete";
-		String	END		= "End";
-		String	JUMP	= "Jump";
-		String	OUTPUT	= "Output";
-		String	LINE	= "Line";
-		String	LOAD	= "Load";
-		String	COMPLIE	= "Compile";
+		public static int	MAX_CELL					= 14;
+		public static int	CUSTOM_BORDER_HEIGTH_OFFSET	= 2;
+		public static int	SECTION_WIDTH				= 88;
+		public static int	SECTION_HEIGHT				= 60;
 	}

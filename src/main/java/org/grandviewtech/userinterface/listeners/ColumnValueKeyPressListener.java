@@ -31,15 +31,20 @@ public class ColumnValueKeyPressListener implements KeyListener
 	{
 		private ColumnScreen columnScreen;
 		
-		public ColumnValueKeyPressListener(ColumnScreen columnScreen)
-			{
-				this.columnScreen = columnScreen;
-			}
-			
 		@Override
 		public void keyTyped(KeyEvent keyEvent)
 			{
 				
+			}
+			
+		public ColumnScreen getColumnScreen()
+			{
+				return columnScreen;
+			}
+			
+		public void setColumnScreen(ColumnScreen columnScreen)
+			{
+				this.columnScreen = columnScreen;
 			}
 			
 		@Override

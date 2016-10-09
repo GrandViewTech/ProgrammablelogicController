@@ -25,10 +25,9 @@ package org.grandviewtech.userinterface.listeners;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-import org.grandviewtech.constants.Borders;
 import org.grandviewtech.userinterface.misc.ActionBot;
 
-public class PasteButtonListener implements MouseListener, Borders
+public class PasteButtonListener implements MouseListener
 	{
 		public PasteButtonListener()
 			{

@@ -32,9 +32,9 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 
-import org.grandviewtech.constants.PLCConstant;
+import org.grandviewtech.constants.ApplicationConstant;
 
-public class Ruler extends JScrollPane implements PLCConstant
+public class Ruler extends JScrollPane
 	{
 		private static final long	serialVersionUID	= 5438596997335696102L;
 		
@@ -56,6 +56,7 @@ public class Ruler extends JScrollPane implements PLCConstant
 					{
 						private static final long serialVersionUID = 2103953553735173735L;
 						
+						@Override
 						public void paintComponent(Graphics graphics)
 							{
 								super.paintComponent(graphics);
@@ -67,9 +68,10 @@ public class Ruler extends JScrollPane implements PLCConstant
 									}
 							}
 							
+						@Override
 						public Dimension getPreferredSize()
 							{
-								return new Dimension(SECTION_WIDTH, 10);
+								return new Dimension(ApplicationConstant.SECTION_WIDTH, 10);
 							}
 							
 					};
@@ -84,19 +86,20 @@ public class Ruler extends JScrollPane implements PLCConstant
 					{
 						private static final long serialVersionUID = -2103953553735173735L;
 						
+						@Override
 						public void paintComponent(Graphics graphics)
 							{
 								super.paintComponent(graphics);
-								for (int i = 0; i <= MAX_CELL; i++)
+								for (int i = 0; i <= ApplicationConstant.MAX_CELL; i++)
 									{
 										int x;
 										if (i == 0)
 											{
-												x = SECTION_WIDTH * i + SECTION_WIDTH / 2 + 30;
+												x = ApplicationConstant.SECTION_WIDTH * i + ApplicationConstant.SECTION_WIDTH / 2 + 30;
 											}
 										else
 											{
-												x = SECTION_WIDTH * i + SECTION_WIDTH / 2 + 20;
+												x = ApplicationConstant.SECTION_WIDTH * i + ApplicationConstant.SECTION_WIDTH / 2 + 20;
 											}
 											
 										graphics.drawLine(x, 0, x, 3);
@@ -104,9 +107,10 @@ public class Ruler extends JScrollPane implements PLCConstant
 									}
 							}
 							
+						@Override
 						public Dimension getPreferredSize()
 							{
-								return new Dimension(SECTION_WIDTH, 20);
+								return new Dimension(ApplicationConstant.SECTION_WIDTH, 20);
 							}
 					};
 				columnheader.setBackground(Color.white);

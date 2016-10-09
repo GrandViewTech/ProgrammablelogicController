@@ -64,14 +64,14 @@ public class SearchEngine
 			{
 				try
 					{
-						if ( columnScreen == null || columnScreen.isBlank() == true )
+						if (columnScreen == null || columnScreen.isBlank() == true)
 							{
 								return;
 							}
 						else
 							{
 								File file = new File(fileLocation);
-								if ( file.exists() == false )
+								if (file.exists() == false)
 									{
 										file.mkdirs();
 									}
@@ -83,7 +83,7 @@ public class SearchEngine
 									{
 										indexWriter.deleteDocuments(new QueryParser("columnId", standardAnalyzer).parse("" + columnScreen.getRowNumber() + "." + columnScreen.getColumnNumber()));
 										indexWriter.commit();
-										if ( columnScreen.isBlank() == false )
+										if (columnScreen.isBlank() == false)
 											{
 												Document document = new Document();
 												document.add(new TextField("columnId", "" + columnScreen.getRowNumber() + "." + columnScreen.getColumnNumber(), Field.Store.YES));
@@ -91,7 +91,7 @@ public class SearchEngine
 												document.add(new TextField("columnNumber", "" + columnScreen.getColumnNumber(), Field.Store.YES));
 												document.add(new TextField("tag", columnScreen.getTag(), Field.Store.NO));
 												document.add(new TextField("value", columnScreen.getValue(), Field.Store.NO));
-												document.add(new TextField("coil", columnScreen.getCoil(), Field.Store.NO));
+												document.add(new TextField("coil", columnScreen.getCoilType().getCoilType(), Field.Store.NO));
 												indexWriter.addDocument(document);
 												indexWriter.commit();
 											}
@@ -110,7 +110,7 @@ public class SearchEngine
 					}
 				catch (Exception exception)
 					{
-						exception.printStackTrace();
+						logger.error(exception.getLocalizedMessage(), exception);
 					}
 			}
 			
@@ -147,15 +147,15 @@ public class SearchEngine
 					}
 				catch (org.apache.lucene.queryparser.classic.ParseException parseException)
 					{
-						parseException.printStackTrace();
+						logger.error(parseException.getLocalizedMessage(), parseException);
 					}
 				catch (IOException ioException)
 					{
-						ioException.printStackTrace();
+						logger.error(ioException.getLocalizedMessage(), ioException);
 					}
 				catch (Exception exception)
 					{
-						exception.printStackTrace();
+						logger.error(exception.getLocalizedMessage(), exception);
 					}
 				return new ArrayList<SearchResult>();
 			}
@@ -181,7 +181,7 @@ public class SearchEngine
 					}
 				catch (org.apache.lucene.index.IndexNotFoundException indexNotFoundException)
 					{
-						indexNotFoundException.printStackTrace();
+						logger.error(indexNotFoundException.getLocalizedMessage(), indexNotFoundException);
 					}
 				return results;
 			}
@@ -190,7 +190,7 @@ public class SearchEngine
 			{
 				try
 					{
-						if ( indexWriter != null )
+						if (indexWriter != null)
 							{
 								indexWriter.flush();
 								indexWriter.close();

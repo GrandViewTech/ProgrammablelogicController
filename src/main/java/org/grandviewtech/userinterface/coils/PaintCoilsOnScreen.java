@@ -27,88 +27,93 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.QuadCurve2D;
 
-import org.grandviewtech.constants.Coils;
-import org.grandviewtech.constants.Fonts;
-import org.grandviewtech.constants.NoNc;
-import org.grandviewtech.constants.PLCConstant;
+import org.grandviewtech.constants.ApplicationConstant;
+import org.grandviewtech.constants.CustomFont;
 import org.grandviewtech.entity.bo.Screen;
+import org.grandviewtech.entity.enums.CoilType;
+import org.grandviewtech.entity.enums.NoNc;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 
-public class PaintCoilsOnScreen implements PLCConstant, Fonts
+public class PaintCoilsOnScreen
 	{
 		final static Screen SCREEN = Screen.getInstance();
 		
 		public static void paint(ColumnScreen columnScreen, Graphics graphics)
 			{
-				String coil = columnScreen.getCoil();
+				CoilType coilType = columnScreen.getCoilType();
 				boolean paintDefault = columnScreen.isPaintDefault();
-				if ( paintDefault )
+				if (paintDefault)
 					{
 						paintDefault(graphics);
 					}
 				else
 					{
-						selectRigthDragOption(columnScreen, graphics, coil);
+						selectRigthDragOption(columnScreen, graphics, coilType);
 					}
 			}
 			
-		private static void selectRigthDragOption(ColumnScreen columnScreen, Graphics graphics, String coil)
+		private static void selectRigthDragOption(ColumnScreen columnScreen, Graphics graphics, CoilType coilType)
 			{
-				switch (coil)
+				switch (coilType)
 					{
-						case Coils.LINE:
+						case LINE:
 							{
 								configureLineCoil(graphics);
 								break;
 							}
-						case Coils.OUTPUT:
+						case OUTPUT:
 							{
 								configureOutputCoil(columnScreen, graphics);
 								// configureNamedCoil(columnScreen, graphics);
 								break;
 							}
-						case Coils.LOAD:
+						case LOAD:
 							{
 								configureLoadCoil(columnScreen, graphics);
 								break;
 							}
-						case Coils.JUMP:
+						case JUMP:
 							{
 								// configureJumpCoil(columnScreen, graphics);
-								configureNamedCoil(columnScreen, graphics, coil);
+								configureNamedCoil(columnScreen, graphics, coilType.getCoilType());
 								break;
 							}
-						case Coils.END:
+						case END:
 							{
-								configureNamedCoil(columnScreen, graphics, coil);
+								configureNamedCoil(columnScreen, graphics, coilType.getCoilType());
+								break;
+							}
+						case ROUTINE:
+							{
 								break;
 							}
 					}
 			}
 			
-		private static void configureJumpCoil(ColumnScreen columnScreen, Graphics graphics)
-			{
-				int offsetY = 8;
-				graphics.setColor(Color.BLACK);
-				graphics.fillRect(0, SECTION_HEIGHT / 2, (SECTION_WIDTH / 2) - 20, 1);
-				((Graphics2D) graphics).draw(new QuadCurve2D.Double((SECTION_WIDTH / 2) - 15, (SECTION_HEIGHT / 2) - offsetY, (SECTION_WIDTH / 2) - 25, (SECTION_HEIGHT / 2), (SECTION_WIDTH / 2) - 15, (SECTION_HEIGHT / 2) + offsetY));
-				((Graphics2D) graphics).draw(new QuadCurve2D.Double((SECTION_WIDTH / 2) + 15, (SECTION_HEIGHT / 2) - offsetY, (SECTION_WIDTH / 2) + 25, (SECTION_HEIGHT / 2), (SECTION_WIDTH / 2) + 15, (SECTION_HEIGHT / 2) + offsetY));
-				graphics.fillRect((SECTION_WIDTH / 2) + 20, SECTION_HEIGHT / 2, SECTION_WIDTH, 1);
-				columnScreen.getValueLabel().setText("JUMP");
-				columnScreen.getValueLabel().setBounds((SECTION_WIDTH / 2) - 12, (SECTION_HEIGHT / 2) - 5, 60, 10);
-				columnScreen.getValueLabel().setFont(font1);
-			}
-			
+		/*		private static void configureJumpCoil(ColumnScreen columnScreen, Graphics graphics)
+					{
+						int offsetY = 8;
+						graphics.setColor(Color.BLACK);
+						graphics.fillRect(0, ApplicationConstant.SECTION_HEIGHT / 2, (ApplicationConstant.SECTION_WIDTH / 2) - 20, 1);
+						((Graphics2D) graphics).draw(new QuadCurve2D.Double((ApplicationConstant.SECTION_WIDTH / 2) - 15, (ApplicationConstant.SECTION_HEIGHT / 2) - offsetY, (ApplicationConstant.SECTION_WIDTH / 2) - 25, (ApplicationConstant.SECTION_HEIGHT / 2), (ApplicationConstant.SECTION_WIDTH / 2) - 15, (ApplicationConstant.SECTION_HEIGHT / 2) + offsetY));
+						((Graphics2D) graphics).draw(new QuadCurve2D.Double((ApplicationConstant.SECTION_WIDTH / 2) + 15, (ApplicationConstant.SECTION_HEIGHT / 2) - offsetY, (ApplicationConstant.SECTION_WIDTH / 2) + 25, (ApplicationConstant.SECTION_HEIGHT / 2), (ApplicationConstant.SECTION_WIDTH / 2) + 15, (ApplicationConstant.SECTION_HEIGHT / 2) + offsetY));
+						graphics.fillRect((ApplicationConstant.SECTION_WIDTH / 2) + 20, ApplicationConstant.SECTION_HEIGHT / 2, ApplicationConstant.SECTION_WIDTH, 1);
+						columnScreen.getValueLabel().setText("JUMP");
+						columnScreen.getValueLabel().setBounds((ApplicationConstant.SECTION_WIDTH / 2) - 12, (ApplicationConstant.SECTION_HEIGHT / 2) - 5, 60, 10);
+						columnScreen.getValueLabel().setFont(CustomFont.font1);
+					}
+		*/
+		
 		private static void configureLoadCoil(ColumnScreen columnScreen, Graphics graphics)
 			{
 				int offset = 5;
-				graphics.drawLine(0, SECTION_HEIGHT / 2, (SECTION_WIDTH / 2) - offset, SECTION_HEIGHT / 2);
-				graphics.drawLine((SECTION_WIDTH / 2) - offset, (SECTION_HEIGHT / 2) - offset, (SECTION_WIDTH / 2) - offset, (SECTION_HEIGHT / 2) + offset);
-				graphics.drawLine((SECTION_WIDTH / 2) + offset, (SECTION_HEIGHT / 2) - offset, (SECTION_WIDTH / 2) + offset, (SECTION_HEIGHT / 2) + offset);
-				graphics.drawLine((SECTION_WIDTH / 2) + offset, SECTION_HEIGHT / 2, (SECTION_WIDTH), SECTION_HEIGHT / 2);
-				if ( columnScreen.getNonc().getType().equalsIgnoreCase(NoNc.NC.getType()) )
+				graphics.drawLine(0, ApplicationConstant.SECTION_HEIGHT / 2, (ApplicationConstant.SECTION_WIDTH / 2) - offset, ApplicationConstant.SECTION_HEIGHT / 2);
+				graphics.drawLine((ApplicationConstant.SECTION_WIDTH / 2) - offset, (ApplicationConstant.SECTION_HEIGHT / 2) - offset, (ApplicationConstant.SECTION_WIDTH / 2) - offset, (ApplicationConstant.SECTION_HEIGHT / 2) + offset);
+				graphics.drawLine((ApplicationConstant.SECTION_WIDTH / 2) + offset, (ApplicationConstant.SECTION_HEIGHT / 2) - offset, (ApplicationConstant.SECTION_WIDTH / 2) + offset, (ApplicationConstant.SECTION_HEIGHT / 2) + offset);
+				graphics.drawLine((ApplicationConstant.SECTION_WIDTH / 2) + offset, ApplicationConstant.SECTION_HEIGHT / 2, (ApplicationConstant.SECTION_WIDTH), ApplicationConstant.SECTION_HEIGHT / 2);
+				if (columnScreen.getNonc().getType().equalsIgnoreCase(NoNc.NC.getType()))
 					{
-						graphics.drawLine((SECTION_WIDTH / 2) - offset * 2, (SECTION_HEIGHT / 2) + (offset * 2), (SECTION_WIDTH / 2) + offset * 2, (SECTION_HEIGHT / 2) - (offset * 2));
+						graphics.drawLine((ApplicationConstant.SECTION_WIDTH / 2) - offset * 2, (ApplicationConstant.SECTION_HEIGHT / 2) + (offset * 2), (ApplicationConstant.SECTION_WIDTH / 2) + offset * 2, (ApplicationConstant.SECTION_HEIGHT / 2) - (offset * 2));
 					}
 			}
 			
@@ -116,10 +121,10 @@ public class PaintCoilsOnScreen implements PLCConstant, Fonts
 			{
 				int offsetY = 8;
 				graphics.setColor(Color.BLACK);
-				graphics.fillRect(0, SECTION_HEIGHT / 2, (SECTION_WIDTH / 2) - 10, 1);
-				((Graphics2D) graphics).draw(new QuadCurve2D.Double((SECTION_WIDTH / 2) - 5, (SECTION_HEIGHT / 2) - offsetY, (SECTION_WIDTH / 2) - 15, (SECTION_HEIGHT / 2), (SECTION_WIDTH / 2) - 5, (SECTION_HEIGHT / 2) + offsetY));
-				((Graphics2D) graphics).draw(new QuadCurve2D.Double((SECTION_WIDTH / 2) + 5, (SECTION_HEIGHT / 2) - offsetY, (SECTION_WIDTH / 2) + 15, (SECTION_HEIGHT / 2), (SECTION_WIDTH / 2) + 5, (SECTION_HEIGHT / 2) + offsetY));
-				// graphics.fillRect((SECTION_WIDTH / 2) + 10, SECTION_HEIGHT /
+				graphics.fillRect(0, ApplicationConstant.SECTION_HEIGHT / 2, (ApplicationConstant.SECTION_WIDTH / 2) - 10, 1);
+				((Graphics2D) graphics).draw(new QuadCurve2D.Double((ApplicationConstant.SECTION_WIDTH / 2) - 5, (ApplicationConstant.SECTION_HEIGHT / 2) - offsetY, (ApplicationConstant.SECTION_WIDTH / 2) - 15, (ApplicationConstant.SECTION_HEIGHT / 2), (ApplicationConstant.SECTION_WIDTH / 2) - 5, (ApplicationConstant.SECTION_HEIGHT / 2) + offsetY));
+				((Graphics2D) graphics).draw(new QuadCurve2D.Double((ApplicationConstant.SECTION_WIDTH / 2) + 5, (ApplicationConstant.SECTION_HEIGHT / 2) - offsetY, (ApplicationConstant.SECTION_WIDTH / 2) + 15, (ApplicationConstant.SECTION_HEIGHT / 2), (ApplicationConstant.SECTION_WIDTH / 2) + 5, (ApplicationConstant.SECTION_HEIGHT / 2) + offsetY));
+				// graphics.fillRect((ApplicationConstant.SECTION_WIDTH / 2) + 10, ApplicationConstant.SECTION_HEIGHT /
 				// 2, SECTION_WIDTH, 1);
 				
 			}
@@ -127,27 +132,30 @@ public class PaintCoilsOnScreen implements PLCConstant, Fonts
 		private static void configureLineCoil(Graphics graphics)
 			{
 				graphics.setColor(Color.BLACK);
-				graphics.fillRect(0, SECTION_HEIGHT / 2, SECTION_WIDTH, 1);
+				graphics.fillRect(0, ApplicationConstant.SECTION_HEIGHT / 2, ApplicationConstant.SECTION_WIDTH, 1);
 			}
 			
 		private static void paintDefault(Graphics graphics)
 			{
 				graphics.setColor(Color.LIGHT_GRAY);
-				graphics.fillRect(0, SECTION_HEIGHT / 2, SECTION_WIDTH, 1);
+				graphics.fillRect(0, ApplicationConstant.SECTION_HEIGHT / 2, ApplicationConstant.SECTION_WIDTH, 1);
 			}
 			
 		private static void configureNamedCoil(ColumnScreen columnScreen, Graphics graphics, String name)
 			{
-				if ( name == null || name.trim().length() == 0 ) { return; }
+				if (name == null || name.trim().length() == 0)
+					{
+						return;
+					}
 				int offsetY = 8;
 				graphics.setColor(Color.BLACK);
-				graphics.fillRect(0, SECTION_HEIGHT / 2, (SECTION_WIDTH / 2) - 20, 1);
-				((Graphics2D) graphics).draw(new QuadCurve2D.Double((SECTION_WIDTH / 2) - 15, (SECTION_HEIGHT / 2) - offsetY, (SECTION_WIDTH / 2) - 25, (SECTION_HEIGHT / 2), (SECTION_WIDTH / 2) - 15, (SECTION_HEIGHT / 2) + offsetY));
-				((Graphics2D) graphics).draw(new QuadCurve2D.Double((SECTION_WIDTH / 2) + 15, (SECTION_HEIGHT / 2) - offsetY, (SECTION_WIDTH / 2) + 25, (SECTION_HEIGHT / 2), (SECTION_WIDTH / 2) + 15, (SECTION_HEIGHT / 2) + offsetY));
-				graphics.fillRect((SECTION_WIDTH / 2) + 20, SECTION_HEIGHT / 2, SECTION_WIDTH, 1);
+				graphics.fillRect(0, ApplicationConstant.SECTION_HEIGHT / 2, (ApplicationConstant.SECTION_WIDTH / 2) - 20, 1);
+				((Graphics2D) graphics).draw(new QuadCurve2D.Double((ApplicationConstant.SECTION_WIDTH / 2) - 15, (ApplicationConstant.SECTION_HEIGHT / 2) - offsetY, (ApplicationConstant.SECTION_WIDTH / 2) - 25, (ApplicationConstant.SECTION_HEIGHT / 2), (ApplicationConstant.SECTION_WIDTH / 2) - 15, (ApplicationConstant.SECTION_HEIGHT / 2) + offsetY));
+				((Graphics2D) graphics).draw(new QuadCurve2D.Double((ApplicationConstant.SECTION_WIDTH / 2) + 15, (ApplicationConstant.SECTION_HEIGHT / 2) - offsetY, (ApplicationConstant.SECTION_WIDTH / 2) + 25, (ApplicationConstant.SECTION_HEIGHT / 2), (ApplicationConstant.SECTION_WIDTH / 2) + 15, (ApplicationConstant.SECTION_HEIGHT / 2) + offsetY));
+				graphics.fillRect((ApplicationConstant.SECTION_WIDTH / 2) + 20, ApplicationConstant.SECTION_HEIGHT / 2, ApplicationConstant.SECTION_WIDTH, 1);
 				columnScreen.getValueLabel().setText(name.toUpperCase());
-				columnScreen.getValueLabel().setBounds((SECTION_WIDTH / 2) - 12, (SECTION_HEIGHT / 2) - 5, 60, 10);
-				columnScreen.getValueLabel().setFont(font1);
+				columnScreen.getValueLabel().setBounds((ApplicationConstant.SECTION_WIDTH / 2) - 12, (ApplicationConstant.SECTION_HEIGHT / 2) - 5, 60, 10);
+				columnScreen.getValueLabel().setFont(CustomFont.font1);
 			}
 			
 	}

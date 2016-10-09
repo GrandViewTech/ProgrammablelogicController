@@ -24,8 +24,9 @@ package org.grandviewtech.constants;
 
 import java.awt.Font;
 
-public interface Fonts
+public class CustomFont
 	{
-		Font	font	= new java.awt.Font("SansSerif", java.awt.Font.BOLD, 9);
-		Font	font1	= new Font("SansSerif", java.awt.Font.PLAIN, 11);
+		public static Font	font	= new java.awt.Font("SansSerif", java.awt.Font.BOLD, 9);
+		public static Font	font1	= new Font("SansSerif", java.awt.Font.PLAIN, 11);
+		
 	}

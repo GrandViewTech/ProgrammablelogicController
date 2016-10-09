@@ -1,4 +1,4 @@
-package org.grandviewtech.constants;
+package org.grandviewtech.entity.enums;
 
 public enum NoNc
 	{

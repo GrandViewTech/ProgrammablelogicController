@@ -13,13 +13,13 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.DefaultStyledDocument;
 
-import org.grandviewtech.constants.PreferredDimension;
+import org.grandviewtech.constants.CustomDimension;
 import org.grandviewtech.entity.helper.Dimension;
 import org.grandviewtech.runner.Application;
 import org.grandviewtech.userinterface.listeners.DocumentSizeFilter;
 import org.grandviewtech.userinterface.misc.CustomToolBar;
 
-public class RungComment extends JFrame implements PreferredDimension
+public class RungComment extends JFrame
 	{
 		private static final long		serialVersionUID	= -920843301851468236L;
 		
@@ -58,12 +58,12 @@ public class RungComment extends JFrame implements PreferredDimension
 			
 		private void invokeFrame()
 			{
-				jpanel.setPreferredSize(RUNG_COMMENT_SCREEN);
+				jpanel.setPreferredSize(CustomDimension.RUNG_COMMENT_SCREEN);
 				jpanel.setLayout(null);
 				add(jpanel);
 				Dimension dimension = Application.calculateCenterAlignment(getPreferredSize());
 				setLocation(dimension.getX(), dimension.getY());
-				setPreferredSize(RUNG_COMMENT_SCREEN);
+				setPreferredSize(CustomDimension.RUNG_COMMENT_SCREEN);
 				pack();
 				setVisible(true);
 			}
@@ -104,7 +104,7 @@ public class RungComment extends JFrame implements PreferredDimension
 				textArea.setLineWrap(true);
 				
 				String comment = rung.getComment();
-				if ( comment != null && comment.trim().length() > 0 )
+				if (comment != null && comment.trim().length() > 0)
 					{
 						remainingLabel.setText((maxLength - comment.length()) + " characters remaining");
 						textArea.setText(comment);
@@ -124,9 +124,10 @@ public class RungComment extends JFrame implements PreferredDimension
 		private void addCancel()
 			{
 				cancel.setBounds(150, 150, 100, 25);
-				cancel.addActionListener(event -> {
-					dispose();
-				});
+				cancel.addActionListener(event ->
+					{
+						dispose();
+					});
 				jpanel.add(cancel);
 			}
 			
@@ -134,22 +135,24 @@ public class RungComment extends JFrame implements PreferredDimension
 			{
 				submit.setBounds(20, 150, 100, 25);
 				JFrame frame = this;
-				submit.addActionListener(event -> {
-					String comment = textArea.getText();
-					rung.setComment(comment);
-					JOptionPane optionPane = new JOptionPane("Comment submitted Successfully", JOptionPane.INFORMATION_MESSAGE);
-					JDialog dialog = optionPane.createDialog(null, "Rung Comment");
-					dialog.setModal(false);
-					dialog.setVisible(true);
-					// http://docs.oracle.com/javase/tutorial/uiswing/components/dialog.html#stayup
-					CustomToolBar.setRungComment(rung.getRowNumber(), comment);
-					Timer timer = new Timer(600, timerEvent -> {
-						dialog.setVisible(false);
-						dialog.dispose();
+				submit.addActionListener(event ->
+					{
+						String comment = textArea.getText();
+						rung.setComment(comment);
+						JOptionPane optionPane = new JOptionPane("Comment submitted Successfully", JOptionPane.INFORMATION_MESSAGE);
+						JDialog dialog = optionPane.createDialog(null, "Rung Comment");
+						dialog.setModal(false);
+						dialog.setVisible(true);
+						// http://docs.oracle.com/javase/tutorial/uiswing/components/dialog.html#stayup
+						CustomToolBar.setRungComment(rung.getRowNumber(), comment);
+						Timer timer = new Timer(600, timerEvent ->
+					        {
+						        dialog.setVisible(false);
+						        dialog.dispose();
+					        });
+						timer.start();
+						frame.dispose();
 					});
-					timer.start();
-					frame.dispose();
-				});
 				jpanel.add(submit);
 			}
 			

@@ -26,7 +26,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.grandviewtech.constants.PLCConstant;
+import org.grandviewtech.constants.ApplicationConstant;
 import org.grandviewtech.service.system.Printer;
 import org.grandviewtech.userinterface.screen.RowScreen;
 import org.grandviewtech.userinterface.screen.Sheet;
@@ -52,7 +52,7 @@ public class Screen implements Serializable
 			
 		private Sheet	sheet			= new Sheet();
 		private int		totalRow		= 1;
-		private int		endColumnNumber	= PLCConstant.MAX_CELL;
+		private int		endColumnNumber	= ApplicationConstant.MAX_CELL;
 		
 		private int		maxNumberOffRow	= 50;
 		private int		endRowNumber	= maxNumberOffRow;
@@ -113,9 +113,7 @@ public class Screen implements Serializable
 		 * @methodName : getRow <br>
 		 * @methodPackage : org.grandviewtech.entity.bo <br>
 		 * @Description : <br>
-		 *              Do not modify the index before retriving the reduction
-		 *              of index from n to n-1 is taken care by the method
-		 *              itself.
+		 *              Do not modify the index before retriving the reduction of index from n to n-1 is taken care by the method itself.
 		 * @StepsWithExplanation : <br>
 		 * @TODO : <br>
 		 * @param index
@@ -125,7 +123,7 @@ public class Screen implements Serializable
 		public RowScreen getRow(int index)
 			{
 				int i$ = index - 1;
-				if ( i$ >= 0 )
+				if (i$ >= 0)
 					{
 						Printer.print("Retieving Row Number " + i$);
 						return rows.get(i$);
@@ -145,7 +143,7 @@ public class Screen implements Serializable
 		public void addRow(int index, RowScreen rowScreen)
 			{
 				int i$ = index - 1;
-				if ( i$ <= getTotalRow() )
+				if (i$ <= getTotalRow())
 					{
 						// Printer.print("Inserting Row Number " + i$);
 						rows.add(i$, rowScreen);

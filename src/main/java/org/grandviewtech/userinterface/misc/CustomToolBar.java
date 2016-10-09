@@ -31,9 +31,9 @@ import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 
-import org.grandviewtech.constants.Coils;
-import org.grandviewtech.constants.Icons;
+import org.grandviewtech.constants.CustomIcon;
 import org.grandviewtech.entity.bo.ClipBoard;
+import org.grandviewtech.entity.enums.CoilType;
 import org.grandviewtech.userinterface.listeners.CopyButtonListerner;
 import org.grandviewtech.userinterface.listeners.CutButtonListener;
 import org.grandviewtech.userinterface.listeners.PasteButtonListener;
@@ -60,7 +60,7 @@ public class CustomToolBar
 				Helper.setCursor(toolBar);
 				setDefaultFunction();
 				toolBar.addSeparator();
-				setCoilsFunctions();
+				setCoilTypeFunctions();
 				toolBar.add(Box.createHorizontalGlue());
 				// toolBar.add(separator);
 				toolBar.add(rungComment);
@@ -93,13 +93,13 @@ public class CustomToolBar
 		private static void setDefaultFunction()
 			{
 				
-				ToolBarLabel cut = new ToolBarLabel(Icons.CUT);
+				ToolBarLabel cut = new ToolBarLabel(CustomIcon.CUT);
 				// cut.setBounds(5, 5, 25, 25);
 				cut.setToolTipText("cut");
-				ToolBarLabel copy = new ToolBarLabel(Icons.COPY);
+				ToolBarLabel copy = new ToolBarLabel(CustomIcon.COPY);
 				// copy.setBounds(30, 5, 25, 25);
 				copy.setToolTipText("copy");
-				ToolBarLabel paste = new ToolBarLabel(Icons.PASTE);
+				ToolBarLabel paste = new ToolBarLabel(CustomIcon.PASTE);
 				paste.setToolTipText("paste");
 				// paste.setBounds(55, 5, 25, 25);
 				cut.addMouseListener(new CutButtonListener());
@@ -118,22 +118,22 @@ public class CustomToolBar
 				ClipBoard.pasteLabel = paste;
 			}
 			
-		public static void setCoilsFunctions()
+		public static void setCoilTypeFunctions()
 			{
-				DragLabel load = new DragLabel(Coils.LOAD);
-				DragLabel line = new DragLabel(Coils.LINE);
+				DragLabel load = new DragLabel(CoilType.LOAD.getCoilType());
+				DragLabel line = new DragLabel(CoilType.LINE.getCoilType());
 				//
-				DragLabel delete = new DragLabel(Coils.DELETE);
-				DragLabel end = new DragLabel(Coils.END);
-				DragLabel compile = new DragLabel(Coils.COMPLIE);
+				//DragLabel delete = new DragLabel(CoilType.DELETE.getCoil());
+				DragLabel end = new DragLabel(CoilType.END.getCoilType());
+				//DragLabel compile = new DragLabel(CoilType.COMPLIE.getCoil());
 				//
-				DragLabel output = new DragLabel(Coils.OUTPUT);
-				DragLabel jump = new DragLabel(Coils.JUMP);
+				DragLabel output = new DragLabel(CoilType.OUTPUT.getCoilType());
+				DragLabel jump = new DragLabel(CoilType.JUMP.getCoilType());
 				//
 				toolBar.add(load);
 				toolBar.add(line);
-				toolBar.add(compile);
-				toolBar.add(delete);
+				//toolBar.add(compile);
+				//toolBar.add(delete);
 				toolBar.add(jump);
 				toolBar.add(output);
 				toolBar.add(end);
@@ -151,10 +151,10 @@ public class CustomToolBar
 			
 		public static void setRungComment(int rungNumber, String rungComment)
 			{
-				if ( rungComment != null && rungComment.trim().length() > 0 )
+				if (rungComment != null && rungComment.trim().length() > 0)
 					{
 						String tempText = rungComment;
-						if ( rungComment.length() > 200 )
+						if (rungComment.length() > 200)
 							{
 								tempText = rungComment.substring(0, 199);
 							}

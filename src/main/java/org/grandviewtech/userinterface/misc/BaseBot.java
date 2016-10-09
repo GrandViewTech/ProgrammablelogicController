@@ -1,42 +1,18 @@
 package org.grandviewtech.userinterface.misc;
 
-/*
- * #%L
- * Programmable Login Controller Inteface
- * %%
- * Copyright (C) 2016 GrandViewTech
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-3.0.html>.
- * #L%
- */
-
-import org.grandviewtech.constants.Borders;
-import org.grandviewtech.constants.PreferredDimension;
 import org.grandviewtech.entity.bo.ClipBoard;
 import org.grandviewtech.userinterface.helper.ColumnScreenGenerator;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 
-public class BaseBot implements Borders, PreferredDimension
+public class BaseBot
 	{
 		
-		protected static final ClipBoard	CLIP_BOARD	= ClipBoard.getInstance();
+		protected static final ClipBoard CLIP_BOARD = ClipBoard.getInstance();
 		
 		protected static void pasteIndividualColumn(ColumnScreen source, ColumnScreen target)
 			{
 				target.setValue(source.getValue());
-				target.setCoil(source.getCoil());
+				target.setCoilType(source.getCoilType());
 				ColumnScreenGenerator.createColumnNeighbourHood(ClipBoard.SCREEN.getRow(target.getRowNumber()), target);
 				target.repaint();
 			}

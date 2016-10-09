@@ -29,15 +29,15 @@ import javax.swing.border.Border;
 
 import org.grandviewtech.userinterface.helper.CustomBorder;
 
-public interface Borders
+public class CustomBorderList
 	{
-		Border	PADDING					= BorderFactory.createEmptyBorder(2, 5, 5, 2);
-		Border	WHITE_BORDER			= BorderFactory.createLineBorder(Color.white);
-		Border	PADDED_DEFAULT			= BorderFactory.createCompoundBorder(WHITE_BORDER, PADDING);
-		Border	DASHED_BORDER			= BorderFactory.createDashedBorder(java.awt.Color.BLUE);
-		Border	DASHED_BORDER_RED		= BorderFactory.createDashedBorder(java.awt.Color.RED);
-		Border	PADDED_DASHED_BORDER	= BorderFactory.createCompoundBorder(DASHED_BORDER, PADDING);
-		Border	CUSTOM_BORDER			= new CustomBorder();
-		Border	PADDING_BORDER			= BorderFactory.createEmptyBorder(2, 5, 5, 2);
-		Border	BORDER					= BorderFactory.createLineBorder(Color.white);
+		public static Border	PADDING					= BorderFactory.createEmptyBorder(2, 5, 5, 2);
+		public static Border	WHITE_BORDER			= BorderFactory.createLineBorder(Color.white);
+		public static Border	PADDED_DEFAULT			= BorderFactory.createCompoundBorder(WHITE_BORDER, PADDING);
+		public static Border	DASHED_BORDER			= BorderFactory.createDashedBorder(java.awt.Color.BLUE);
+		public static Border	DASHED_BORDER_RED		= BorderFactory.createDashedBorder(java.awt.Color.RED);
+		public static Border	PADDED_DASHED_BORDER	= BorderFactory.createCompoundBorder(DASHED_BORDER, PADDING);
+		public static Border	CUSTOM_BORDER			= new CustomBorder();
+		public static Border	PADDING_BORDER			= BorderFactory.createEmptyBorder(2, 5, 5, 2);
+		public static Border	BORDER					= BorderFactory.createLineBorder(Color.white);
 	}

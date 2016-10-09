@@ -27,9 +27,7 @@ import java.io.Serializable;
 import javax.swing.Icon;
 import javax.swing.JButton;
 
-import org.grandviewtech.constants.PreferredDimension;
-
-public class ToolBarButton extends JButton implements Serializable, PreferredDimension
+public class ToolBarButton extends JButton implements Serializable
 	{
 		
 		private static final long serialVersionUID = -5924372108403206263L;

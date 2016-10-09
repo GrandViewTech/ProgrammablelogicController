@@ -28,9 +28,9 @@ import java.awt.GridBagLayout;
 
 import javax.swing.JPanel;
 
-import org.grandviewtech.constants.PLCConstant;
+import org.grandviewtech.constants.ApplicationConstant;
 
-public class RowScreen extends JPanel implements PLCConstant, Comparable<RowScreen>
+public class RowScreen extends JPanel implements Comparable<RowScreen>
 	{
 		
 		private static final long	serialVersionUID	= 8194999359481289598L;
@@ -50,7 +50,7 @@ public class RowScreen extends JPanel implements PLCConstant, Comparable<RowScre
 				createColumnScreen();
 			}
 			
-		private ColumnScreen[] columnScreens = new ColumnScreen[MAX_CELL];
+		private ColumnScreen[] columnScreens = new ColumnScreen[ApplicationConstant.MAX_CELL];
 		
 		public ColumnScreen[] getAllColumnScreens()
 			{
@@ -123,7 +123,7 @@ public class RowScreen extends JPanel implements PLCConstant, Comparable<RowScre
 				rung = new Rung(rowNumber);
 				add(rung, gridBagConstraints);
 				int columnNumber = 1;
-				while (columnNumber <= MAX_CELL)
+				while (columnNumber <= ApplicationConstant.MAX_CELL)
 					{
 						gridBagConstraints.gridx = columnNumber + 1;
 						ColumnScreen columnScreen = new ColumnScreen();

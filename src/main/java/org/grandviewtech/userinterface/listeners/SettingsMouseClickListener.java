@@ -25,12 +25,11 @@ package org.grandviewtech.userinterface.listeners;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-import org.grandviewtech.constants.Icons;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.userinterface.screen.ColumnConfigurationScreen;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 
-public class SettingsMouseClickListener implements MouseListener, Icons
+public class SettingsMouseClickListener implements MouseListener
 	{
 		final static Screen		SCREEN	= Screen.getInstance();
 		private ColumnScreen	columnScreen;
@@ -46,7 +45,7 @@ public class SettingsMouseClickListener implements MouseListener, Icons
 		@Override
 		public void mouseClicked(MouseEvent mouseEvent)
 			{
-				ColumnConfigurationScreen columnConfigurationScreen =new ColumnConfigurationScreen();
+				ColumnConfigurationScreen columnConfigurationScreen = new ColumnConfigurationScreen();
 				columnConfigurationScreen.initiateInstance(columnScreen);
 				columnConfigurationScreen.requestFocusInWindow();
 			}

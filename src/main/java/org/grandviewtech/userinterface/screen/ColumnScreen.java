@@ -36,20 +36,21 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.io.IOException;
 
+import javax.annotation.PostConstruct;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.TransferHandler;
 
-import org.grandviewtech.constants.Coils;
-import org.grandviewtech.constants.Edge;
-import org.grandviewtech.constants.Icons;
-import org.grandviewtech.constants.InputType;
-import org.grandviewtech.constants.NoNc;
-import org.grandviewtech.constants.PreferredDimension;
+import org.grandviewtech.constants.CustomDimension;
+import org.grandviewtech.constants.CustomIcon;
 import org.grandviewtech.entity.bo.ClipBoard;
 import org.grandviewtech.entity.bo.Response;
 import org.grandviewtech.entity.bo.Screen;
+import org.grandviewtech.entity.enums.CoilType;
+import org.grandviewtech.entity.enums.Edge;
+import org.grandviewtech.entity.enums.InputType;
+import org.grandviewtech.entity.enums.NoNc;
 import org.grandviewtech.service.validation.ValidateDragOption;
 import org.grandviewtech.userinterface.coils.PaintCoilsOnScreen;
 import org.grandviewtech.userinterface.helper.ColumnScreenGenerator;
@@ -59,7 +60,7 @@ import org.grandviewtech.userinterface.listeners.ColumnScreenKeyPressListener;
 import org.grandviewtech.userinterface.listeners.ColumnScreenMouseClickListener;
 import org.grandviewtech.userinterface.listeners.SettingsMouseClickListener;
 
-public class ColumnScreen extends JPanel implements PreferredDimension, DropTargetListener, Icons, Comparable<ColumnScreen>
+public class ColumnScreen extends JPanel implements DropTargetListener, Comparable<ColumnScreen>
 	{
 		private static final long	serialVersionUID	= -4357735797077739462L;
 		private ColumnScreen		previous;
@@ -70,41 +71,18 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 		private int					columnNumber;
 		private boolean				paintDefault		= true;
 		static Screen				SCREEN				= Screen.getInstance();
-		private JLabel				setting				= new JLabel(SETTING);
+		private JLabel				setting				= new JLabel(CustomIcon.SETTING);
 		private JLabel				valueLabel			= new JLabel("");
 		private boolean				isBlank				= true;
 		private JLabel				tagLabel			= new JLabel();
 		private String				tag					= "";
 		private String				value;
-		private String				coil;
+		private CoilType			coilType;
 		private String				comment;
 		private InputType			inputType;
 		private NoNc				nonc				= NoNc.DEFAULT;
 		private Edge				edge				= Edge.DEFAULT;
 		
-		public ColumnScreen()
-			{
-				init();
-			}
-			
-		private void init()
-			{
-				setLayout(null);
-				valueLabel.setBounds(35, 6, 50, 20);
-				add(valueLabel);
-				tagLabel.setBounds(10, 40, 50, 20);
-				add(tagLabel);
-				setPreferredSize(CELL_SIZE);
-				setting.setBounds(getX() + 55, 0, 50, 20);
-				setting.addMouseListener(new SettingsMouseClickListener(this));
-				setBorder(new CustomBorder());
-				setTransferHandler(new TransferHandler("icon"));
-				new DropTarget(this, this);
-				addMouseListener(new ColumnScreenMouseClickListener(this));
-				addKeyListener(new ColumnScreenKeyPressListener(this));
-				addFocusListener(new ColumnScreenFocusListener(this));
-			}
-			
 		public int getColumnNumber()
 			{
 				return columnNumber;
@@ -115,107 +93,11 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 				this.columnNumber = columnNumber;
 			}
 			
-		@Override
-		protected void paintComponent(java.awt.Graphics graphics)
-			{
-				super.paintComponent(graphics);
-				this.valueLabel.setText(this.valueLabel.getText());
-				PaintCoilsOnScreen.paint(this, graphics);
-			}
-			
-		@Override
-		public void dropActionChanged(DropTargetDragEvent dropTargetDragEvent)
-			{
-			}
-			
-		@Override
-		public void dragExit(DropTargetEvent dropTargetEvent)
-			{
-			}
-			
-		@Override
-		public void drop(DropTargetDropEvent dropTargetDragEvent)
-			{
-				try
-					{
-						Transferable transferable = dropTargetDragEvent.getTransferable();
-						if ( transferable.isDataFlavorSupported(DataFlavor.stringFlavor) )
-							{
-								String dragContents = (String) transferable.getTransferData(DataFlavor.stringFlavor);
-								ColumnScreenGenerator.createColumnNeighbourHood(SCREEN.getRow(getRowNumber()), this);
-								Response response = ValidateDragOption.validateDragOption(this, dragContents);
-								boolean isError = response.isError();
-								if ( !isError )
-									{
-										dropTargetDragEvent.getDropTargetContext().getComponent().setCursor(DragSource.DefaultCopyDrop);
-										dropTargetDragEvent.acceptDrop(DnDConstants.ACTION_MOVE);
-										selectTheRigthCoilUsingDragOption(dragContents);
-										Graphics graphics = getGraphics();
-										paintComponent(graphics);
-										DropTargetContext dropTargetContext = dropTargetDragEvent.getDropTargetContext();
-										dropTargetContext.dropComplete(true);
-									}
-								else
-									{
-										dropTargetDragEvent.getDropTargetContext().getComponent().setCursor(DragSource.DefaultCopyNoDrop);
-										dropTargetDragEvent.rejectDrop();
-										StringBuffer stringBuffer = new StringBuffer();
-										int i = 1;
-										for (String message : response.getMessages())
-											{
-												String text = "";
-												if ( i > 1 )
-													{
-														text = "\n";
-													}
-												if ( i <= 9 )
-													{
-														text += ("0" + i + " : ");
-													}
-												else
-													{
-														text += (i + " : ");
-													}
-													
-												stringBuffer.append(text + message);
-												i = i + 1;
-											}
-										JOptionPane.showMessageDialog(null, stringBuffer.toString());
-									}
-									
-							}
-						else
-							{
-								dropTargetDragEvent.rejectDrop();
-							}
-							
-					}
-				catch (IOException exception)
-					{
-						dropTargetDragEvent.rejectDrop();
-					}
-				catch (UnsupportedFlavorException exception)
-					{
-						dropTargetDragEvent.rejectDrop();
-					}
-					
-			}
-			
-		@Override
-		public void dragEnter(DropTargetDragEvent dtde)
-			{
-			}
-			
-		@Override
-		public void dragOver(DropTargetDragEvent dtde)
-			{
-			}
-			
 		public ColumnScreen getPrevious(boolean isFocusRequired)
 			{
-				if ( previous != null )
+				if (previous != null)
 					{
-						if ( isFocusRequired == true )
+						if (isFocusRequired == true)
 							{
 								previous.requestFocus();
 							}
@@ -230,9 +112,9 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 			
 		public ColumnScreen getNext(boolean isFocusRequired)
 			{
-				if ( next != null )
+				if (next != null)
 					{
-						if ( isFocusRequired == true )
+						if (isFocusRequired == true)
 							{
 								next.requestFocus();
 							}
@@ -247,9 +129,9 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 			
 		public ColumnScreen getAbove(boolean isFocusRequired)
 			{
-				if ( above != null )
+				if (above != null)
 					{
-						if ( isFocusRequired == true )
+						if (isFocusRequired == true)
 							{
 								above.requestFocus();
 							}
@@ -264,9 +146,9 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 			
 		public ColumnScreen getBelow(boolean isFocusRequired)
 			{
-				if ( below != null )
+				if (below != null)
 					{
-						if ( isFocusRequired == true )
+						if (isFocusRequired == true)
 							{
 								below.requestFocus();
 							}
@@ -294,23 +176,23 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 				return (next == null) ? false : true;
 			}
 			
-		public String getCoil()
+		public CoilType getCoilType()
 			{
-				return coil;
+				return coilType;
 			}
 			
-		public void setCoil(String coil)
+		public void setCoilType(CoilType coilType)
 			{
-				if ( coil != null )
+				if (coilType != null)
 					{
 						this.paintDefault = false;
-						this.coil = coil;
+						this.coilType = coilType;
 						setBlank(false);
 					}
 				else
 					{
 						this.paintDefault = true;
-						this.coil = coil;
+						this.coilType = coilType;
 						setBlank(true);
 					}
 			}
@@ -323,46 +205,6 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 		public void setPaintDefault(boolean paintDefault)
 			{
 				this.paintDefault = paintDefault;
-			}
-			
-		private void selectTheRigthCoilUsingDragOption(String dragContents)
-			{
-				switch (dragContents)
-					{
-						case Coils.LINE:
-							{
-								setCoil(Coils.LINE);
-								break;
-							}
-						case Coils.OUTPUT:
-							{
-								setCoil(Coils.OUTPUT);
-								break;
-							}
-						case Coils.LOAD:
-							{
-								ColumnConfigurationScreen columnConfigurationScreen = new ColumnConfigurationScreen();
-								columnConfigurationScreen.initiateInstance(this);
-								
-								columnConfigurationScreen.requestFocusInWindow();
-								ClipBoard.setCurrentRowNumber(rowNumber);
-								ClipBoard.setCurrentColumnNumber(columnNumber);
-								setCoil(Coils.LOAD);
-								break;
-							}
-						case Coils.JUMP:
-							{
-								setCoil(Coils.JUMP);
-								break;
-							}
-						case Coils.END:
-							{
-								SCREEN.setEndRowNumber(rowNumber);
-								SCREEN.setEndColumnNumber(columnNumber);
-								setCoil(Coils.END);
-								break;
-							}
-					}
 			}
 			
 		public JLabel getSetting()
@@ -404,7 +246,7 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 			{
 				remove(setting);
 				setBlank(true);
-				setCoil(null);
+				setCoilType(null);
 				setValue(null);
 			}
 			
@@ -419,20 +261,6 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 				String tempText = (tag.length() > 20) ? tag.substring(0, 16) + "..." : tag;
 				this.tagLabel.setText(tempText);
 				this.tagLabel.setToolTipText(tag);
-			}
-			
-		@Override
-		public String toString()
-			{
-				return "ColumnScreen [rowNumber=" + rowNumber + ", columnNumber=" + columnNumber + ", paintDefault=" + paintDefault + ", coil=" + coil + ", value=" + value + "]";
-			}
-			
-		@Override
-		public int compareTo(ColumnScreen comparableColumnScreen)
-			{
-				Integer currentColumnNumber = columnNumber;
-				Integer comparableColumnNumber = comparableColumnScreen.getColumnNumber();
-				return currentColumnNumber.compareTo(comparableColumnNumber);
 			}
 			
 		public String getComment()
@@ -475,4 +303,170 @@ public class ColumnScreen extends JPanel implements PreferredDimension, DropTarg
 				this.edge = edge;
 			}
 			
+		@Override
+		public int compareTo(ColumnScreen comparableColumnScreen)
+			{
+				Integer currentColumnNumber = columnNumber;
+				Integer comparableColumnNumber = comparableColumnScreen.getColumnNumber();
+				return currentColumnNumber.compareTo(comparableColumnNumber);
+			}
+			
+		@Override
+		protected void paintComponent(java.awt.Graphics graphics)
+			{
+				super.paintComponent(graphics);
+				this.valueLabel.setText(this.valueLabel.getText());
+				PaintCoilsOnScreen.paint(this, graphics);
+			}
+			
+		@Override
+		public void dropActionChanged(DropTargetDragEvent dropTargetDragEvent)
+			{
+			}
+			
+		@Override
+		public void dragExit(DropTargetEvent dropTargetEvent)
+			{
+			}
+			
+		@Override
+		public void drop(DropTargetDropEvent dropTargetDragEvent)
+			{
+				try
+					{
+						Transferable transferable = dropTargetDragEvent.getTransferable();
+						if (transferable.isDataFlavorSupported(DataFlavor.stringFlavor))
+							{
+								String dragContent = (String) transferable.getTransferData(DataFlavor.stringFlavor);
+								ColumnScreenGenerator.createColumnNeighbourHood(SCREEN.getRow(getRowNumber()), this);
+								CoilType coilType = CoilType.valueOf(dragContent);
+								Response response = ValidateDragOption.validateDragOption(this, coilType);
+								boolean isError = response.isError();
+								if (!isError)
+									{
+										dropTargetDragEvent.getDropTargetContext().getComponent().setCursor(DragSource.DefaultCopyDrop);
+										dropTargetDragEvent.acceptDrop(DnDConstants.ACTION_MOVE);
+										selectTheRigthCoilUsingDragOption(coilType);
+										Graphics graphics = getGraphics();
+										paintComponent(graphics);
+										DropTargetContext dropTargetContext = dropTargetDragEvent.getDropTargetContext();
+										dropTargetContext.dropComplete(true);
+									}
+								else
+									{
+										dropTargetDragEvent.getDropTargetContext().getComponent().setCursor(DragSource.DefaultCopyNoDrop);
+										dropTargetDragEvent.rejectDrop();
+										StringBuffer stringBuffer = new StringBuffer();
+										int i = 1;
+										for (String message : response.getMessages())
+											{
+												String text = "";
+												if (i > 1)
+													{
+														text = "\n";
+													}
+												if (i <= 9)
+													{
+														text += ("0" + i + " : ");
+													}
+												else
+													{
+														text += (i + " : ");
+													}
+													
+												stringBuffer.append(text + message);
+												i = i + 1;
+											}
+										JOptionPane.showMessageDialog(null, stringBuffer.toString());
+									}
+									
+							}
+						else
+							{
+								dropTargetDragEvent.rejectDrop();
+							}
+							
+					}
+				catch (IOException exception)
+					{
+						dropTargetDragEvent.rejectDrop();
+					}
+				catch (UnsupportedFlavorException exception)
+					{
+						dropTargetDragEvent.rejectDrop();
+					}
+					
+			}
+			
+		@Override
+		public void dragEnter(DropTargetDragEvent dtde)
+			{
+			}
+			
+		@Override
+		public void dragOver(DropTargetDragEvent dtde)
+			{
+			}
+			
+		@PostConstruct
+		private void init()
+			{
+				setLayout(null);
+				valueLabel.setBounds(35, 6, 50, 20);
+				add(valueLabel);
+				tagLabel.setBounds(10, 40, 50, 20);
+				add(tagLabel);
+				setPreferredSize(CustomDimension.CELL_SIZE);
+				setting.setBounds(getX() + 55, 0, 50, 20);
+				setting.addMouseListener(new SettingsMouseClickListener(this));
+				setBorder(new CustomBorder());
+				setTransferHandler(new TransferHandler("icon"));
+				new DropTarget(this, this);
+				addMouseListener(new ColumnScreenMouseClickListener(this));
+				addKeyListener(new ColumnScreenKeyPressListener(this));
+				addFocusListener(new ColumnScreenFocusListener(this));
+			}
+			
+		private void selectTheRigthCoilUsingDragOption(CoilType coilType)
+			{
+				switch (coilType)
+					{
+						case LINE:
+							{
+								setCoilType(CoilType.LINE);
+								break;
+							}
+						case OUTPUT:
+							{
+								setCoilType(CoilType.OUTPUT);
+								break;
+							}
+						case LOAD:
+							{
+								ColumnConfigurationScreen columnConfigurationScreen = new ColumnConfigurationScreen();
+								columnConfigurationScreen.initiateInstance(this);
+								columnConfigurationScreen.requestFocusInWindow();
+								ClipBoard.setCurrentRowNumber(rowNumber);
+								ClipBoard.setCurrentColumnNumber(columnNumber);
+								setCoilType(CoilType.LOAD);
+								break;
+							}
+						case JUMP:
+							{
+								setCoilType(CoilType.JUMP);
+								break;
+							}
+						case END:
+							{
+								SCREEN.setEndRowNumber(rowNumber);
+								SCREEN.setEndColumnNumber(columnNumber);
+								setCoilType(CoilType.END);
+								break;
+							}
+						case ROUTINE:
+							{
+								break;
+							}
+					}
+			}
 	}

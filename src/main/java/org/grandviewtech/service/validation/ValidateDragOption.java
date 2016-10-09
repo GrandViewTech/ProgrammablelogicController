@@ -22,76 +22,85 @@ package org.grandviewtech.service.validation;
  * #L%
  */
 
-import org.grandviewtech.constants.Coils;
 import org.grandviewtech.entity.bo.Response;
 import org.grandviewtech.entity.bo.Screen;
+import org.grandviewtech.entity.enums.CoilType;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 
 public class ValidateDragOption
 	{
 		static Screen screen = Screen.getInstance();
 		
-		public static Response validateDragOption(ColumnScreen columnScreen, String dragOption)
+		public static Response validateDragOption(ColumnScreen columnScreen, CoilType dragOption)
 			{
 				Response response = new Response();
 				response = validateEndCase(response, dragOption, columnScreen);
-				if ( !response.isError() )
+				if (!response.isError())
 					{
 						switch (dragOption)
 							{
-								case Coils.LINE:
+								case LINE:
 									{
-										response = validateLineDrag(response, Coils.LINE, columnScreen);
+										response = validateLineDrag(response, CoilType.LINE, columnScreen);
 										break;
 									}
-								case Coils.OUTPUT:
+								case OUTPUT:
 									{
-										response = validateOutputDrag(response, Coils.OUTPUT, columnScreen);
+										response = validateOutputDrag(response, CoilType.OUTPUT, columnScreen);
 										break;
 									}
-								case Coils.LOAD:
+								case LOAD:
 									{
-										response = validateLoadtDrag(response, Coils.LOAD, columnScreen);
+										response = validateLoadtDrag(response, CoilType.LOAD, columnScreen);
 										break;
 									}
-								case Coils.JUMP:
+								case JUMP:
 									{
 										
-										response = validateCoil(response, Coils.JUMP, columnScreen);
+										response = validateCoil(response, CoilType.JUMP, columnScreen);
 										break;
 									}
+								case END:
+									{
+										break;
+									}
+								case ROUTINE:
+									{
+										break;
+									}
+								
 							}
 					}
 				return response;
 			}
 			
-		private static Response validateLoadtDrag(Response response, String dragOption, ColumnScreen columnScreen)
+		private static Response validateLoadtDrag(Response response, CoilType dragOption, ColumnScreen columnScreen)
 			{
 				return validateCoil(response, dragOption, columnScreen);
 			}
 			
-		private static Response validateOutputDrag(Response response, String dragOption, ColumnScreen columnScreen)
+		private static Response validateOutputDrag(Response response, CoilType dragOption, ColumnScreen columnScreen)
 			{
 				return validateCoil(response, dragOption, columnScreen);
 			}
 			
-		private static Response validateLineDrag(Response response, String dragOption, ColumnScreen columnScreen)
+		private static Response validateLineDrag(Response response, CoilType dragOption, ColumnScreen columnScreen)
 			{
 				return validateCoil(response, dragOption, columnScreen);
 			}
 			
-		private static Response validateEndCase(Response response, String dragOption, ColumnScreen columnScreen)
+		private static Response validateEndCase(Response response, CoilType dragOption, ColumnScreen columnScreen)
 			{
-				if ( columnScreen.getRowNumber() == 1 && columnScreen.getColumnNumber() == 1 )
+				if (columnScreen.getRowNumber() == 1 && columnScreen.getColumnNumber() == 1)
 					{
-						String coil = dragOption;
-						if ( !coil.equalsIgnoreCase(Coils.LOAD) )
+						CoilType coil = dragOption;
+						if (!coil.equals(CoilType.LOAD))
 							{
 								response.setError(true);
-								response.addMessage("cannot " + dragOption.toUpperCase() + " in Row 1 , column 1");
+								response.addMessage("cannot " + dragOption.getCoilType().toUpperCase() + " in Row 1 , column 1");
 							}
 					}
-				else if ( columnScreen.getRowNumber() > screen.getEndRowNumber() || columnScreen.getColumnNumber() > screen.getEndColumnNumber() )
+				else if (columnScreen.getRowNumber() > screen.getEndRowNumber() || columnScreen.getColumnNumber() > screen.getEndColumnNumber())
 					{
 						response.setError(true);
 						response.addMessage("Cannot Place Coil After End of File | Row : " + screen.getEndRowNumber() + " | Column : " + screen.getEndColumnNumber());
@@ -101,18 +110,18 @@ public class ValidateDragOption
 			
 		private static Response validatePreviousOption(Response response, ColumnScreen previous, ColumnScreen columnScreen)
 			{
-				String previousOption = previous.getCoil();
-				if ( previousOption == null || previousOption.trim().length() == 0 )
+				CoilType previousOption = previous.getCoilType();
+				if (previousOption == null)
 					{
 						response.addMessage("cannot place coil in between , previous option is undefined");
 					}
 				else
 					{
-						if ( previousOption.equalsIgnoreCase(Coils.OUTPUT) )
+						if (previousOption.equals(CoilType.OUTPUT))
 							{
 								response.addMessage("Cannot place coil after OUTPUT coil");
 							}
-						else if ( previousOption.equalsIgnoreCase(Coils.JUMP) )
+						else if (previousOption.equals(CoilType.JUMP))
 							{
 								response.addMessage("Cannot place coil after JUMP coil");
 							}
@@ -120,19 +129,19 @@ public class ValidateDragOption
 				return response;
 			}
 			
-		private static Response validateCoil(Response response, String coil, ColumnScreen columnScreen)
+		private static Response validateCoil(Response response, CoilType coilType, ColumnScreen columnScreen)
 			{
 				ColumnScreen previous = columnScreen.getPrevious(false);
-				if ( previous != null )
+				if (previous != null)
 					{
-						String previousOption = previous.getCoil();
-						if ( previousOption == null || previousOption.trim().length() == 0 )
+						CoilType previousOption = previous.getCoilType();
+						if (previousOption == null)
 							{
-								if ( coil == null || coil.trim().length() == 0 )
+								if (coilType == null)
 									{
 										response.addMessage("cannot place coil in between , previous option is undefined");
 									}
-								else if ( !coil.equalsIgnoreCase(Coils.LOAD) && !coil.equalsIgnoreCase(Coils.END) )
+								else if (!coilType.equals(CoilType.LOAD) && !coilType.equals(CoilType.END))
 									{
 										response.addMessage("cannot place coil in between , previous option is undefined");
 									}

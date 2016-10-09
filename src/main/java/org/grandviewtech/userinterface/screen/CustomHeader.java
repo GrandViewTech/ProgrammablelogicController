@@ -39,12 +39,11 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.TransferHandler;
 
-import org.grandviewtech.constants.Icons;
 import org.grandviewtech.userinterface.listeners.AdvancedSearchMouseListener;
 import org.grandviewtech.userinterface.misc.CustomToolBar;
 import org.grandviewtech.userinterface.misc.Helper;
 
-public class CustomHeader implements Icons
+public class CustomHeader
 	{
 		
 		public static JMenuBar getJMenuBar()
@@ -114,6 +113,7 @@ public class CustomHeader implements Icons
 			
 		public static class DragMouseAdapter extends MouseAdapter
 			{
+				@Override
 				public void mousePressed(MouseEvent event)
 					{
 						JComponent component = (JComponent) event.getSource();

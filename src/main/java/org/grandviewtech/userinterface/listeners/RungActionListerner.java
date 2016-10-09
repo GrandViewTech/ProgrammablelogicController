@@ -95,13 +95,13 @@ public class RungActionListerner implements ActionListener
 							{
 								RungComment rungComment = new RungComment();
 								RowScreen rowScreen = screen.getRow(currentRungNumber);
-								if ( rowScreen != null )
+								if (rowScreen != null)
 									{
 										rungComment.initiateRungComment(rowScreen.getRung());
 									}
 								break;
 							}
-							
+						
 					}
 					
 			}
@@ -110,7 +110,7 @@ public class RungActionListerner implements ActionListener
 			{
 				int newRungNumber = currentRungNumber;
 				List<Rung> rungs = ClipBoard.getSelectedRung();
-				if ( rungs.size() == 0 )
+				if (rungs.size() == 0)
 					{
 						RowGenerator.regenerateRow(newRungNumber, false);
 					}
@@ -120,7 +120,7 @@ public class RungActionListerner implements ActionListener
 						for (Rung rung : rungs)
 							{
 								Integer rowNumber = rung.getRowNumber();
-								if ( rowNumber != null )
+								if (rowNumber != null)
 									{
 										rowNumbers.add(rowNumber);
 									}
@@ -152,9 +152,9 @@ public class RungActionListerner implements ActionListener
 						for (ColumnScreen pasteColumn : pasteRow.getAllColumnScreens())
 							{
 								ColumnScreen copiedColumn = copiedRow.getColumnScreens(columnIndex);
-								if ( copiedColumn.isBlank() == false )
+								if (copiedColumn.isBlank() == false)
 									{
-										pasteColumn.setCoil(copiedColumn.getCoil());
+										pasteColumn.setCoilType(copiedColumn.getCoilType());
 										pasteColumn.setValue(copiedColumn.getValue());
 										pasteColumn.setTag(copiedColumn.getTag());
 										pasteColumn.requestFocus();
@@ -165,7 +165,7 @@ public class RungActionListerner implements ActionListener
 							}
 						i$ = i$ + 1;
 					}
-				if ( ClipBoard.getClipboardAction() == CLIPBOARD_ACTION.CUT )
+				if (ClipBoard.getClipboardAction() == CLIPBOARD_ACTION.CUT)
 					{
 						Set<Integer> deletedRowNumbers = new LinkedHashSet<Integer>();
 						List<Rung> copiedRungs = ClipBoard.getCopiedRung();

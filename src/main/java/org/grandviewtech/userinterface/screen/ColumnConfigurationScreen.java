@@ -35,15 +35,15 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-import org.grandviewtech.constants.Edge;
-import org.grandviewtech.constants.InputType;
-import org.grandviewtech.constants.NoNc;
-import org.grandviewtech.constants.PreferredDimension;
+import org.grandviewtech.constants.CustomDimension;
+import org.grandviewtech.entity.enums.Edge;
+import org.grandviewtech.entity.enums.InputType;
+import org.grandviewtech.entity.enums.NoNc;
 import org.grandviewtech.entity.helper.Dimension;
 import org.grandviewtech.runner.Application;
 import org.grandviewtech.service.searching.SearchEngine;
 
-public class ColumnConfigurationScreen extends JFrame implements PreferredDimension
+public class ColumnConfigurationScreen extends JFrame
 	{
 		private static org.apache.log4j.Logger	logger							= org.apache.log4j.Logger.getLogger(ColumnConfigurationScreen.class);
 		
@@ -139,12 +139,12 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 			{
 				inputValue.setBounds(X1, Y - 5, WIDTH, HEIGHT);
 				value.setBounds(X2, Y - 5, WIDTH, HEIGHT);
-				if ( columnScreen.getValue() != null && columnScreen.getValue().length() > 0 )
+				if (columnScreen.getValue() != null && columnScreen.getValue().length() > 0)
 					{
 						value.setText(columnScreen.getValue());
 					}
 				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
-				separator.setBounds(X1, Y * 1 + (20), CONFIGURATION_SCREEN.width - (X1 * 4), 10);
+				separator.setBounds(X1, Y * 1 + (20), CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
 				panel.add(inputValue);
 				panel.add(value);
 				panel.add(separator);
@@ -159,7 +159,7 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 				word.setBounds(X2, Y * 3, RADIO_WIDTH, HEIGHT);
 				output.setBounds(X2 + (RADIO_WIDTH * 1), Y * 3, RADIO_WIDTH, HEIGHT);
 				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
-				separator.setBounds(X1, Y * 3 + (20), CONFIGURATION_SCREEN.width - (X1 * 4), 10);
+				separator.setBounds(X1, Y * 3 + (20), CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
 				setDefaultInputOption(columnScreen);
 				panel.add(type);
 				panel.add(input);
@@ -206,7 +206,7 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 				risingEdge.setBounds(X2, Y * 4, RADIO_WIDTH, HEIGHT);
 				fallingEdge.setBounds(X2 + (RADIO_WIDTH * 1), Y * 4, RADIO_WIDTH, HEIGHT);
 				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
-				separator.setBounds(X1, Y * 4 + (20), CONFIGURATION_SCREEN.width - (X1 * 4), 10);
+				separator.setBounds(X1, Y * 4 + (20), CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
 				setDefaultEdgeOption(columnScreen);
 				panel.add(edgeLabel);
 				panel.add(risingEdge);
@@ -235,7 +235,7 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 				NC.setBounds(X2, Y * 5, RADIO_WIDTH, HEIGHT);
 				NO.setBounds(X2 + (RADIO_WIDTH * 1), Y * 5, RADIO_WIDTH, HEIGHT);
 				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
-				separator.setBounds(X1, Y * 5 + (20), CONFIGURATION_SCREEN.width - (X1 * 4), 10);
+				separator.setBounds(X1, Y * 5 + (20), CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
 				setDefaultNoNcOption(columnScreen);
 				panel.add(ncnoLabel);
 				panel.add(NC);
@@ -250,12 +250,12 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 				tagLabel.setToolTipText("Add A Tag for Current Coil");
 				tagValue.setBounds(X2, Y * 6, WIDTH, HEIGHT);
 				String tag = columnScreen.getTag();
-				if ( tag != null && tag.trim().length() > 0 )
+				if (tag != null && tag.trim().length() > 0)
 					{
 						tagValue.setText(tag);
 					}
 				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
-				separator.setBounds(X1, Y * 6 + (20), CONFIGURATION_SCREEN.width - (X1 * 4), 10);
+				separator.setBounds(X1, Y * 6 + (20), CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
 				panel.add(tagLabel);
 				panel.add(tagValue);
 				panel.add(separator);
@@ -266,32 +266,34 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 				submit.setBounds(X1, Y * 7 + 20, WIDTH, HEIGHT);
 				panel.add(submit);
 				
-				submit.addActionListener(event -> {
-					setInputTagAndValue(columnScreen);
-					setNoNcValue(columnScreen);
-					setEdgeValue(columnScreen);
-					SearchEngine.index(columnScreen);
-					dispose();
-				});
+				submit.addActionListener(event ->
+					{
+						setInputTagAndValue(columnScreen);
+						setNoNcValue(columnScreen);
+						setEdgeValue(columnScreen);
+						SearchEngine.index(columnScreen);
+						dispose();
+					});
 			}
 			
 		private void addCancelToScreen()
 			{
 				cancel.setBounds(X2, Y * 7 + 20, WIDTH, HEIGHT);
 				panel.add(cancel);
-				cancel.addActionListener(event -> {
-					dispose();
-				});
+				cancel.addActionListener(event ->
+					{
+						dispose();
+					});
 			}
 			
 		private void invokeFrame()
 			{
-				panel.setPreferredSize(CONFIGURATION_SCREEN);
+				panel.setPreferredSize(CustomDimension.CONFIGURATION_SCREEN);
 				panel.setLayout(null);
 				getContentPane().add(scrollableConfigurationScreen);
 				Dimension dimension = Application.calculateCenterAlignment(getPreferredSize());
 				setLocation(dimension.getX(), dimension.getY());
-				setPreferredSize(CONFIGURATION_SCREEN);
+				setPreferredSize(CustomDimension.CONFIGURATION_SCREEN);
 				pack();
 				setVisible(true);
 			}
@@ -300,22 +302,22 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 			{
 				InputType inputType = null;
 				String optionType = "";
-				if ( input.isSelected() )
+				if (input.isSelected())
 					{
 						inputType = InputType.INPUT;
 						optionType = "I/";
 					}
-				else if ( flag.isSelected() )
+				else if (flag.isSelected())
 					{
 						inputType = InputType.FLAG;
 						optionType = "F/";
 					}
-				else if ( word.isSelected() )
+				else if (word.isSelected())
 					{
 						inputType = InputType.WORD;
 						optionType = "D/";
 					}
-				else if ( output.isSelected() )
+				else if (output.isSelected())
 					{
 						inputType = InputType.OUTPUT;
 						optionType = "O/";
@@ -331,11 +333,11 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 		private void setNoNcValue(ColumnScreen columnScreen)
 			{
 				NoNc nonc = null;
-				if ( NO.isSelected() )
+				if (NO.isSelected())
 					{
 						nonc = NoNc.NO;
 					}
-				else if ( NC.isSelected() )
+				else if (NC.isSelected())
 					{
 						nonc = NoNc.NC;
 					}
@@ -345,11 +347,11 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 		private void setEdgeValue(ColumnScreen columnScreen)
 			{
 				Edge edge = null;
-				if ( risingEdge.isSelected() )
+				if (risingEdge.isSelected())
 					{
 						edge = Edge.RISING;
 					}
-				else if ( fallingEdge.isSelected() )
+				else if (fallingEdge.isSelected())
 					{
 						edge = Edge.FALLING;
 					}
@@ -359,7 +361,7 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 		private void setDefaultInputOption(ColumnScreen columnScreen)
 			{
 				InputType inputType = columnScreen.getInputType();
-				if ( inputType == null )
+				if (inputType == null)
 					{
 						input.setSelected(true);
 						flag.setSelected(false);
@@ -417,7 +419,7 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 		private void setDefaultNoNcOption(ColumnScreen columnScreen)
 			{
 				NoNc nonc = columnScreen.getNonc();
-				if ( nonc == null )
+				if (nonc == null)
 					{
 						NO.setSelected(true);
 						NC.setSelected(false);
@@ -451,7 +453,7 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 		private void setDefaultEdgeOption(ColumnScreen columnScreen)
 			{
 				Edge edge = columnScreen.getEdge();
-				if ( edge == null )
+				if (edge == null)
 					{
 						risingEdge.setSelected(true);
 						fallingEdge.setSelected(false);
@@ -478,7 +480,7 @@ public class ColumnConfigurationScreen extends JFrame implements PreferredDimens
 										fallingEdge.setSelected(false);
 										break;
 									}
-									
+								
 							}
 					}
 			}

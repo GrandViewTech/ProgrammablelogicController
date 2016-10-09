@@ -28,7 +28,7 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 
-import org.grandviewtech.constants.Borders;
+import org.grandviewtech.constants.CustomBorderList;
 import org.grandviewtech.entity.bo.ClipBoard;
 import org.grandviewtech.entity.enums.CLIPBOARD_ACTION;
 import org.grandviewtech.service.system.Printer;
@@ -60,7 +60,7 @@ public final class ActionBot extends BaseBot
 					{
 						if (columnScreen.isBlank() == false)
 							{
-								columnScreen.setBorder(Borders.DASHED_BORDER);
+								columnScreen.setBorder(CustomBorderList.DASHED_BORDER);
 								ClipBoard.addCopiedCell(columnScreen);
 							}
 					}
@@ -70,7 +70,7 @@ public final class ActionBot extends BaseBot
 			{
 				if (ClipBoard.isControlKeyActive() == false)
 					{
-						columnScreen.setBorder(Borders.CUSTOM_BORDER);
+						columnScreen.setBorder(CustomBorderList.CUSTOM_BORDER);
 					}
 			}
 			
@@ -97,9 +97,9 @@ public final class ActionBot extends BaseBot
 			
 		public static void pasteColumn()
 			{
-				ClipBoard.cutLabel.setBorder(PADDED_DEFAULT);
-				ClipBoard.copyLabel.setBorder(PADDED_DEFAULT);
-				ClipBoard.pasteLabel.setBorder(PADDED_DASHED_BORDER);
+				ClipBoard.cutLabel.setBorder(CustomBorderList.PADDED_DEFAULT);
+				ClipBoard.copyLabel.setBorder(CustomBorderList.PADDED_DEFAULT);
+				ClipBoard.pasteLabel.setBorder(CustomBorderList.PADDED_DASHED_BORDER);
 				System.out.println("Pasting : " + ClipBoard.getCopiedCell());
 				ColumnScreen target = ClipBoard.SCREEN.getRow(ClipBoard.getCurrentRowNumber()).getColumnScreens(ClipBoard.getCurrentColumnNumber());
 				for (ColumnScreen columnScreen : ClipBoard.getCopiedCell())
@@ -137,17 +137,17 @@ public final class ActionBot extends BaseBot
 					{
 						case COPY:
 							{
-								ClipBoard.cutLabel.setBorder(PADDED_DEFAULT);
-								ClipBoard.copyLabel.setBorder(PADDED_DASHED_BORDER);
-								ClipBoard.pasteLabel.setBorder(PADDED_DEFAULT);
+								ClipBoard.cutLabel.setBorder(CustomBorderList.PADDED_DEFAULT);
+								ClipBoard.copyLabel.setBorder(CustomBorderList.PADDED_DASHED_BORDER);
+								ClipBoard.pasteLabel.setBorder(CustomBorderList.PADDED_DEFAULT);
 								ClipBoard.setClipBoardColumnSelection(false);
 								break;
 							}
 						case CUT:
 							{
-								ClipBoard.cutLabel.setBorder(PADDED_DASHED_BORDER);
-								ClipBoard.copyLabel.setBorder(PADDED_DEFAULT);
-								ClipBoard.pasteLabel.setBorder(PADDED_DEFAULT);
+								ClipBoard.cutLabel.setBorder(CustomBorderList.PADDED_DASHED_BORDER);
+								ClipBoard.copyLabel.setBorder(CustomBorderList.PADDED_DEFAULT);
+								ClipBoard.pasteLabel.setBorder(CustomBorderList.PADDED_DEFAULT);
 								ClipBoard.setClipBoardColumnSelection(true);
 								break;
 							}

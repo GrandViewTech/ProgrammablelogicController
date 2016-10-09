@@ -28,13 +28,13 @@ import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.border.Border;
 
-import org.grandviewtech.constants.Borders;
+import org.grandviewtech.constants.CustomBorderList;
 import org.grandviewtech.entity.enums.CLIPBOARD_ACTION;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 import org.grandviewtech.userinterface.screen.RowScreen;
 import org.grandviewtech.userinterface.screen.Rung;
 
-final public class ClipBoard implements Borders
+final public class ClipBoard
 	{
 		
 		private ClipBoard()
@@ -97,9 +97,9 @@ final public class ClipBoard implements Borders
 			
 		public static void addTempRung(Rung rung)
 			{
-				if ( copiedTempRung.contains(rung) == false )
+				if (copiedTempRung.contains(rung) == false)
 					{
-						if ( ClipBoard.isControlKeyActive )
+						if (ClipBoard.isControlKeyActive)
 							{
 								copiedTempRung.add(rung);
 							}
@@ -118,11 +118,11 @@ final public class ClipBoard implements Borders
 					{
 						int rowNumber = rung.getRowNumber();
 						RowScreen rowScreen = SCREEN.getRow(rowNumber);
-						if ( clipboardAction == CLIPBOARD_ACTION.COPY )
+						if (clipboardAction == CLIPBOARD_ACTION.COPY)
 							{
 								rowScreen.setBackground(java.awt.Color.GREEN);
 							}
-						else if ( clipboardAction == CLIPBOARD_ACTION.CUT )
+						else if (clipboardAction == CLIPBOARD_ACTION.CUT)
 							{
 								rowScreen.setBackground(java.awt.Color.RED);
 							}
@@ -136,9 +136,9 @@ final public class ClipBoard implements Borders
 			
 		public static void addCopiedCell(ColumnScreen columnScreen)
 			{
-				if ( ClipBoard.isControlKeyActive )
+				if (ClipBoard.isControlKeyActive)
 					{
-						if ( columnScreen.isBlank() == false )
+						if (columnScreen.isBlank() == false)
 							{
 								ClipBoard.tempData.add(columnScreen);
 							}
@@ -154,7 +154,7 @@ final public class ClipBoard implements Borders
 		public static void setControlKeyActive(boolean isControlKeyActive)
 			{
 				ClipBoard.isControlKeyActive = isControlKeyActive;
-				if ( ClipBoard.isControlKeyActive == true )
+				if (ClipBoard.isControlKeyActive == true)
 					{
 						selection.setText("SELECTION : ON ");
 					}
@@ -187,8 +187,8 @@ final public class ClipBoard implements Borders
 		public static void setClipBoardColumnSelection(boolean isCutAction)
 			{
 				setClipBoardType("Column");
-				Border cellBorder = (isCutAction) ? DASHED_BORDER_RED : DASHED_BORDER;
-				if ( ClipBoard.tempData.isEmpty() == false )
+				Border cellBorder = (isCutAction) ? CustomBorderList.DASHED_BORDER_RED : CustomBorderList.DASHED_BORDER;
+				if (ClipBoard.tempData.isEmpty() == false)
 					{
 						for (ColumnScreen columnScreen : ClipBoard.tempData)
 							{
@@ -207,15 +207,15 @@ final public class ClipBoard implements Borders
 			
 		public static void resetClipBoardSelection()
 			{
-				if ( ClipBoard.copiedCell.isEmpty() == false )
+				if (ClipBoard.copiedCell.isEmpty() == false)
 					{
 						for (ColumnScreen columnScreen : ClipBoard.copiedCell)
 							{
-								columnScreen.setBorder(CUSTOM_BORDER);
+								columnScreen.setBorder(CustomBorderList.CUSTOM_BORDER);
 							}
 						ClipBoard.copiedCell.clear();
 					}
-				if ( ClipBoard.copiedRung.isEmpty() == false )
+				if (ClipBoard.copiedRung.isEmpty() == false)
 					{
 						for (Rung copiedRung : ClipBoard.copiedRung)
 							{

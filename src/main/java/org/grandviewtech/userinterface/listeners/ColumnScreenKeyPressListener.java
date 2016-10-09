@@ -25,14 +25,14 @@ package org.grandviewtech.userinterface.listeners;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-import org.grandviewtech.constants.Borders;
+import org.grandviewtech.constants.CustomBorderList;
 import org.grandviewtech.entity.bo.ClipBoard;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.userinterface.helper.ColumnScreenGenerator;
 import org.grandviewtech.userinterface.misc.ActionBot;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 
-public class ColumnScreenKeyPressListener implements KeyListener, Borders
+public class ColumnScreenKeyPressListener implements KeyListener
 	{
 		final static Screen		SCREEN	= Screen.getInstance();
 		
@@ -48,11 +48,11 @@ public class ColumnScreenKeyPressListener implements KeyListener, Borders
 			{
 				boolean defaultWait = true;
 				onFocus(keyEvent, defaultWait);
-				if ( keyEvent.getKeyCode() == KeyEvent.VK_CONTROL )
+				if (keyEvent.getKeyCode() == KeyEvent.VK_CONTROL)
 					{
 						ClipBoard.setControlKeyActive(true);
 					}
-				else if ( keyEvent.getKeyCode() == KeyEvent.VK_ESCAPE )
+				else if (keyEvent.getKeyCode() == KeyEvent.VK_ESCAPE)
 					{
 						ClipBoard.cutLabel.setBorder(null);
 						ClipBoard.copyLabel.setBorder(null);
@@ -64,11 +64,11 @@ public class ColumnScreenKeyPressListener implements KeyListener, Borders
 		@Override
 		public void keyPressed(KeyEvent keyEvent)
 			{
-				if ( keyEvent.getKeyCode() == KeyEvent.VK_CONTROL )
+				if (keyEvent.getKeyCode() == KeyEvent.VK_CONTROL)
 					{
 						ClipBoard.setControlKeyActive(true);
 					}
-				else if ( keyEvent.getKeyCode() == KeyEvent.VK_ESCAPE )
+				else if (keyEvent.getKeyCode() == KeyEvent.VK_ESCAPE)
 					{
 						actionOnEscape();
 					}
@@ -79,7 +79,7 @@ public class ColumnScreenKeyPressListener implements KeyListener, Borders
 			{
 				boolean defaultWait = false;
 				onFocus(keyEvent, defaultWait);
-				if ( keyEvent.getKeyCode() == KeyEvent.VK_CONTROL )
+				if (keyEvent.getKeyCode() == KeyEvent.VK_CONTROL)
 					{
 						ClipBoard.setControlKeyActive(false);
 					}
@@ -87,7 +87,7 @@ public class ColumnScreenKeyPressListener implements KeyListener, Borders
 			
 		private void onFocus(KeyEvent keyEvent, boolean defaultWait)
 			{
-				if ( defaultWait )
+				if (defaultWait)
 					{
 						ActionBot.defaultHalt();
 					}
@@ -119,9 +119,9 @@ public class ColumnScreenKeyPressListener implements KeyListener, Borders
 			
 		private void actionOnEscape()
 			{
-				ClipBoard.cutLabel.setBorder(PADDED_DEFAULT);
-				ClipBoard.copyLabel.setBorder(PADDED_DEFAULT);
-				ClipBoard.pasteLabel.setBorder(PADDED_DEFAULT);
+				ClipBoard.cutLabel.setBorder(CustomBorderList.PADDED_DEFAULT);
+				ClipBoard.copyLabel.setBorder(CustomBorderList.PADDED_DEFAULT);
+				ClipBoard.pasteLabel.setBorder(CustomBorderList.PADDED_DEFAULT);
 				ClipBoard.resetClipBoardSelection();
 			}
 			

@@ -37,10 +37,10 @@ import java.awt.dnd.DragSourceListener;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 
-import org.grandviewtech.constants.Borders;
+import org.grandviewtech.constants.CustomBorderList;
 import org.grandviewtech.service.system.Printer;
 
-public class DragLabel extends JLabel implements DragGestureListener, DragSourceListener, Borders
+public class DragLabel extends JLabel implements DragGestureListener, DragSourceListener
 	{
 		private static final long	serialVersionUID	= 4128980357528030474L;
 		private DragSource			dragSource;
@@ -48,7 +48,7 @@ public class DragLabel extends JLabel implements DragGestureListener, DragSource
 		public DragLabel(String text)
 			{
 				setText(text);
-				setBorder(BorderFactory.createCompoundBorder(BORDER, PADDING_BORDER));
+				setBorder(BorderFactory.createCompoundBorder(CustomBorderList.BORDER, CustomBorderList.PADDING_BORDER));
 				dragSource = new DragSource();
 				dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
 				setCursor(new Cursor(Cursor.HAND_CURSOR));

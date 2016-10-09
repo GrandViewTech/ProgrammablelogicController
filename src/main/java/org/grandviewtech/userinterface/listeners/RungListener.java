@@ -32,12 +32,12 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
-import org.grandviewtech.constants.Icons;
+import org.grandviewtech.constants.CustomIcon;
 import org.grandviewtech.entity.bo.ClipBoard;
 import org.grandviewtech.userinterface.misc.CustomToolBar;
 import org.grandviewtech.userinterface.screen.Rung;
 
-public class RungListener implements MouseListener, KeyListener, Icons
+public class RungListener implements MouseListener, KeyListener
 	{
 		
 		final JPopupMenu	editMenu	= new JPopupMenu("Edit");
@@ -53,14 +53,14 @@ public class RungListener implements MouseListener, KeyListener, Icons
 		public void mouseClicked(MouseEvent mouseEvent)
 			{
 				CustomToolBar.setRungComment(rung.getRowNumber(), rung.getComment());
-				if ( SwingUtilities.isRightMouseButton(mouseEvent) )
+				if (SwingUtilities.isRightMouseButton(mouseEvent))
 					{
 						editMenu.removeAll();
 						open();
 						editMenu.show(rung, rung.getX() + 22, rung.getY());
 					}
 				ClipBoard.addTempRung(rung);
-				if ( ClipBoard.isControlKeyActive() == false )
+				if (ClipBoard.isControlKeyActive() == false)
 					{
 						rung.setBackground(Color.GREEN);
 					}
@@ -75,7 +75,7 @@ public class RungListener implements MouseListener, KeyListener, Icons
 		@Override
 		public void mouseReleased(MouseEvent mouseEvent)
 			{
-				if ( ClipBoard.isControlKeyActive() == false )
+				if (ClipBoard.isControlKeyActive() == false)
 					{
 						rung.setBackground(null);
 					}
@@ -84,7 +84,7 @@ public class RungListener implements MouseListener, KeyListener, Icons
 		@Override
 		public void mouseEntered(MouseEvent mouseEvent)
 			{
-				if ( ClipBoard.isControlKeyActive() == false )
+				if (ClipBoard.isControlKeyActive() == false)
 					{
 						rung.setBackground(Color.LIGHT_GRAY);
 					}
@@ -94,7 +94,7 @@ public class RungListener implements MouseListener, KeyListener, Icons
 		public void mouseExited(MouseEvent mouseEvent)
 			{
 				
-				if ( ClipBoard.isControlKeyActive() == false )
+				if (ClipBoard.isControlKeyActive() == false)
 					{
 						rung.setBackground(null);
 					}
@@ -109,7 +109,7 @@ public class RungListener implements MouseListener, KeyListener, Icons
 		@Override
 		public void keyPressed(KeyEvent keyEvent)
 			{
-				if ( keyEvent.getKeyCode() == KeyEvent.VK_CONTROL )
+				if (keyEvent.getKeyCode() == KeyEvent.VK_CONTROL)
 					{
 						ClipBoard.setControlKeyActive(true);
 					}
@@ -118,7 +118,7 @@ public class RungListener implements MouseListener, KeyListener, Icons
 		@Override
 		public void keyReleased(KeyEvent keyEvent)
 			{
-				if ( keyEvent.getKeyCode() == KeyEvent.VK_CONTROL )
+				if (keyEvent.getKeyCode() == KeyEvent.VK_CONTROL)
 					{
 						ClipBoard.setControlKeyActive(false);
 					}
@@ -131,7 +131,7 @@ public class RungListener implements MouseListener, KeyListener, Icons
 				newMenu(true);
 				copyMenu(false);
 				cutMenu(true);
-				if ( isCopyDataAvaliable == true )
+				if (isCopyDataAvaliable == true)
 					{
 						pasteMenu(true);
 					}
@@ -143,11 +143,11 @@ public class RungListener implements MouseListener, KeyListener, Icons
 			{
 				int currentRowIndex = rung.getRowNumber();
 				JMenuItem menuItem = new JMenuItem("New");
-				menuItem.setIcon(NEW);
+				menuItem.setIcon(CustomIcon.NEW);
 				menuItem.addActionListener(new RungActionListerner(RungActionListerner.RungAction.NEW, currentRowIndex));
 				menuItem.setToolTipText("Add New Rung Below Rung Number " + currentRowIndex);
 				editMenu.add(menuItem);
-				if ( addSeparator )
+				if (addSeparator)
 					{
 						editMenu.addSeparator();
 					}
@@ -157,10 +157,10 @@ public class RungListener implements MouseListener, KeyListener, Icons
 			{
 				int currentRowIndex = rung.getRowNumber();
 				JMenuItem menuItem = new JMenuItem("Copy");
-				menuItem.setIcon(COPY);
+				menuItem.setIcon(CustomIcon.COPY);
 				menuItem.addActionListener(new RungActionListerner(RungActionListerner.RungAction.COPY, currentRowIndex));
 				editMenu.add(menuItem);
-				if ( addSeparator )
+				if (addSeparator)
 					{
 						editMenu.addSeparator();
 					}
@@ -170,10 +170,10 @@ public class RungListener implements MouseListener, KeyListener, Icons
 			{
 				int currentRowIndex = rung.getRowNumber();
 				JMenuItem menuItem = new JMenuItem("Cut");
-				menuItem.setIcon(CUT);
+				menuItem.setIcon(CustomIcon.CUT);
 				editMenu.add(menuItem);
 				menuItem.addActionListener(new RungActionListerner(RungActionListerner.RungAction.CUT, currentRowIndex));
-				if ( addSeparator )
+				if (addSeparator)
 					{
 						editMenu.addSeparator();
 					}
@@ -183,11 +183,11 @@ public class RungListener implements MouseListener, KeyListener, Icons
 			{
 				int currentRowIndex = rung.getRowNumber();
 				JMenuItem menuItem = new JMenuItem("Paste");
-				menuItem.setIcon(PASTE);
+				menuItem.setIcon(CustomIcon.PASTE);
 				editMenu.add(menuItem);
 				menuItem.setToolTipText("Paste Below Rung Number " + currentRowIndex);
 				menuItem.addActionListener(new RungActionListerner(RungActionListerner.RungAction.PASTE, currentRowIndex));
-				if ( addSeparator )
+				if (addSeparator)
 					{
 						editMenu.addSeparator();
 					}
@@ -197,11 +197,11 @@ public class RungListener implements MouseListener, KeyListener, Icons
 			{
 				int currentRowIndex = rung.getRowNumber();
 				JMenuItem menuItem = new JMenuItem("Delete");
-				menuItem.setIcon(DELETE);
+				menuItem.setIcon(CustomIcon.DELETE);
 				menuItem.addActionListener(new RungActionListerner(RungActionListerner.RungAction.DELETE, currentRowIndex));
 				menuItem.setToolTipText("Delete Rung Number " + currentRowIndex);
 				editMenu.add(menuItem);
-				if ( addSeparator )
+				if (addSeparator)
 					{
 						editMenu.addSeparator();
 					}
@@ -211,11 +211,11 @@ public class RungListener implements MouseListener, KeyListener, Icons
 			{
 				int currentRowIndex = rung.getRowNumber();
 				JMenuItem menuItem = new JMenuItem("Comment");
-				menuItem.setIcon(COMMENT);
+				menuItem.setIcon(CustomIcon.COMMENT);
 				menuItem.addActionListener(new RungActionListerner(RungActionListerner.RungAction.COMMENT, currentRowIndex));
 				menuItem.setToolTipText("Comment on Rung Number " + currentRowIndex);
 				editMenu.add(menuItem);
-				if ( addSeparator )
+				if (addSeparator)
 					{
 						editMenu.addSeparator();
 					}
