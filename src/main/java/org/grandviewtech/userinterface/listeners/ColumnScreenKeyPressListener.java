@@ -28,8 +28,10 @@ import java.awt.event.KeyListener;
 import org.grandviewtech.constants.CustomBorderList;
 import org.grandviewtech.entity.bo.ClipBoard;
 import org.grandviewtech.entity.bo.Screen;
+import org.grandviewtech.entity.enums.CoilType;
 import org.grandviewtech.userinterface.helper.ColumnScreenGenerator;
 import org.grandviewtech.userinterface.misc.ActionBot;
+import org.grandviewtech.userinterface.screen.ColumnConfigurationScreen;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 
 public class ColumnScreenKeyPressListener implements KeyListener
@@ -48,11 +50,11 @@ public class ColumnScreenKeyPressListener implements KeyListener
 			{
 				boolean defaultWait = true;
 				onFocus(keyEvent, defaultWait);
-				if (keyEvent.getKeyCode() == KeyEvent.VK_CONTROL)
+				if ( keyEvent.getKeyCode() == KeyEvent.VK_CONTROL )
 					{
 						ClipBoard.setControlKeyActive(true);
 					}
-				else if (keyEvent.getKeyCode() == KeyEvent.VK_ESCAPE)
+				else if ( keyEvent.getKeyCode() == KeyEvent.VK_ESCAPE )
 					{
 						ClipBoard.cutLabel.setBorder(null);
 						ClipBoard.copyLabel.setBorder(null);
@@ -64,13 +66,22 @@ public class ColumnScreenKeyPressListener implements KeyListener
 		@Override
 		public void keyPressed(KeyEvent keyEvent)
 			{
-				if (keyEvent.getKeyCode() == KeyEvent.VK_CONTROL)
+				if ( keyEvent.getKeyCode() == KeyEvent.VK_CONTROL )
 					{
 						ClipBoard.setControlKeyActive(true);
 					}
-				else if (keyEvent.getKeyCode() == KeyEvent.VK_ESCAPE)
+				else if ( keyEvent.getKeyCode() == KeyEvent.VK_ESCAPE )
 					{
 						actionOnEscape();
+					}
+				else if ( keyEvent.getKeyCode() == KeyEvent.VK_ENTER )
+					{
+						if ( source != null && source.getCoilType() != null && (source.getCoilType().equals(CoilType.LOAD) || source.getCoilType().equals(CoilType.ROUTINE)) )
+							{
+								ColumnConfigurationScreen columnConfigurationScreen = new ColumnConfigurationScreen();
+								columnConfigurationScreen.initiateInstance(source);
+								columnConfigurationScreen.requestFocusInWindow();
+							}
 					}
 			}
 			
@@ -79,7 +90,7 @@ public class ColumnScreenKeyPressListener implements KeyListener
 			{
 				boolean defaultWait = false;
 				onFocus(keyEvent, defaultWait);
-				if (keyEvent.getKeyCode() == KeyEvent.VK_CONTROL)
+				if ( keyEvent.getKeyCode() == KeyEvent.VK_CONTROL )
 					{
 						ClipBoard.setControlKeyActive(false);
 					}
@@ -87,7 +98,7 @@ public class ColumnScreenKeyPressListener implements KeyListener
 			
 		private void onFocus(KeyEvent keyEvent, boolean defaultWait)
 			{
-				if (defaultWait)
+				if ( defaultWait )
 					{
 						ActionBot.defaultHalt();
 					}

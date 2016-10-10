@@ -123,19 +123,23 @@ public class CustomToolBar
 				DragLabel load = new DragLabel(CoilType.LOAD.getCoilType());
 				DragLabel line = new DragLabel(CoilType.LINE.getCoilType());
 				//
-				//DragLabel delete = new DragLabel(CoilType.DELETE.getCoil());
+				// DragLabel delete = new DragLabel(CoilType.DELETE.getCoil());
 				DragLabel end = new DragLabel(CoilType.END.getCoilType());
-				//DragLabel compile = new DragLabel(CoilType.COMPLIE.getCoil());
+				// DragLabel compile = new
+				// DragLabel(CoilType.COMPLIE.getCoil());
 				//
 				DragLabel output = new DragLabel(CoilType.OUTPUT.getCoilType());
 				DragLabel jump = new DragLabel(CoilType.JUMP.getCoilType());
+				
+				DragLabel routine = new DragLabel(CoilType.ROUTINE.getCoilType());
 				//
 				toolBar.add(load);
 				toolBar.add(line);
-				//toolBar.add(compile);
-				//toolBar.add(delete);
+				// toolBar.add(compile);
+				// toolBar.add(delete);
 				toolBar.add(jump);
 				toolBar.add(output);
+				toolBar.add(routine);
 				toolBar.add(end);
 			}
 			
@@ -151,10 +155,10 @@ public class CustomToolBar
 			
 		public static void setRungComment(int rungNumber, String rungComment)
 			{
-				if (rungComment != null && rungComment.trim().length() > 0)
+				if ( rungComment != null && rungComment.trim().length() > 0 )
 					{
 						String tempText = rungComment;
-						if (rungComment.length() > 200)
+						if ( rungComment.length() > 200 )
 							{
 								tempText = rungComment.substring(0, 199);
 							}

@@ -36,7 +36,6 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.io.IOException;
 
-import javax.annotation.PostConstruct;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -83,6 +82,11 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 		private NoNc				nonc				= NoNc.DEFAULT;
 		private Edge				edge				= Edge.DEFAULT;
 		
+		public ColumnScreen()
+			{
+				init();
+			}
+			
 		public int getColumnNumber()
 			{
 				return columnNumber;
@@ -95,9 +99,9 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public ColumnScreen getPrevious(boolean isFocusRequired)
 			{
-				if (previous != null)
+				if ( previous != null )
 					{
-						if (isFocusRequired == true)
+						if ( isFocusRequired == true )
 							{
 								previous.requestFocus();
 							}
@@ -112,9 +116,9 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public ColumnScreen getNext(boolean isFocusRequired)
 			{
-				if (next != null)
+				if ( next != null )
 					{
-						if (isFocusRequired == true)
+						if ( isFocusRequired == true )
 							{
 								next.requestFocus();
 							}
@@ -129,9 +133,9 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public ColumnScreen getAbove(boolean isFocusRequired)
 			{
-				if (above != null)
+				if ( above != null )
 					{
-						if (isFocusRequired == true)
+						if ( isFocusRequired == true )
 							{
 								above.requestFocus();
 							}
@@ -146,9 +150,9 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public ColumnScreen getBelow(boolean isFocusRequired)
 			{
-				if (below != null)
+				if ( below != null )
 					{
-						if (isFocusRequired == true)
+						if ( isFocusRequired == true )
 							{
 								below.requestFocus();
 							}
@@ -183,7 +187,7 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public void setCoilType(CoilType coilType)
 			{
-				if (coilType != null)
+				if ( coilType != null )
 					{
 						this.paintDefault = false;
 						this.coilType = coilType;
@@ -335,14 +339,14 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 				try
 					{
 						Transferable transferable = dropTargetDragEvent.getTransferable();
-						if (transferable.isDataFlavorSupported(DataFlavor.stringFlavor))
+						if ( transferable.isDataFlavorSupported(DataFlavor.stringFlavor) )
 							{
 								String dragContent = (String) transferable.getTransferData(DataFlavor.stringFlavor);
 								ColumnScreenGenerator.createColumnNeighbourHood(SCREEN.getRow(getRowNumber()), this);
-								CoilType coilType = CoilType.valueOf(dragContent);
+								CoilType coilType = CoilType.valueOf(dragContent.toUpperCase());
 								Response response = ValidateDragOption.validateDragOption(this, coilType);
 								boolean isError = response.isError();
-								if (!isError)
+								if ( !isError )
 									{
 										dropTargetDragEvent.getDropTargetContext().getComponent().setCursor(DragSource.DefaultCopyDrop);
 										dropTargetDragEvent.acceptDrop(DnDConstants.ACTION_MOVE);
@@ -361,11 +365,11 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 										for (String message : response.getMessages())
 											{
 												String text = "";
-												if (i > 1)
+												if ( i > 1 )
 													{
 														text = "\n";
 													}
-												if (i <= 9)
+												if ( i <= 9 )
 													{
 														text += ("0" + i + " : ");
 													}
@@ -408,7 +412,6 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			{
 			}
 			
-		@PostConstruct
 		private void init()
 			{
 				setLayout(null);
@@ -429,16 +432,17 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		private void selectTheRigthCoilUsingDragOption(CoilType coilType)
 			{
+				setCoilType(coilType);
 				switch (coilType)
 					{
 						case LINE:
 							{
-								setCoilType(CoilType.LINE);
+								// setCoilType(CoilType.LINE);
 								break;
 							}
 						case OUTPUT:
 							{
-								setCoilType(CoilType.OUTPUT);
+								// setCoilType(CoilType.OUTPUT);
 								break;
 							}
 						case LOAD:
@@ -448,12 +452,11 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 								columnConfigurationScreen.requestFocusInWindow();
 								ClipBoard.setCurrentRowNumber(rowNumber);
 								ClipBoard.setCurrentColumnNumber(columnNumber);
-								setCoilType(CoilType.LOAD);
 								break;
 							}
 						case JUMP:
 							{
-								setCoilType(CoilType.JUMP);
+								// AsetCoilType(CoilType.JUMP);
 								break;
 							}
 						case END:
@@ -465,6 +468,11 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 							}
 						case ROUTINE:
 							{
+								ColumnConfigurationScreen columnConfigurationScreen = new ColumnConfigurationScreen();
+								columnConfigurationScreen.initiateInstance(this);
+								columnConfigurationScreen.requestFocusInWindow();
+								ClipBoard.setCurrentRowNumber(rowNumber);
+								ClipBoard.setCurrentColumnNumber(columnNumber);
 								break;
 							}
 					}

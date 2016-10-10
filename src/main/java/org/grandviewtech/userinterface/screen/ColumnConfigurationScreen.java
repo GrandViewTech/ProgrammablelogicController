@@ -23,9 +23,11 @@ package org.grandviewtech.userinterface.screen;
  */
 
 import java.awt.event.KeyEvent;
+import java.io.File;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -36,12 +38,14 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import org.grandviewtech.constants.CustomDimension;
+import org.grandviewtech.entity.enums.CoilType;
 import org.grandviewtech.entity.enums.Edge;
 import org.grandviewtech.entity.enums.InputType;
 import org.grandviewtech.entity.enums.NoNc;
 import org.grandviewtech.entity.helper.Dimension;
 import org.grandviewtech.runner.Application;
 import org.grandviewtech.service.searching.SearchEngine;
+import org.grandviewtech.service.system.PropertyReader;
 
 public class ColumnConfigurationScreen extends JFrame
 	{
@@ -91,7 +95,15 @@ public class ColumnConfigurationScreen extends JFrame
 		
 		private JButton							cancel							= new JButton("Canel");
 		
+		private JComboBox<String>				category						= new JComboBox<String>();
+		
+		private JComboBox<String>				sub_category					= new JComboBox<String>();
+		
+		private JComboBox<String>				routine							= new JComboBox<String>();
+		
 		private JScrollPane						scrollableConfigurationScreen	= null;
+		
+		private String							resourcePath					= PropertyReader.getProperties("resourcePath");
 		
 		private static final int				X1								= 10;
 		private static final int				X2								= 150;
@@ -120,13 +132,14 @@ public class ColumnConfigurationScreen extends JFrame
 					{
 						setAlwaysOnTop(true);
 						setTitle("Configure Coil | Row : " + columnScreen.getRowNumber() + " Column Number : " + columnScreen.getColumnNumber());
-						addInputValueToScreen(columnScreen);
-						addInputOptionsToScreen(columnScreen);
-						addEdgeOptionToScreen(columnScreen);
-						addNcNoOptionToScreen(columnScreen);
-						addTagToScreen(columnScreen);
-						addSubmitToScreen(columnScreen);
-						addCancelToScreen();
+						if ( columnScreen.getCoilType().equals(CoilType.LOAD) )
+							{
+								loadCoilConfiguration(columnScreen);
+							}
+						else if ( columnScreen.getCoilType().equals(CoilType.ROUTINE) )
+							{
+								routineCoilConfiguration(columnScreen);
+							}
 						invokeFrame();
 					}
 				catch (Exception exception)
@@ -135,11 +148,75 @@ public class ColumnConfigurationScreen extends JFrame
 					}
 			}
 			
+		private void routineCoilConfiguration(ColumnScreen columnScreen)
+			{
+				loadCategory();
+				addChangeListernerForCategory();
+				loadSubCategory();
+			}
+			
+		private void loadCategory()
+			{
+				File file = new File(resourcePath);
+				String[] folder = file.list();
+				if ( folder != null )
+					{
+						category.removeAllItems();
+						for (String folderName : folder)
+							{
+								category.addItem(folderName);
+							}
+						JLabel label = new JLabel("Category : ");
+						label.setBounds(X1, Y - 5, WIDTH, HEIGHT);
+						category.setBounds(X2, Y - 5, WIDTH, HEIGHT);
+						panel.add(label);
+						panel.add(category);
+					}
+			}
+			
+		private void addChangeListernerForCategory()
+			{
+				category.addActionListener(event -> {
+					sub_category.removeAllItems();
+					String categoryFileName = (String) category.getSelectedItem();
+					File file = new File(resourcePath + File.separator + categoryFileName);
+					String[] folder = file.list();
+					if ( folder != null )
+						{
+							for (String folderName : folder)
+								{
+									sub_category.addItem(folderName);
+								}
+						}
+				});
+			}
+			
+		private void loadSubCategory()
+			{
+				int x = 2;
+				JLabel label = new JLabel("Sub Category : ");
+				label.setBounds(X1, (Y - 5) * x, WIDTH, HEIGHT);
+				sub_category.setBounds(X2, (Y - 5) * x, WIDTH, HEIGHT);
+				panel.add(label);
+				panel.add(sub_category);
+			}
+			
+		private void loadCoilConfiguration(ColumnScreen columnScreen)
+			{
+				addInputValueToScreen(columnScreen);
+				addInputOptionsToScreen(columnScreen);
+				addEdgeOptionToScreen(columnScreen);
+				addNcNoOptionToScreen(columnScreen);
+				addTagToScreen(columnScreen);
+				addSubmitToScreen(columnScreen);
+				addCancelToScreen();
+			}
+			
 		public void addInputValueToScreen(ColumnScreen columnScreen)
 			{
 				inputValue.setBounds(X1, Y - 5, WIDTH, HEIGHT);
 				value.setBounds(X2, Y - 5, WIDTH, HEIGHT);
-				if (columnScreen.getValue() != null && columnScreen.getValue().length() > 0)
+				if ( columnScreen.getValue() != null && columnScreen.getValue().length() > 0 )
 					{
 						value.setText(columnScreen.getValue());
 					}
@@ -250,7 +327,7 @@ public class ColumnConfigurationScreen extends JFrame
 				tagLabel.setToolTipText("Add A Tag for Current Coil");
 				tagValue.setBounds(X2, Y * 6, WIDTH, HEIGHT);
 				String tag = columnScreen.getTag();
-				if (tag != null && tag.trim().length() > 0)
+				if ( tag != null && tag.trim().length() > 0 )
 					{
 						tagValue.setText(tag);
 					}
@@ -265,25 +342,22 @@ public class ColumnConfigurationScreen extends JFrame
 			{
 				submit.setBounds(X1, Y * 7 + 20, WIDTH, HEIGHT);
 				panel.add(submit);
-				
-				submit.addActionListener(event ->
-					{
-						setInputTagAndValue(columnScreen);
-						setNoNcValue(columnScreen);
-						setEdgeValue(columnScreen);
-						SearchEngine.index(columnScreen);
-						dispose();
-					});
+				submit.addActionListener(event -> {
+					setInputTagAndValue(columnScreen);
+					setNoNcValue(columnScreen);
+					setEdgeValue(columnScreen);
+					SearchEngine.index(columnScreen);
+					dispose();
+				});
 			}
 			
 		private void addCancelToScreen()
 			{
 				cancel.setBounds(X2, Y * 7 + 20, WIDTH, HEIGHT);
 				panel.add(cancel);
-				cancel.addActionListener(event ->
-					{
-						dispose();
-					});
+				cancel.addActionListener(event -> {
+					dispose();
+				});
 			}
 			
 		private void invokeFrame()
@@ -302,22 +376,22 @@ public class ColumnConfigurationScreen extends JFrame
 			{
 				InputType inputType = null;
 				String optionType = "";
-				if (input.isSelected())
+				if ( input.isSelected() )
 					{
 						inputType = InputType.INPUT;
 						optionType = "I/";
 					}
-				else if (flag.isSelected())
+				else if ( flag.isSelected() )
 					{
 						inputType = InputType.FLAG;
 						optionType = "F/";
 					}
-				else if (word.isSelected())
+				else if ( word.isSelected() )
 					{
 						inputType = InputType.WORD;
 						optionType = "D/";
 					}
-				else if (output.isSelected())
+				else if ( output.isSelected() )
 					{
 						inputType = InputType.OUTPUT;
 						optionType = "O/";
@@ -333,11 +407,11 @@ public class ColumnConfigurationScreen extends JFrame
 		private void setNoNcValue(ColumnScreen columnScreen)
 			{
 				NoNc nonc = null;
-				if (NO.isSelected())
+				if ( NO.isSelected() )
 					{
 						nonc = NoNc.NO;
 					}
-				else if (NC.isSelected())
+				else if ( NC.isSelected() )
 					{
 						nonc = NoNc.NC;
 					}
@@ -347,11 +421,11 @@ public class ColumnConfigurationScreen extends JFrame
 		private void setEdgeValue(ColumnScreen columnScreen)
 			{
 				Edge edge = null;
-				if (risingEdge.isSelected())
+				if ( risingEdge.isSelected() )
 					{
 						edge = Edge.RISING;
 					}
-				else if (fallingEdge.isSelected())
+				else if ( fallingEdge.isSelected() )
 					{
 						edge = Edge.FALLING;
 					}
@@ -361,7 +435,7 @@ public class ColumnConfigurationScreen extends JFrame
 		private void setDefaultInputOption(ColumnScreen columnScreen)
 			{
 				InputType inputType = columnScreen.getInputType();
-				if (inputType == null)
+				if ( inputType == null )
 					{
 						input.setSelected(true);
 						flag.setSelected(false);
@@ -419,7 +493,7 @@ public class ColumnConfigurationScreen extends JFrame
 		private void setDefaultNoNcOption(ColumnScreen columnScreen)
 			{
 				NoNc nonc = columnScreen.getNonc();
-				if (nonc == null)
+				if ( nonc == null )
 					{
 						NO.setSelected(true);
 						NC.setSelected(false);
@@ -453,7 +527,7 @@ public class ColumnConfigurationScreen extends JFrame
 		private void setDefaultEdgeOption(ColumnScreen columnScreen)
 			{
 				Edge edge = columnScreen.getEdge();
-				if (edge == null)
+				if ( edge == null )
 					{
 						risingEdge.setSelected(true);
 						fallingEdge.setSelected(false);
@@ -480,7 +554,7 @@ public class ColumnConfigurationScreen extends JFrame
 										fallingEdge.setSelected(false);
 										break;
 									}
-								
+									
 							}
 					}
 			}
