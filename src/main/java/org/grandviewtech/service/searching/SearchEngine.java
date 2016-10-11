@@ -50,15 +50,16 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.Lock;
 import org.grandviewtech.entity.bo.SearchResult;
 import org.grandviewtech.runner.Application;
+import org.grandviewtech.service.system.PropertyReader;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 
 public class SearchEngine
 	{
-		private static org.apache.log4j.Logger	logger				= org.apache.log4j.Logger.getLogger(Application.class);
+		private static org.apache.log4j.Logger	logger				= org.apache.log4j.Logger.getLogger(SearchEngine.class);
 		
 		private static Analyzer					standardAnalyzer	= new StandardAnalyzer();
 		
-		private static String					fileLocation		= "indexes" + File.separator + Application.getProperties("pId");
+		private static String					fileLocation		= PropertyReader.getProperties("indexPath") + File.separator + Application.getProperties("pId");
 		
 		public static void index(ColumnScreen columnScreen)
 			{
@@ -78,7 +79,6 @@ public class SearchEngine
 								IndexWriterConfig indexWriterConfig = new IndexWriterConfig(standardAnalyzer);
 								Directory directory = FSDirectory.open((new File(fileLocation)).toPath());
 								IndexWriter indexWriter = new IndexWriter(directory, indexWriterConfig);
-								
 								try
 									{
 										indexWriter.deleteDocuments(new QueryParser("columnId", standardAnalyzer).parse("" + columnScreen.getRowNumber() + "." + columnScreen.getColumnNumber()));
@@ -99,7 +99,7 @@ public class SearchEngine
 								catch (Exception exception)
 									{
 										indexWriter.rollback();
-										exception.printStackTrace();
+										logger.error(exception.getLocalizedMessage(), exception);
 									}
 								finally
 									{
@@ -129,11 +129,11 @@ public class SearchEngine
 					}
 				catch (IOException ioException)
 					{
-						ioException.printStackTrace();
+						logger.error(ioException.getLocalizedMessage(), ioException);
 					}
 				catch (Exception exception)
 					{
-						exception.printStackTrace();
+						logger.error(exception.getLocalizedMessage(), exception);
 					}
 				return new ArrayList<SearchResult>();
 			}
@@ -202,7 +202,7 @@ public class SearchEngine
 					}
 				catch (Exception exception)
 					{
-						exception.printStackTrace();
+						logger.error(exception.getLocalizedMessage(), exception);
 					}
 			}
 			

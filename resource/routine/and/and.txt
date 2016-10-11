@@ -1,0 +1,14 @@
+The FileSystemUtils class contains utility methods for working with the file system to access functionality not supported by the JDK. Currently, the only method is to get the free space on a drive. Note that this uses the command line, not native code.
+
+For example to find the free space on a drive:
+
+
+ long freeSpace = FileSystemUtils.freeSpace("C:/");
+Endian classes
+Different computer architectures adopt different conventions for byte ordering. In so-called "Little Endian" architectures (eg Intel), the low-order byte is stored in memory at the lowest address, and subsequent bytes at higher addresses. For "Big Endian" architectures (eg Motorola), the situation is reversed.
+
+There are two classes in this package of relevance:
+
+The EndianUtils class contains static methods for swapping the Endian-ness of Java primitives and streams.
+The SwappedDataInputStream class is an implementation of the DataInput interface. With this, one can read data from files of non-native Endian-ness.
+For more information, see http://www.cs.umass.edu/~verts/cs32/endian.html

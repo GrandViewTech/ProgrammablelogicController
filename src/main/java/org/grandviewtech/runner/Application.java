@@ -33,14 +33,7 @@ import org.springframework.util.StringUtils;
 
 @Configuration
 @SpringBootApplication
-/*
- * @PropertySources(value =
- * { @PropertySource("classpath:properties/input.properties"), @PropertySource(
- * "classpath:properties/database.properties"), @PropertySource(
- * "classpath:properties/query.properties") })
- */
-@ComponentScan(basePackages =
-	{ "com.grandviewtech" })
+@ComponentScan(basePackages = { "com.grandviewtech" })
 public class Application implements CommandLineRunner
 	{
 		
@@ -90,9 +83,9 @@ public class Application implements CommandLineRunner
 						
 						properties = new Properties();
 						String pid_HostName = ManagementFactory.getRuntimeMXBean().getName();
-						if ( pid_HostName != null )
+						if (pid_HostName != null)
 							{
-								if ( pid_HostName.contains("@") )
+								if (pid_HostName.contains("@"))
 									{
 										String[] data = StringUtils.split(pid_HostName, "@");
 										properties.put("pId".toLowerCase(), data[0]);
@@ -101,7 +94,7 @@ public class Application implements CommandLineRunner
 									}
 							}
 						File folder = new File(FOLDER);
-						if ( !folder.exists() )
+						if (!folder.exists())
 							{
 								FileUtils.forceMkdir(folder);
 							}
@@ -134,7 +127,7 @@ public class Application implements CommandLineRunner
 				try
 					{
 						File folder = new File("indexes");
-						if ( folder.exists() )
+						if (folder.exists())
 							{
 								File[] files = folder.listFiles();
 								for (File file : files)
@@ -157,14 +150,14 @@ public class Application implements CommandLineRunner
 				for (Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces(); enumeration.hasMoreElements();)
 					{
 						NetworkInterface netInterface = enumeration.nextElement();
-						if ( netInterface.getHardwareAddress() != null )
+						if (netInterface.getHardwareAddress() != null)
 							{
 								isMacFound = true;
 								networkInterface = netInterface;
 								break;
 							}
 					}
-				if ( isMacFound == true )
+				if (isMacFound == true)
 					{
 						byte[] mac = networkInterface.getHardwareAddress();
 						StringBuilder stringBuilder = new StringBuilder();
@@ -193,7 +186,7 @@ public class Application implements CommandLineRunner
 			{
 				key = key.trim().toLowerCase();
 				Object object = properties.get(key);
-				if ( object != null )
+				if (object != null)
 					{
 						return (String) object;
 					}

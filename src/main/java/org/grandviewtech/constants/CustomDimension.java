@@ -27,11 +27,12 @@ import java.awt.Dimension;
 public class CustomDimension extends ApplicationConstant
 	{
 		
-		public static Dimension	TOOLBAR_BUTTON			= new Dimension(15, 10);
-		public static Dimension	MINIMUM_FRAME_SIZE		= new Dimension(1200, 700);
-		public static Dimension	CELL_SIZE				= new Dimension(SECTION_WIDTH, SECTION_HEIGHT);
-		public static Dimension	RUNG_SIZE				= new Dimension(20, SECTION_HEIGHT);
-		public static Dimension	CONFIGURATION_SCREEN	= new Dimension(350, 300);
-		public static Dimension	RUNG_COMMENT_SCREEN		= new Dimension(400, 250);
+		public static Dimension	TOOLBAR_BUTTON					= new Dimension(15, 10);
+		public static Dimension	MINIMUM_FRAME_SIZE				= new Dimension(1200, 700);
+		public static Dimension	CELL_SIZE						= new Dimension(SECTION_WIDTH, SECTION_HEIGHT);
+		public static Dimension	RUNG_SIZE						= new Dimension(20, SECTION_HEIGHT);
+		public static Dimension	LOAD_CONFIGURATION_SCREEN		= new Dimension(350, 300);
+		public static Dimension	ROUTINE_CONFIGURATION_SCREEN	= new Dimension(500, 450);
+		public static Dimension	RUNG_COMMENT_SCREEN				= new Dimension(400, 250);
 		// Dimension CONFIGURATION_SCREEN = new Dimension(500, 200);
 	}
