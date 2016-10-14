@@ -18,8 +18,10 @@ import java.util.Enumeration;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.PropertyConfigurator;
 import org.grandviewtech.service.system.Printer;
+import org.grandviewtech.service.system.PropertyReader;
 import org.grandviewtech.userinterface.screen.BackGroundLayer;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -29,7 +31,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.util.StringUtils;
 
 @Configuration
 @SpringBootApplication
@@ -87,7 +88,7 @@ public class Application implements CommandLineRunner
 							{
 								if (pid_HostName.contains("@"))
 									{
-										String[] data = StringUtils.split(pid_HostName, "@");
+										String[] data = org.apache.commons.lang3.StringUtils.split(pid_HostName, "@");
 										properties.put("pId".toLowerCase(), data[0]);
 										properties.put("hostName".toLowerCase(), data[1]);
 										properties.put("serialNumber".toLowerCase(), "" + (new BigInteger(data[1].getBytes())));
@@ -126,13 +127,17 @@ public class Application implements CommandLineRunner
 			{
 				try
 					{
-						File folder = new File("indexes");
-						if (folder.exists())
+						String indexPath = PropertyReader.getProperties("indexPath");
+						if (!StringUtils.isBlank(indexPath))
 							{
-								File[] files = folder.listFiles();
-								for (File file : files)
+								File folder = new File("indexes");
+								if (folder.exists())
 									{
-										FileUtils.forceDelete(file);
+										File[] files = folder.listFiles();
+										for (File file : files)
+											{
+												FileUtils.forceDelete(file);
+											}
 									}
 							}
 					}

@@ -4,6 +4,7 @@
 	<artifactId>ProgrammableLogicController-RELEASE</artifactId>
 	<version>1.0</version>
 	<name>Programmable Logic Controller Interface for 8058 Compiler</name>
+	<description>Programmable Logic Controller Interface for 8085 Compiler Developed for Ultra Solution</description>
 	<inceptionYear>2016</inceptionYear>
 	<organization>
 		<name>gRandViewTech</name>
@@ -60,6 +61,58 @@
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>1.4.0.RELEASE</version>
 	</parent>
+	<properties>
+		<lucene.query.parser.version>6.0.0</lucene.query.parser.version>
+		<lucene.analyzers.common.version>6.0.0</lucene.analyzers.common.version>
+		<lucene.queries.version>6.0.0</lucene.queries.version>
+		<start-class>org.grandviewtech.runner.Run</start-class>
+		<commons.lang3.version>3.4</commons.lang3.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-queryparser</artifactId>
+			<version>${lucene.query.parser.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-queries</artifactId>
+			<version>${lucene.queries.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-analyzers-common</artifactId>
+			<version>${lucene.analyzers.common.version}</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/net.java.dev.jna/jna-platform -->
+		<!-- <dependency>
+			<groupId>net.java.dev.jna</groupId>
+			<artifactId>jna-platform</artifactId>
+			<version>4.2.2</version>
+		</dependency> -->
+		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-web -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.5</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>${commons.lang3.version}</version>
+		</dependency>
+	</dependencies>
 	<build>
 		<plugins>
 			<plugin>
@@ -101,50 +154,4 @@
 			</plugin>
 		</plugins>
 	</build>
-	<properties>
-		<lucene.query.parser.version>6.0.0</lucene.query.parser.version>
-		<lucene.analyzers.common.version>6.0.0</lucene.analyzers.common.version>
-		<lucene.queries.version>6.0.0</lucene.queries.version>
-		<start-class>org.grandviewtech.runner.Run</start-class>
-	</properties>
-	<dependencies>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-queryparser</artifactId>
-			<version>${lucene.query.parser.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-queries</artifactId>
-			<version>${lucene.queries.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-analyzers-common</artifactId>
-			<version>${lucene.analyzers.common.version}</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/net.java.dev.jna/jna-platform -->
-		<dependency>
-			<groupId>net.java.dev.jna</groupId>
-			<artifactId>jna-platform</artifactId>
-			<version>4.2.2</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-web -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>2.5</version>
-		</dependency>
-	</dependencies>
-	<description>Programmable Logic Controller Interface for 8085 Compiler</description>
 </project>

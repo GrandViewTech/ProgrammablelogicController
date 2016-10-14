@@ -5,19 +5,22 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class RoutineFileReader
 	{
 		private static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(RoutineFileReader.class);
 		
-		public static String getRoutineCode(String filePath)
+		public static Object[] getRoutineCode(String filePath)
 			{
-				String content = readContentFromFile(filePath);
-				logger.info(content);
+				Object[] content = readContentFromFile(filePath);
+				logger.info("Content : " + (String) content[0]);
+				logger.info("Variable Count : " + content[1]);
+				logger.info("Constant Count : " + content[2]);
 				return content;
 			}
 			
-		private static String readContentFromFile(String filePath)
+		private static Object[] readContentFromFile(String filePath)
 			{
 				File file = new File(filePath);
 				String filename = file.getName();
@@ -47,9 +50,10 @@ public class RoutineFileReader
 				return content;
 			}
 			
-		private static String analyseContent(String content)
+		private static Object[] analyseContent(String content)
 			{
 				String analysedContext = content;
-				return analysedContext;
+				analysedContext = StringUtils.normalizeSpace(analysedContext);
+				return new Object[] { analysedContext, StringUtils.countMatches(analysedContext, PropertyReader.getProperties("varivableKeyword")), StringUtils.countMatches(analysedContext, PropertyReader.getProperties("constantKeyword")) };
 			}
 	}
