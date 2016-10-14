@@ -24,6 +24,8 @@ package org.grandviewtech.userinterface.screen;
 
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -103,6 +105,8 @@ public class ColumnConfigurationScreen extends JFrame
 		private JScrollPane						scrollableConfigurationScreen	= null;
 		
 		private String							resourcePath					= PropertyReader.getProperties("resourcePath");
+		
+		private Map<String, JTextField>			dataset							= new HashMap<String, JTextField>();
 		
 		private static final int				X1								= 10;
 		private static final int				X2								= 150;
@@ -186,7 +190,21 @@ public class ColumnConfigurationScreen extends JFrame
 						if (selectedRoutine.trim().length() > 0)
 							{
 								String filePath = resourcePath + File.separator + (String) category.getSelectedItem() + File.separator + selectedRoutine;
-								RoutineFileReader.getRoutineCode(filePath);
+								Object[] routineContent = RoutineFileReader.getRoutineCode(filePath);
+								int x = 3;
+								for (int i = 1; i <= (Integer) routineContent[1]; i++)
+									{
+										String keyword = "D" + i;
+										JLabel dataLabel = new JLabel("D" + i);
+										JTextField dataField = new JTextField();
+										dataLabel.setBounds(X1, Y * (x + i), WIDTH, HEIGHT);
+										dataField.setBounds(X2, Y * (x + i), WIDTH, HEIGHT);
+										dataset.put(keyword, dataField);
+										panel.add(dataLabel);
+										panel.add(dataField);
+									}
+								revalidate();
+								repaint();
 							}
 					});
 			}

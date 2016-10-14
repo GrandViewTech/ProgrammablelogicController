@@ -130,7 +130,7 @@ public class Application implements CommandLineRunner
 						String indexPath = PropertyReader.getProperties("indexPath");
 						if (!StringUtils.isBlank(indexPath))
 							{
-								File folder = new File("indexes");
+								File folder = new File(indexPath);
 								if (folder.exists())
 									{
 										File[] files = folder.listFiles();
