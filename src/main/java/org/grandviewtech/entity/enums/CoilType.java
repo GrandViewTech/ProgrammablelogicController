@@ -24,7 +24,7 @@ package org.grandviewtech.entity.enums;
 
 public enum CoilType
 	{
-	END("End"), JUMP("Jump"), OUTPUT("Output"), LINE("Line"), LOAD("Load"), ROUTINE("Routine");
+	END("END"), JUMP("JUMP"), OUTPUT("OUTPUT"), LINE("LINE"), LOAD("LOAD"), ROUTINE("ROUTINE"), LEFT_LINK("LEFT_LINK"), RIGHT_LINK("RIGHT_LINK"), PARALLEL("PARALLEL"), DEFAULT("DEFAULT");
 		
 		private String coilType;
 		

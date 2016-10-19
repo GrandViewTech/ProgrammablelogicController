@@ -10,14 +10,13 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.log4j.Logger;
-import org.grandviewtech.runner.Application;
 import org.grandviewtech.service.runtime.user.useractivity.Activities;
 import org.grandviewtech.service.runtime.user.useractivity.Activity;
 
 public class SystemFileLocation
 	{
 		private static Logger			logger					= Logger.getLogger(SystemFileLocation.class);
-		public final static String		PROCESS_ID				= (Application.getProperties("pId") != null) ? Application.getProperties("pId") : "PROCESS_ID";
+		public final static String		PROCESS_ID				= (PropertyReader.getProperties("pId") != null) ? PropertyReader.getProperties("pId") : "PROCESS_ID";
 		public final static String		OUTPUT_FILE_LOCATION	= PropertyReader.getProperties("outputPath");
 		public final static String		SYSTEM_FILE_LOCATION	= OUTPUT_FILE_LOCATION + File.separator + PROCESS_ID + File.separator + PropertyReader.getProperties("systemFilePath");
 		public final static String		INDEX_FILE_LOCATION		= OUTPUT_FILE_LOCATION + File.separator + PROCESS_ID + File.separator + PropertyReader.getProperties("indexPath");

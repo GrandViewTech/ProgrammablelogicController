@@ -1,39 +1,55 @@
 package org.grandviewtech.service.system;
 
-import java.io.File;
 import java.util.Properties;
 
 import org.apache.log4j.PropertyConfigurator;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
+import org.grandviewtech.service.runtime.user.useractivity.Activities;
+import org.grandviewtech.service.runtime.user.useractivity.Activity;
 
 public class PropertyReader
 	{
-		private static Properties				properties	= new Properties();
+		private static Properties properties = new Properties();
 		
-		private static org.apache.log4j.Logger	logger		= org.apache.log4j.Logger.getLogger(PropertyConfigurator.class);
-		static
+		public static Properties getProperties()
 			{
-				try
-					{
-						String path = "properties" + File.separator + "application.properties";
-						Resource resource = new ClassPathResource(path);
-						properties.load(resource.getInputStream());
-						Resource loggerResource = new ClassPathResource("properties" + File.separator + "log4j.properties");
-						Properties properties = new Properties();
-						properties.load(loggerResource.getInputStream());
-						PropertyConfigurator.configure(properties);
-					}
-				catch (Exception exception)
-					{
-						logger.error(exception.getLocalizedMessage(), exception);
-					}
+				return properties;
 			}
 			
+		public static void setProperties(Properties properties)
+			{
+				PropertyReader.properties = properties;
+			}
+			
+		private static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(PropertyConfigurator.class);
+		
 		public static String getProperties(String key)
 			{
-				Object object = properties.get(key);
-				return (object == null) ? null : (String) object;
-				
+				Activities activities = Activities.getInstance();
+				if ( properties != null )
+					{
+						Object object = properties.get(key);
+						String returnValue = (object == null) ? null : (String) object;
+						if ( returnValue == null )
+							{
+								String error = "Key-Value Pair for Key : " + key + " not Found";
+								logger.error(error);
+							}
+						return returnValue.trim();
+					}
+				else
+					{
+						String error = "Properties Object is not been initialized";
+						logger.error(error);
+						try
+							{
+								activities.addActivity(new Activity(error, Activity.Category.SYSTEM));
+							}
+						catch (Exception exception)
+							{
+								logger.error("Unable to Add Activity For Key : " + key, exception);
+							}
+						return null;
+					}
+					
 			}
 	}
