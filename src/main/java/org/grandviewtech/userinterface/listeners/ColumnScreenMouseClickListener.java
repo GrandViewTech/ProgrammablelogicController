@@ -51,7 +51,7 @@ public class ColumnScreenMouseClickListener implements MouseListener
 				else
 					{
 						isSelected = false;
-						source.setBackground(null);
+						
 						ActionBot.focusLost(source);
 					}
 					

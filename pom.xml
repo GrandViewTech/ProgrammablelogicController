@@ -85,11 +85,7 @@
 			<version>${lucene.analyzers.common.version}</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/net.java.dev.jna/jna-platform -->
-		<!-- <dependency>
-			<groupId>net.java.dev.jna</groupId>
-			<artifactId>jna-platform</artifactId>
-			<version>4.2.2</version>
-		</dependency> -->
+		<!-- <dependency> <groupId>net.java.dev.jna</groupId> <artifactId>jna-platform</artifactId> <version>4.2.2</version> </dependency> -->
 		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-web -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -111,6 +107,17 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>${commons.lang3.version}</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/javax.mail/mail -->
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.5.0-b01</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.springframework.integration/spring-integration-mail -->
+		<dependency>
+			<groupId>org.springframework.integration</groupId>
+			<artifactId>spring-integration-mail</artifactId>
 		</dependency>
 	</dependencies>
 	<build>

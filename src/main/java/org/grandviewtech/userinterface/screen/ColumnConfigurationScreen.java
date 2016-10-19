@@ -144,7 +144,6 @@ public class ColumnConfigurationScreen extends JFrame
 						else if (columnScreen.getCoilType().equals(CoilType.ROUTINE))
 							{
 								routineCoilConfiguration(columnScreen);
-								
 							}
 					}
 				catch (Exception exception)

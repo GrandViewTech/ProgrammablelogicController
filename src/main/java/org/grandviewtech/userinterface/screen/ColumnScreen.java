@@ -1,5 +1,7 @@
 package org.grandviewtech.userinterface.screen;
 
+import java.awt.Color;
+
 /*
  * #%L
  * Programmable Login Controller Inteface
@@ -82,11 +84,6 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 		private NoNc				nonc				= NoNc.DEFAULT;
 		private Edge				edge				= Edge.DEFAULT;
 		
-		public ColumnScreen()
-			{
-				init();
-			}
-			
 		public int getColumnNumber()
 			{
 				return columnNumber;
@@ -99,9 +96,9 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public ColumnScreen getPrevious(boolean isFocusRequired)
 			{
-				if ( previous != null )
+				if (previous != null)
 					{
-						if ( isFocusRequired == true )
+						if (isFocusRequired == true)
 							{
 								previous.requestFocus();
 							}
@@ -116,9 +113,9 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public ColumnScreen getNext(boolean isFocusRequired)
 			{
-				if ( next != null )
+				if (next != null)
 					{
-						if ( isFocusRequired == true )
+						if (isFocusRequired == true)
 							{
 								next.requestFocus();
 							}
@@ -133,9 +130,9 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public ColumnScreen getAbove(boolean isFocusRequired)
 			{
-				if ( above != null )
+				if (above != null)
 					{
-						if ( isFocusRequired == true )
+						if (isFocusRequired == true)
 							{
 								above.requestFocus();
 							}
@@ -150,9 +147,9 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public ColumnScreen getBelow(boolean isFocusRequired)
 			{
-				if ( below != null )
+				if (below != null)
 					{
-						if ( isFocusRequired == true )
+						if (isFocusRequired == true)
 							{
 								below.requestFocus();
 							}
@@ -187,7 +184,7 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public void setCoilType(CoilType coilType)
 			{
-				if ( coilType != null )
+				if (coilType != null)
 					{
 						this.paintDefault = false;
 						this.coilType = coilType;
@@ -339,14 +336,14 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 				try
 					{
 						Transferable transferable = dropTargetDragEvent.getTransferable();
-						if ( transferable.isDataFlavorSupported(DataFlavor.stringFlavor) )
+						if (transferable.isDataFlavorSupported(DataFlavor.stringFlavor))
 							{
 								String dragContent = (String) transferable.getTransferData(DataFlavor.stringFlavor);
 								ColumnScreenGenerator.createColumnNeighbourHood(SCREEN.getRow(getRowNumber()), this);
 								CoilType coilType = CoilType.valueOf(dragContent.toUpperCase());
 								Response response = ValidateDragOption.validateDragOption(this, coilType);
 								boolean isError = response.isError();
-								if ( !isError )
+								if (!isError)
 									{
 										dropTargetDragEvent.getDropTargetContext().getComponent().setCursor(DragSource.DefaultCopyDrop);
 										dropTargetDragEvent.acceptDrop(DnDConstants.ACTION_MOVE);
@@ -365,11 +362,11 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 										for (String message : response.getMessages())
 											{
 												String text = "";
-												if ( i > 1 )
+												if (i > 1)
 													{
 														text = "\n";
 													}
-												if ( i <= 9 )
+												if (i <= 9)
 													{
 														text += ("0" + i + " : ");
 													}
@@ -412,9 +409,17 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			{
 			}
 			
+		public ColumnScreen()
+			{
+				init();
+				
+			}
+			
 		private void init()
 			{
 				setLayout(null);
+				setOpaque(true);
+				setBackground(Color.white);
 				valueLabel.setBounds(35, 6, 50, 20);
 				add(valueLabel);
 				tagLabel.setBounds(10, 40, 50, 20);
@@ -428,6 +433,7 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 				addMouseListener(new ColumnScreenMouseClickListener(this));
 				addKeyListener(new ColumnScreenKeyPressListener(this));
 				addFocusListener(new ColumnScreenFocusListener(this));
+				repaint();
 			}
 			
 		private void selectTheRigthCoilUsingDragOption(CoilType coilType)
@@ -477,4 +483,22 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 							}
 					}
 			}
+			
+		@Override
+		public void setBackground(Color bg)
+			{
+				super.setBackground(bg);
+				if (bg == null)
+					{
+						setOpaque(true);
+						setBackground(Color.white);
+					}
+			}
+			
+		@Override
+		public String toString()
+			{
+				return "ColumnScreen [previous=" + previous + ", next=" + next + ", above=" + above + ", below=" + below + ", rowNumber=" + rowNumber + ", columnNumber=" + columnNumber + ", isBlank=" + isBlank + ", tag=" + tag + ", value=" + value + ", coilType=" + coilType + ", comment=" + comment + ", inputType=" + inputType + ", nonc=" + nonc + ", edge=" + edge + "]";
+			}
+			
 	}

@@ -33,6 +33,7 @@ import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CoilType;
 import org.grandviewtech.entity.enums.NoNc;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
+import org.grandviewtech.userinterface.screen.RowScreen;
 
 public class PaintCoilsOnScreen
 	{
@@ -119,14 +120,33 @@ public class PaintCoilsOnScreen
 			
 		private static void configureOutputCoil(ColumnScreen columnScreen, Graphics graphics)
 			{
-				int offsetY = 8;
-				graphics.setColor(Color.BLACK);
-				graphics.fillRect(0, ApplicationConstant.SECTION_HEIGHT / 2, (ApplicationConstant.SECTION_WIDTH / 2) - 10, 1);
-				((Graphics2D) graphics).draw(new QuadCurve2D.Double((ApplicationConstant.SECTION_WIDTH / 2) - 5, (ApplicationConstant.SECTION_HEIGHT / 2) - offsetY, (ApplicationConstant.SECTION_WIDTH / 2) - 15, (ApplicationConstant.SECTION_HEIGHT / 2), (ApplicationConstant.SECTION_WIDTH / 2) - 5, (ApplicationConstant.SECTION_HEIGHT / 2) + offsetY));
-				((Graphics2D) graphics).draw(new QuadCurve2D.Double((ApplicationConstant.SECTION_WIDTH / 2) + 5, (ApplicationConstant.SECTION_HEIGHT / 2) - offsetY, (ApplicationConstant.SECTION_WIDTH / 2) + 15, (ApplicationConstant.SECTION_HEIGHT / 2), (ApplicationConstant.SECTION_WIDTH / 2) + 5, (ApplicationConstant.SECTION_HEIGHT / 2) + offsetY));
-				// graphics.fillRect((ApplicationConstant.SECTION_WIDTH / 2) + 10, ApplicationConstant.SECTION_HEIGHT /
-				// 2, SECTION_WIDTH, 1);
-				
+				int currentColumnNumber = columnScreen.getColumnNumber();
+				if (currentColumnNumber < ApplicationConstant.MAX_CELL)
+					{
+						int currentRowNumber = columnScreen.getRowNumber();
+						for (int i$ = currentColumnNumber; i$ <= ApplicationConstant.MAX_CELL; i$++)
+							{
+								RowScreen rowScreen = SCREEN.getRow(currentRowNumber);
+								if (rowScreen != null)
+									{
+										ColumnScreen tempScreen = rowScreen.getColumnScreens(i$);
+										if (i$ < ApplicationConstant.MAX_CELL)
+											{
+												tempScreen.setCoilType(CoilType.LINE);
+											}
+										else if (i$ == ApplicationConstant.MAX_CELL)
+											{
+												tempScreen.setCoilType(CoilType.OUTPUT);
+											}
+										tempScreen.repaint();
+									}
+							}
+					}
+				else
+					{
+						paintOutPutCoil(columnScreen, graphics);
+					}
+					
 			}
 			
 		private static void configureLineCoil(Graphics graphics)
@@ -158,4 +178,15 @@ public class PaintCoilsOnScreen
 				columnScreen.getValueLabel().setFont(CustomFont.font1);
 			}
 			
+		private static void paintOutPutCoil(ColumnScreen columnScreen, Graphics graphics)
+			{
+				int offsetY = 8;
+				graphics.setColor(Color.BLACK);
+				graphics.fillRect(0, ApplicationConstant.SECTION_HEIGHT / 2, (ApplicationConstant.SECTION_WIDTH / 2) - 10, 1);
+				((Graphics2D) graphics).draw(new QuadCurve2D.Double((ApplicationConstant.SECTION_WIDTH / 2) - 5, (ApplicationConstant.SECTION_HEIGHT / 2) - offsetY, (ApplicationConstant.SECTION_WIDTH / 2) - 15, (ApplicationConstant.SECTION_HEIGHT / 2), (ApplicationConstant.SECTION_WIDTH / 2) - 5, (ApplicationConstant.SECTION_HEIGHT / 2) + offsetY));
+				((Graphics2D) graphics).draw(new QuadCurve2D.Double((ApplicationConstant.SECTION_WIDTH / 2) + 5, (ApplicationConstant.SECTION_HEIGHT / 2) - offsetY, (ApplicationConstant.SECTION_WIDTH / 2) + 15, (ApplicationConstant.SECTION_HEIGHT / 2), (ApplicationConstant.SECTION_WIDTH / 2) + 5, (ApplicationConstant.SECTION_HEIGHT / 2) + offsetY));
+				
+				// graphics.fillRect((ApplicationConstant.SECTION_WIDTH / 2) + 10, ApplicationConstant.SECTION_HEIGHT /
+				// 2, SECTION_WIDTH, 1);
+			}
 	}

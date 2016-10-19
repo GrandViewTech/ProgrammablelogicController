@@ -49,8 +49,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.Lock;
 import org.grandviewtech.entity.bo.SearchResult;
-import org.grandviewtech.runner.Application;
-import org.grandviewtech.service.system.PropertyReader;
+import org.grandviewtech.service.system.SystemFileLocation;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 
 public class SearchEngine
@@ -59,7 +58,7 @@ public class SearchEngine
 		
 		private static Analyzer					standardAnalyzer	= new StandardAnalyzer();
 		
-		private static String					fileLocation		= PropertyReader.getProperties("indexPath") + File.separator + Application.getProperties("pId");
+		private static String					fileLocation		= SystemFileLocation.INDEX_FILE_LOCATION;
 		
 		public static void index(ColumnScreen columnScreen)
 			{

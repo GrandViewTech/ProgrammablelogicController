@@ -4,7 +4,6 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.math.BigInteger;
@@ -20,40 +19,40 @@ import java.util.Properties;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.PropertyConfigurator;
+import org.grandviewtech.entity.bo.SystemPreference;
+import org.grandviewtech.entity.bo.SystemPreference.CleanUpActivity;
 import org.grandviewtech.service.system.Printer;
 import org.grandviewtech.service.system.PropertyReader;
+import org.grandviewtech.service.system.SystemFileLocation;
 import org.grandviewtech.userinterface.screen.BackGroundLayer;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
 @Configuration
 @SpringBootApplication
-@ComponentScan(basePackages = { "com.grandviewtech" })
+//@ComponentScan(basePackages = { "com.grandviewtech" })
 public class Application implements CommandLineRunner
 	{
 		
-		private static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(Application.class);
+		private static org.apache.log4j.Logger	logger					= org.apache.log4j.Logger.getLogger(Application.class);
 		
-		@Bean
-		public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() throws IOException
-			{
-				PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer = new PropertySourcesPlaceholderConfigurer();
-				return propertySourcesPlaceholderConfigurer;
-			}
-			
-		private static Properties	properties;
+		/*		@Bean
+				public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() throws IOException
+					{
+						PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer = new PropertySourcesPlaceholderConfigurer();
+						return propertySourcesPlaceholderConfigurer;
+					}*/
 		
-		private final static String	FOLDER		= "output" + java.io.File.separator + "system";
-		private static String		FILENAME	= FOLDER + java.io.File.separator + "system.properties";
+		private static Properties				properties;
 		
-		private static Dimension	screenSize	= Toolkit.getDefaultToolkit().getScreenSize();
-		
+		private final static String				FOLDER					= SystemFileLocation.SYSTEM_FILE_LOCATION;
+		private final static String				FILENAME				= FOLDER + File.separator + PropertyReader.getProperties("systemFileName");
+		private static boolean					isProcessIdGenerated	= false;
+		private static Dimension				screenSize				= Toolkit.getDefaultToolkit().getScreenSize();
+		private static SystemPreference			systemPreference		= new SystemPreference();
 		static
 			{
 				try
@@ -70,18 +69,41 @@ public class Application implements CommandLineRunner
 					}
 			}
 			
-		public static void getSystemInfomation()
+		public static void generateProcessInformation()
 			{
-				try
+				if (properties == null)
 					{
-						Double width = screenSize.getWidth();
-						Double height = screenSize.getHeight();
-						Printer.print("Deteching Screen Resolution  : Width : " + width.intValue() + " X  Hieght : " + height.intValue());
-						String motherBoardUniqueInformation = getNetworkCardInformationToGetMACAddress();
-						Printer.print(motherBoardUniqueInformation);
-						String name = ManagementFactory.getRuntimeMXBean().getName();
-						Printer.print("Launching Process with PID : " + name);
-						
+						try
+							{
+								Double width = screenSize.getWidth();
+								Double height = screenSize.getHeight();
+								Printer.print("Deteching Screen Resolution  : Width : " + width.intValue() + " X  Hieght : " + height.intValue());
+								String motherBoardUniqueInformation = getNetworkCardInformationToGetMACAddress();
+								Printer.print(motherBoardUniqueInformation);
+								String name = ManagementFactory.getRuntimeMXBean().getName();
+								Printer.print("Launching Process with PID : " + name);
+								generateProcessId();
+								File folder = new File(FOLDER);
+								if (!folder.exists())
+									{
+										FileUtils.forceMkdir(folder);
+									}
+								File file = new File(FILENAME);
+								OutputStream output = new FileOutputStream(file);
+								DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+								properties.store(output, "updating system properties on " + dateFormat.format(new Date()));
+							}
+						catch (Exception exception)
+							{
+								logger.error("Exception while loading System Properties", exception);
+							}
+					}
+			}
+			
+		private static void generateProcessId()
+			{
+				if (isProcessIdGenerated == false)
+					{
 						properties = new Properties();
 						String pid_HostName = ManagementFactory.getRuntimeMXBean().getName();
 						if (pid_HostName != null)
@@ -94,43 +116,34 @@ public class Application implements CommandLineRunner
 										properties.put("serialNumber".toLowerCase(), "" + (new BigInteger(data[1].getBytes())));
 									}
 							}
-						File folder = new File(FOLDER);
-						if (!folder.exists())
-							{
-								FileUtils.forceMkdir(folder);
-							}
-						File file = new File(FILENAME);
-						OutputStream output = new FileOutputStream(file);
-						DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-						properties.store(output, "updating system properties on " + dateFormat.format(new Date()));
-					}
-				catch (Exception exception)
-					{
-						exception.printStackTrace();
+						isProcessIdGenerated = true;
 					}
 			}
 			
 		private static void addHockToShutdownListener()
 			{
-				Runtime.getRuntime().addShutdownHook(new Thread()
+				
+				if (systemPreference.getCleanUpActivity().equals(CleanUpActivity.ON_SHUTDOWN))
 					{
-						@Override
-						public void run()
+						Runtime.getRuntime().addShutdownHook(new Thread()
 							{
-								super.run();
-								Application.deletePreviousIndexes();
-							}
-					});
+								@Override
+								public void run()
+									{
+										super.run();
+										Application.deletePreviousFiles();
+									}
+							});
+					}
 			}
 			
-		public static void deletePreviousIndexes()
+		public static void deletePreviousFiles()
 			{
 				try
 					{
-						String indexPath = PropertyReader.getProperties("indexPath");
-						if (!StringUtils.isBlank(indexPath))
+						if (!StringUtils.isBlank(SystemFileLocation.OUTPUT_FILE_LOCATION))
 							{
-								File folder = new File(indexPath);
+								File folder = new File(SystemFileLocation.OUTPUT_FILE_LOCATION);
 								if (folder.exists())
 									{
 										File[] files = folder.listFiles();
@@ -190,7 +203,12 @@ public class Application implements CommandLineRunner
 		public static String getProperties(String key)
 			{
 				key = key.trim().toLowerCase();
+				if (properties == null)
+					{
+						generateProcessId();
+					}
 				Object object = properties.get(key);
+				
 				if (object != null)
 					{
 						return (String) object;
@@ -206,8 +224,12 @@ public class Application implements CommandLineRunner
 			{
 				try
 					{
-						deletePreviousIndexes();
-						getSystemInfomation();
+						if (systemPreference.getCleanUpActivity().equals(CleanUpActivity.ON_START_UP))
+							{
+								deletePreviousFiles();
+							}
+						SystemFileLocation.createRequiredFolderStructure();
+						generateProcessInformation();
 						addHockToShutdownListener();
 						BackGroundLayer backGroundLayer = new BackGroundLayer();
 						backGroundLayer.init();
