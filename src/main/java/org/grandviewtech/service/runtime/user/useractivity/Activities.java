@@ -36,7 +36,7 @@ public class Activities
 				
 				public static Activities getActivities()
 					{
-						if (activities == null)
+						if ( activities == null )
 							{
 								activities = new Activities();
 							}
@@ -89,7 +89,7 @@ public class Activities
 				try
 					{
 						generateActivityFiles();
-						Files.write(Paths.get(fileName), text.getBytes(), StandardOpenOption.APPEND);
+						Files.write(Paths.get(fileName), (text + "\n").getBytes(), StandardOpenOption.APPEND);
 					}
 				catch (IOException ioException)
 					{
@@ -100,26 +100,28 @@ public class Activities
 			
 		private void generateActivityFiles()
 			{
-				if (!activityFileGenerated)
+				if ( !activityFileGenerated )
 					{
 						File userActivity = new File(SystemFileLocation.ACTIVITY_FILE_LOCATION + File.separator + USER_ACTIVITY_FILE_NAME);
-						if (userActivity.exists() == false)
+						if ( userActivity.exists() == false )
 							{
 								try
 									{
 										userActivity.createNewFile();
+										addActivity(new Activity("Generating Activity File : " + userActivity.getAbsolutePath(), Activity.Category.SYSTEM));
 									}
 								catch (IOException ioException)
 									{
 										logger.error("Exception while creating user activity file", ioException);
 									}
 							}
-						File systemActivity = new File(SystemFileLocation.ACTIVITY_FILE_LOCATION + File.separator + USER_ACTIVITY_FILE_NAME);
-						if (systemActivity.exists() == false)
+						File systemActivity = new File(SystemFileLocation.ACTIVITY_FILE_LOCATION + File.separator + SYSTEM_ACTIVITY_FILE_NAME);
+						if ( !systemActivity.exists() )
 							{
 								try
 									{
 										systemActivity.createNewFile();
+										addActivity(new Activity("Generating Activity File : " + systemActivity.getAbsolutePath(), Activity.Category.SYSTEM));
 									}
 								catch (IOException ioException)
 									{

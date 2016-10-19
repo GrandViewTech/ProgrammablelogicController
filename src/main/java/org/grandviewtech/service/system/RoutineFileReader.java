@@ -31,7 +31,9 @@ public class RoutineFileReader
 						case "txt":
 							{
 								content = readContentFromTextFile(file);
+								break;
 							}
+							
 					}
 				return analyseContent(content);
 			}
@@ -54,6 +56,7 @@ public class RoutineFileReader
 			{
 				String analysedContext = content;
 				analysedContext = StringUtils.normalizeSpace(analysedContext);
-				return new Object[] { analysedContext, StringUtils.countMatches(analysedContext, PropertyReader.getProperties("varivableKeyword")), StringUtils.countMatches(analysedContext, PropertyReader.getProperties("constantKeyword")) };
+				return new Object[]
+					{ analysedContext, StringUtils.countMatches(analysedContext, PropertyReader.getProperties("varivableKeyword")), StringUtils.countMatches(analysedContext, PropertyReader.getProperties("constantKeyword")) };
 			}
 	}

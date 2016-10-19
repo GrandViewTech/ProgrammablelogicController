@@ -37,12 +37,12 @@ public class SystemFileLocation
 							{
 								field.setAccessible(true);
 								String fieldName = field.getName();
-								if (fieldName.contains("FILE_LOCATION"))
+								if ( fieldName.contains("FILE_LOCATION") )
 									{
 										try
 											{
 												String value = (String) FieldUtils.readDeclaredStaticField(clazz, fieldName, forceAccess);
-												if (!StringUtils.isBlank(value) && !StringUtils.isEmpty(value))
+												if ( !StringUtils.isBlank(value) && !StringUtils.isEmpty(value) )
 													{
 														String folderName = value;
 														generateFolder(folderName);
@@ -69,7 +69,7 @@ public class SystemFileLocation
 		private static void generateFolder(String folderName)
 			{
 				File folder = new File(folderName);
-				if (folder.exists() == false)
+				if ( !folder.exists() )
 					{
 						try
 							{
