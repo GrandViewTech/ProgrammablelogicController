@@ -23,7 +23,6 @@ package org.grandviewtech.userinterface.ui;
  */
 
 import java.awt.Cursor;
-import java.awt.Graphics;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
@@ -40,8 +39,6 @@ import javax.swing.Icon;
 import javax.swing.JLabel;
 
 import org.grandviewtech.constants.CustomBorderList;
-import org.grandviewtech.constants.CustomIcon;
-import org.grandviewtech.entity.enums.CoilType;
 import org.grandviewtech.service.system.Printer;
 
 public class DragLabel extends JLabel implements DragGestureListener, DragSourceListener
@@ -52,21 +49,23 @@ public class DragLabel extends JLabel implements DragGestureListener, DragSource
 		public DragLabel(String text)
 			{
 				setText(text);
-				setIcon(text);
-				setBorder(BorderFactory.createCompoundBorder(CustomBorderList.BORDER, CustomBorderList.PADDING_BORDER));
-				dragSource = new DragSource();
-				dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
-				setCursor(new Cursor(Cursor.HAND_CURSOR));
+				initDefault(text);
 			}
 			
 		public DragLabel(Icon icon, String text)
 			{
-				super(icon);
-				// setText(text);
+				setIcon(icon);
+				setHorizontalAlignment(JLabel.CENTER);
+				initDefault(text);
+			}
+			
+		private void initDefault(String text)
+			{
 				setBorder(BorderFactory.createCompoundBorder(CustomBorderList.BORDER, CustomBorderList.PADDING_BORDER));
 				dragSource = new DragSource();
 				dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
 				setCursor(new Cursor(Cursor.HAND_CURSOR));
+				repaint();
 			}
 			
 		@Override
@@ -107,60 +106,4 @@ public class DragLabel extends JLabel implements DragGestureListener, DragSource
 				dragSource.startDrag(dragSourceDragEvent, DragSource.DefaultCopyDrop, transferable, this);
 			}
 			
-		@Override
-		protected void paintComponent(Graphics graphics)
-			{
-				super.paintComponent(graphics);
-				// PaintCoilsOnScreen.paint(this, graphics);
-			}
-			
-		private void setIcon(String text)
-			{
-				CoilType coilType = CoilType.valueOf(text);
-				switch (coilType)
-					{
-						case DEFAULT:
-							{
-								break;
-							}
-						case END:
-							{
-								break;
-							}
-						case JUMP:
-							{
-								break;
-							}
-						case LEFT_LINK:
-							{
-								break;
-							}
-						case LINE:
-							{
-								break;
-							}
-						case LOAD:
-							{
-								setIcon(CustomIcon.LOAD);
-								break;
-							}
-						case OUTPUT:
-							{
-								break;
-							}
-						case PARALLEL:
-							{
-								break;
-							}
-						case RIGHT_LINK:
-							{
-								break;
-							}
-						case ROUTINE:
-							{
-								break;
-							}
-					}
-					
-			}
 	}

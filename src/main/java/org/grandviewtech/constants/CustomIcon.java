@@ -18,7 +18,7 @@ public class CustomIcon
 		public static ImageIcon	CUT				= new ImageIcon(ICON_PATH + File.separator + "cut.png");
 		public static ImageIcon	SETTING			= new ImageIcon(ICON_PATH + File.separator + "setting.png");
 		public static ImageIcon	EDIT			= new ImageIcon(ICON_PATH + File.separator + "edit.png");
-		public static ImageIcon	LOAD_2			= new ImageIcon(ICON_PATH + File.separator + "load.ico");
 		public static ImageIcon	LOAD			= new ImageIcon(ICON_PATH + File.separator + "load.png");
+		public static ImageIcon	LOAD_2			= new ImageIcon(ICON_PATH + File.separator + "load.ico");
 		
 	}

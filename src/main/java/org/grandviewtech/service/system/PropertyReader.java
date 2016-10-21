@@ -25,16 +25,20 @@ public class PropertyReader
 		public static String getProperties(String key)
 			{
 				Activities activities = Activities.getInstance();
-				if ( properties != null )
+				if (properties != null)
 					{
 						Object object = properties.get(key);
 						String returnValue = (object == null) ? null : (String) object;
-						if ( returnValue == null )
+						if (returnValue == null)
 							{
 								String error = "Key-Value Pair for Key : " + key + " not Found";
 								logger.error(error);
+								return null;
 							}
-						return returnValue.trim();
+						else
+							{
+								return returnValue.trim();
+							}
 					}
 				else
 					{

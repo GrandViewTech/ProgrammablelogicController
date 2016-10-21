@@ -120,8 +120,7 @@ public class CustomToolBar
 			
 		public static void setCoilTypeFunctions()
 			{
-				DragLabel load = new DragLabel(CustomIcon.LOAD, CoilType.LOAD.getCoilType());
-				load.repaint();
+				DragLabel load = new DragLabel(CustomIcon.LOAD, CoilType.PARALLEL.getCoilType());
 				DragLabel line = new DragLabel(CoilType.LINE.getCoilType());
 				line.repaint();
 				//
@@ -151,6 +150,7 @@ public class CustomToolBar
 				toolBar.add(righLink);
 				toolBar.add(routine);
 				toolBar.add(end);
+				toolBar.repaint();
 			}
 			
 		public static void setPointerValue(String pointerValue)
@@ -165,10 +165,10 @@ public class CustomToolBar
 			
 		public static void setRungComment(int rungNumber, String rungComment)
 			{
-				if ( rungComment != null && rungComment.trim().length() > 0 )
+				if (rungComment != null && rungComment.trim().length() > 0)
 					{
 						String tempText = rungComment;
-						if ( rungComment.length() > 200 )
+						if (rungComment.length() > 200)
 							{
 								tempText = rungComment.substring(0, 199);
 							}
