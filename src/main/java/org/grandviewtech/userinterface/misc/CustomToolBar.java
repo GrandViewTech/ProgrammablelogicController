@@ -120,7 +120,7 @@ public class CustomToolBar
 			
 		public static void setCoilTypeFunctions()
 			{
-				DragLabel load = new DragLabel(CustomIcon.LOAD, CoilType.PARALLEL.getCoilType());
+				DragLabel load = new DragLabel(CustomIcon.LOAD, CoilType.LOAD.getCoilType());
 				DragLabel line = new DragLabel(CoilType.LINE.getCoilType());
 				line.repaint();
 				//
@@ -134,7 +134,7 @@ public class CustomToolBar
 				// DragLabel compile = new
 				// DragLabel(CoilType.COMPLIE.getCoil());
 				//
-				DragLabel output = new DragLabel(CoilType.OUTPUT.getCoilType());
+				DragLabel output = new DragLabel(CustomIcon.OUTPUT, CoilType.OUTPUT.getCoilType());
 				DragLabel jump = new DragLabel(CoilType.JUMP.getCoilType());
 				
 				DragLabel routine = new DragLabel(CoilType.ROUTINE.getCoilType());

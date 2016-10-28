@@ -48,7 +48,6 @@ public class DragLabel extends JLabel implements DragGestureListener, DragSource
 		
 		public DragLabel(String text)
 			{
-				setText(text);
 				initDefault(text);
 			}
 			
@@ -61,6 +60,7 @@ public class DragLabel extends JLabel implements DragGestureListener, DragSource
 			
 		private void initDefault(String text)
 			{
+				setText(text);
 				setBorder(BorderFactory.createCompoundBorder(CustomBorderList.BORDER, CustomBorderList.PADDING_BORDER));
 				dragSource = new DragSource();
 				dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
