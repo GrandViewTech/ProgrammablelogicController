@@ -32,6 +32,7 @@ import org.grandviewtech.constants.ApplicationConstant;
 import org.grandviewtech.constants.CustomFont;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CoilType;
+import org.grandviewtech.entity.enums.InputType;
 import org.grandviewtech.entity.enums.LoadType;
 import org.grandviewtech.entity.enums.NoNc;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
@@ -79,7 +80,11 @@ public class PaintCoilsOnScreen
 				if (component instanceof ColumnScreen)
 					{
 						ColumnScreen columnScreen = (ColumnScreen) component;
+						InputType inputType = columnScreen.getInputType();
+						String value = columnScreen.getValue();
+						String valueLabel = columnScreen.getValueLabel().getText();
 						int currentColumnNumber = columnScreen.getColumnNumber();
+						String tag = columnScreen.getTag();
 						if (currentColumnNumber < ApplicationConstant.MAX_CELL)
 							{
 								int currentRowNumber = columnScreen.getRowNumber();
@@ -98,6 +103,10 @@ public class PaintCoilsOnScreen
 													{
 														tempScreen.reset();
 														tempScreen.setCoilType(CoilType.OUTPUT);
+														tempScreen.setInputType(inputType);
+														tempScreen.setValue(value);
+														tempScreen.getValueLabel().setText(valueLabel);
+														tempScreen.setTag(tag);
 													}
 												tempScreen.repaint();
 											}

@@ -85,7 +85,7 @@ public class ColumnScreenKeyPressListener implements KeyListener
 					}
 				else if (keyEvent.getKeyCode() == KeyEvent.VK_ENTER)
 					{
-						if (source != null && source.getCoilType() != null && (source.getCoilType().equals(CoilType.LOAD) || source.getCoilType().equals(CoilType.ROUTINE)))
+						if (source != null && source.getCoilType() != null && (source.getCoilType().equals(CoilType.LOAD) || source.getCoilType().equals(CoilType.ROUTINE) || source.getCoilType().equals(CoilType.OUTPUT)))
 							{
 								ColumnConfigurationScreen columnConfigurationScreen = new ColumnConfigurationScreen();
 								columnConfigurationScreen.initiateInstance(source);
