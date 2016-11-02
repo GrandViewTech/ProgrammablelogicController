@@ -40,7 +40,7 @@ public class Sheet extends JPanel
 		
 		public Sheet()
 			{
-				if ( screen == null )
+				if (screen == null)
 					{
 						screen = Screen.getInstance();
 					}
@@ -54,7 +54,7 @@ public class Sheet extends JPanel
 			{
 				
 				super.removeAll();
-				if ( screen == null )
+				if (screen == null)
 					{
 						screen = Screen.getInstance();
 					}

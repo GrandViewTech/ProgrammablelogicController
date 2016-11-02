@@ -27,14 +27,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.grandviewtech.constants.ApplicationConstant;
+import org.grandviewtech.service.runtime.user.useractivity.Activities;
+import org.grandviewtech.service.runtime.user.useractivity.Activity;
 import org.grandviewtech.service.system.Printer;
+import org.grandviewtech.userinterface.screen.ColumnScreen;
 import org.grandviewtech.userinterface.screen.RowScreen;
 import org.grandviewtech.userinterface.screen.Sheet;
 
 public class Screen implements Serializable
 	{
-		
-		private static final long serialVersionUID = 5158611639703073759L;
+		private static Activities	activities			= Activities.getInstance();
+		private static final long	serialVersionUID	= 5158611639703073759L;
 		
 		private Screen()
 			{
@@ -50,12 +53,13 @@ public class Screen implements Serializable
 				return ScreenFactoryInstance.instance;
 			}
 			
-		private Sheet	sheet			= new Sheet();
-		private int		totalRow		= 1;
-		private int		endColumnNumber	= ApplicationConstant.MAX_CELL;
+		private Sheet			sheet			= new Sheet();
+		private int				totalRow		= 1;
+		private int				endColumnNumber	= ApplicationConstant.MAX_CELL;
 		
-		private int		maxNumberOffRow	= 50;
-		private int		endRowNumber	= maxNumberOffRow;
+		private int				maxNumberOffRow	= 50;
+		private int				endRowNumber	= maxNumberOffRow;
+		private ColumnScreen	activeColumn	= null;
 		
 		public Sheet getSheet()
 			{
@@ -128,11 +132,8 @@ public class Screen implements Serializable
 						Printer.print("Retieving Row Number " + i$);
 						return rows.get(i$);
 					}
-				else
-					{
-						throw new RuntimeException("Invald RowNumber " + i$);
-					}
-					
+				return null;
+				
 			}
 			
 		public void removeAll()
@@ -145,7 +146,6 @@ public class Screen implements Serializable
 				int i$ = index - 1;
 				if (i$ <= getTotalRow())
 					{
-						// Printer.print("Inserting Row Number " + i$);
 						rows.add(i$, rowScreen);
 					}
 				else
@@ -157,6 +157,20 @@ public class Screen implements Serializable
 		public List<RowScreen> getRows()
 			{
 				return rows;
+			}
+			
+		public ColumnScreen getActiveColumn()
+			{
+				return activeColumn;
+			}
+			
+		public void setActiveColumn(ColumnScreen activeColumn)
+			{
+				if (activeColumn != null)
+					{
+						activities.addActivity(new Activity("Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " ) is Turned Active", Activity.Category.USER));
+					}
+				this.activeColumn = activeColumn;
 			}
 			
 	}

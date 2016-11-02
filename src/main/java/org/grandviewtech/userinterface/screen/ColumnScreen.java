@@ -1,35 +1,10 @@
 package org.grandviewtech.userinterface.screen;
 
 import java.awt.Color;
-
-/*
- * #%L
- * Programmable Login Controller Inteface
- * %%
- * Copyright (C) 2016 GrandViewTech
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-3.0.html>.
- * #L%
- */
-
-import java.awt.Graphics;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragSource;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetContext;
 import java.awt.dnd.DropTargetDragEvent;
@@ -42,7 +17,9 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.TransferHandler;
+import javax.swing.border.Border;
 
+import org.grandviewtech.constants.CustomBorderList;
 import org.grandviewtech.constants.CustomDimension;
 import org.grandviewtech.constants.CustomIcon;
 import org.grandviewtech.entity.bo.ClipBoard;
@@ -52,6 +29,7 @@ import org.grandviewtech.entity.enums.CoilType;
 import org.grandviewtech.entity.enums.Edge;
 import org.grandviewtech.entity.enums.InputType;
 import org.grandviewtech.entity.enums.NoNc;
+import org.grandviewtech.service.validation.RowValidation;
 import org.grandviewtech.service.validation.ValidateDragOption;
 import org.grandviewtech.userinterface.coils.PaintCoilsOnScreen;
 import org.grandviewtech.userinterface.helper.ColumnScreenGenerator;
@@ -70,7 +48,6 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 		private ColumnScreen		below;
 		private int					rowNumber;
 		private int					columnNumber;
-		private boolean				paintDefault		= true;
 		static Screen				SCREEN				= Screen.getInstance();
 		private JLabel				setting				= new JLabel(CustomIcon.SETTING);
 		private JLabel				valueLabel			= new JLabel("");
@@ -78,11 +55,15 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 		private JLabel				tagLabel			= new JLabel();
 		private String				tag					= "";
 		private String				value;
-		private CoilType			coilType;
+		private CoilType			temp				= CoilType.DEFAULT;
+		private CoilType			coilType			= CoilType.DEFAULT;
+		private CoilType			childType			= CoilType.DEFAULT;
 		private String				comment;
 		private InputType			inputType;
 		private NoNc				nonc				= NoNc.DEFAULT;
 		private Edge				edge				= Edge.DEFAULT;
+		private boolean				parent				= false;
+		private boolean				error				= false;
 		
 		public int getColumnNumber()
 			{
@@ -186,26 +167,24 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			{
 				if (coilType != null)
 					{
-						this.paintDefault = false;
+						this.setTemp(coilType);
 						this.coilType = coilType;
 						setBlank(false);
 					}
 				else
 					{
-						this.paintDefault = true;
-						this.coilType = coilType;
+						this.coilType = CoilType.DEFAULT;
+						this.setTemp(CoilType.DEFAULT);
 						setBlank(true);
 					}
 			}
 			
-		public boolean isPaintDefault()
+		public void apply()
 			{
-				return paintDefault;
-			}
-			
-		public void setPaintDefault(boolean paintDefault)
-			{
-				this.paintDefault = paintDefault;
+				SCREEN.setActiveColumn(this);
+				setCoilType(temp);
+				RowValidation.validate(this);
+				repaint();
 			}
 			
 		public JLabel getSetting()
@@ -249,6 +228,11 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 				setBlank(true);
 				setCoilType(null);
 				setValue(null);
+				setTag("");
+				valueLabel.setText("");
+				setError(false);
+				setBorder(CustomBorderList.CUSTOM_BORDER);
+				repaint();
 			}
 			
 		public String getTag()
@@ -317,7 +301,14 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			{
 				super.paintComponent(graphics);
 				this.valueLabel.setText(this.valueLabel.getText());
-				PaintCoilsOnScreen.paint(this, graphics);
+				if (isBlank)
+					{
+						PaintCoilsOnScreen.paintDefault(this, graphics);
+					}
+				else
+					{
+						PaintCoilsOnScreen.paintDragOption(this, graphics);
+					}
 			}
 			
 		@Override
@@ -340,22 +331,22 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 							{
 								String dragContent = (String) transferable.getTransferData(DataFlavor.stringFlavor);
 								ColumnScreenGenerator.createColumnNeighbourHood(SCREEN.getRow(getRowNumber()), this);
-								CoilType coilType = CoilType.valueOf(dragContent.toUpperCase());
-								Response response = ValidateDragOption.validateDragOption(this, coilType);
+								CoilType temp = CoilType.valueOf(dragContent.toUpperCase());
+								Response response = ValidateDragOption.validateDragOption(this, temp);
 								boolean isError = response.isError();
 								if (!isError)
 									{
-										dropTargetDragEvent.getDropTargetContext().getComponent().setCursor(DragSource.DefaultCopyDrop);
+										//dropTargetDragEvent.getDropTargetContext().getComponent().setCursor(DragSource.DefaultCopyDrop);
 										dropTargetDragEvent.acceptDrop(DnDConstants.ACTION_MOVE);
-										selectTheRigthCoilUsingDragOption(coilType);
-										Graphics graphics = getGraphics();
-										paintComponent(graphics);
+										selectTheRigthCoilUsingDragOption(temp);
+										//Graphics graphics = getGraphics();
+										//paintComponent(graphics);
 										DropTargetContext dropTargetContext = dropTargetDragEvent.getDropTargetContext();
 										dropTargetContext.dropComplete(true);
 									}
 								else
 									{
-										dropTargetDragEvent.getDropTargetContext().getComponent().setCursor(DragSource.DefaultCopyNoDrop);
+										//dropTargetDragEvent.getDropTargetContext().getComponent().setCursor(DragSource.DefaultCopyNoDrop);
 										dropTargetDragEvent.rejectDrop();
 										StringBuffer stringBuffer = new StringBuffer();
 										int i = 1;
@@ -396,7 +387,6 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 					{
 						dropTargetDragEvent.rejectDrop();
 					}
-					
 			}
 			
 		@Override
@@ -412,7 +402,6 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 		public ColumnScreen()
 			{
 				init();
-				
 			}
 			
 		private void init()
@@ -438,38 +427,49 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		private void selectTheRigthCoilUsingDragOption(CoilType coilType)
 			{
-				setCoilType(coilType);
+				setTemp(coilType);
 				switch (coilType)
 					{
 						case LINE:
 							{
-								// setCoilType(CoilType.LINE);
+								apply();
 								break;
 							}
 						case OUTPUT:
 							{
-								// setCoilType(CoilType.OUTPUT);
+								initColumnConfigurationScreen();
+								break;
+							}
+						case LEFT_LINK:
+							{
+								initColumnConfigurationScreen();
+								break;
+							}
+						case RIGHT_LINK:
+							{
+								initColumnConfigurationScreen();
+								break;
+							}
+						case PARALLEL:
+							{
+								initColumnConfigurationScreen();
 								break;
 							}
 						case LOAD:
 							{
-								ColumnConfigurationScreen columnConfigurationScreen = new ColumnConfigurationScreen();
-								columnConfigurationScreen.initiateInstance(this);
-								columnConfigurationScreen.requestFocusInWindow();
-								ClipBoard.setCurrentRowNumber(rowNumber);
-								ClipBoard.setCurrentColumnNumber(columnNumber);
+								initColumnConfigurationScreen();
 								break;
 							}
 						case JUMP:
 							{
-								// AsetCoilType(CoilType.JUMP);
+								apply();
 								break;
 							}
 						case END:
 							{
 								SCREEN.setEndRowNumber(rowNumber);
 								SCREEN.setEndColumnNumber(columnNumber);
-								setCoilType(CoilType.END);
+								apply();
 								break;
 							}
 						case ROUTINE:
@@ -481,7 +481,31 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 								ClipBoard.setCurrentColumnNumber(columnNumber);
 								break;
 							}
+						case DEFAULT:
+							{
+								break;
+							}
+						case DELETE:
+							{
+								break;
+							}
+						case LABEL:
+							{
+								break;
+							}
+						
 					}
+			}
+			
+		public CoilType getChildType()
+			{
+				return childType;
+			}
+			
+		public void setChildType(CoilType childType)
+			{
+				this.parent = true;
+				this.childType = childType;
 			}
 			
 		@Override
@@ -492,6 +516,67 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 					{
 						setOpaque(true);
 						setBackground(Color.white);
+					}
+			}
+			
+		public boolean isParent()
+			{
+				return parent;
+			}
+			
+		public void setParent(boolean parent)
+			{
+				this.parent = parent;
+			}
+			
+		public CoilType getTemp()
+			{
+				return temp;
+			}
+			
+		public void setTemp(CoilType temp)
+			{
+				this.temp = temp;
+			}
+			
+		private void initColumnConfigurationScreen()
+			{
+				ColumnConfigurationScreen columnConfigurationScreen = new ColumnConfigurationScreen();
+				columnConfigurationScreen.initiateInstance(this);
+				columnConfigurationScreen.requestFocusInWindow();
+				ClipBoard.setCurrentRowNumber(rowNumber);
+				ClipBoard.setCurrentColumnNumber(columnNumber);
+			}
+			
+		public boolean isError()
+			{
+				return error;
+			}
+			
+		public void setError(boolean error)
+			{
+				this.error = error;
+				if (error == true)
+					{
+						setBorder(CustomBorderList.ERROR_BORDER);
+					}
+				else
+					{
+						setBorder(CustomBorderList.CUSTOM_BORDER);
+					}
+				repaint();
+			}
+			
+		@Override
+		public void setBorder(Border border)
+			{
+				if (!error)
+					{
+						super.setBorder(border);
+					}
+				else
+					{
+						super.setBorder(CustomBorderList.ERROR_BORDER);
 					}
 			}
 			

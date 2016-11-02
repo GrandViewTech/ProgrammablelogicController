@@ -46,7 +46,7 @@ public class ColumnScreenFocusListener implements FocusListener
 		@Override
 		public void focusGained(FocusEvent event)
 			{
-				if (source.isPaintDefault() == false)
+				if (source.isBlank() == false)
 					{
 						source.add(setting);
 					}
@@ -56,7 +56,7 @@ public class ColumnScreenFocusListener implements FocusListener
 		@Override
 		public void focusLost(FocusEvent event)
 			{
-				if (source.isPaintDefault() == false)
+				if (source.isBlank() == false)
 					{
 						source.remove(setting);
 					}

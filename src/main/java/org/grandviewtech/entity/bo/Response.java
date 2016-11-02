@@ -12,6 +12,10 @@ public class Response implements Serializable
 		
 		public boolean isError()
 			{
+				if (messages.size() > 0)
+					{
+						this.error = true;
+					}
 				return error;
 			}
 			

@@ -40,4 +40,6 @@ public class CustomBorderList
 		public static Border	CUSTOM_BORDER			= new CustomBorder();
 		public static Border	PADDING_BORDER			= BorderFactory.createEmptyBorder(2, 5, 5, 2);
 		public static Border	BORDER					= BorderFactory.createLineBorder(Color.white);
+		public static Border	ERROR_BORDER			= BorderFactory.createLineBorder(Color.RED);
+		public static Border	EMPTY_BORDER			= BorderFactory.createEmptyBorder();
 	}

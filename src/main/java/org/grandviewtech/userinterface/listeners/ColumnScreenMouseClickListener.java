@@ -26,6 +26,9 @@ import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+import org.grandviewtech.entity.bo.Screen;
+import org.grandviewtech.service.runtime.user.useractivity.Activities;
+import org.grandviewtech.service.runtime.user.useractivity.Activity;
 import org.grandviewtech.userinterface.misc.ActionBot;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 
@@ -33,6 +36,8 @@ public class ColumnScreenMouseClickListener implements MouseListener
 	{
 		private ColumnScreen	source;
 		private boolean			isSelected	= false;
+		Activities				activities	= Activities.getInstance();
+		private Screen			screen		= Screen.getInstance();
 		
 		public ColumnScreenMouseClickListener(ColumnScreen columnScreen)
 			{
@@ -46,12 +51,16 @@ public class ColumnScreenMouseClickListener implements MouseListener
 					{
 						isSelected = true;
 						source.setBackground(Color.GREEN);
+						activities.addActivity(new Activity("Row : " + source.getRowNumber() + " | Column : " + source.getColumnNumber() + " Gained Focus", Activity.Category.USER));
+						screen.setActiveColumn(source);
 						ActionBot.focusGained(source);
+						
 					}
 				else
 					{
+						activities.addActivity(new Activity("Row : " + source.getRowNumber() + " | Column : " + source.getColumnNumber() + " Lost Focus", Activity.Category.USER));
 						isSelected = false;
-						
+						screen.setActiveColumn(source);
 						ActionBot.focusLost(source);
 					}
 					

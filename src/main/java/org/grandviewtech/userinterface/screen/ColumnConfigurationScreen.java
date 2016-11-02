@@ -40,6 +40,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import org.grandviewtech.constants.CustomDimension;
+import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CoilType;
 import org.grandviewtech.entity.enums.Edge;
 import org.grandviewtech.entity.enums.InputType;
@@ -54,6 +55,7 @@ public class ColumnConfigurationScreen extends JFrame
 	{
 		private static org.apache.log4j.Logger	logger							= org.apache.log4j.Logger.getLogger(ColumnConfigurationScreen.class);
 		
+		final static Screen						SCREEN							= Screen.getInstance();
 		private static final long				serialVersionUID				= 1L;
 		
 		private ButtonGroup						buttonGroup						= new ButtonGroup();
@@ -136,14 +138,17 @@ public class ColumnConfigurationScreen extends JFrame
 					{
 						setAlwaysOnTop(true);
 						setTitle("Configure Coil | Row : " + columnScreen.getRowNumber() + " Column Number : " + columnScreen.getColumnNumber());
-						if (columnScreen.getCoilType().equals(CoilType.LOAD))
+						if (columnScreen.getTemp().equals(CoilType.LOAD))
 							{
 								loadCoilConfiguration(columnScreen);
-								
 							}
-						else if (columnScreen.getCoilType().equals(CoilType.ROUTINE))
+						else if (columnScreen.getTemp().equals(CoilType.ROUTINE))
 							{
 								routineCoilConfiguration(columnScreen);
+							}
+						else if (columnScreen.getTemp().equals(CoilType.OUTPUT))
+							{
+								outputCoilConfiguration(columnScreen);
 							}
 					}
 				catch (Exception exception)
@@ -240,6 +245,15 @@ public class ColumnConfigurationScreen extends JFrame
 				addChangeListernerForRoutine();
 			}
 			
+		private void outputCoilConfiguration(ColumnScreen columnScreen)
+			{
+				addInputValueToScreen(columnScreen);
+				addInputOptionsToScreen(columnScreen);
+				addSubmitToScreen(columnScreen);
+				addCancelToScreen(columnScreen);
+				invokeFrame(CustomDimension.OUTPUT_CONFIGURATION_SCREEN);
+			}
+			
 		private void loadCoilConfiguration(ColumnScreen columnScreen)
 			{
 				addInputValueToScreen(columnScreen);
@@ -248,7 +262,7 @@ public class ColumnConfigurationScreen extends JFrame
 				addNcNoOptionToScreen(columnScreen);
 				addTagToScreen(columnScreen);
 				addSubmitToScreen(columnScreen);
-				addCancelToScreen();
+				addCancelToScreen(columnScreen);
 				invokeFrame(CustomDimension.LOAD_CONFIGURATION_SCREEN);
 			}
 			
@@ -270,20 +284,37 @@ public class ColumnConfigurationScreen extends JFrame
 		public void addInputOptionsToScreen(ColumnScreen columnScreen)
 			{
 				addRadioButtonsToOptionButtonGroup();
-				type.setBounds(X1, Y * 2, RADIO_WIDTH, HEIGHT);
-				input.setBounds(X2, Y * 2, RADIO_WIDTH, HEIGHT);
-				flag.setBounds(X2 + (RADIO_WIDTH * 1), Y * 2, RADIO_WIDTH, HEIGHT);
-				word.setBounds(X2, Y * 3, RADIO_WIDTH, HEIGHT);
-				output.setBounds(X2 + (RADIO_WIDTH * 1), Y * 3, RADIO_WIDTH, HEIGHT);
-				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
-				//separator.setBounds(X1, Y * 3 + (20), CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
-				setDefaultInputOption(columnScreen);
-				panel.add(type);
-				panel.add(input);
-				panel.add(flag);
-				panel.add(word);
-				panel.add(output);
-				//panel.add(separator);
+				if (columnScreen.getTemp().equals(CoilType.LOAD))
+					{
+						type.setBounds(X1, Y * 2, RADIO_WIDTH, HEIGHT);
+						input.setBounds(X2, Y * 2, RADIO_WIDTH, HEIGHT);
+						word.setBounds(X2 + (RADIO_WIDTH * 1), Y * 2, RADIO_WIDTH, HEIGHT);
+						flag.setBounds(X2, Y * 3, RADIO_WIDTH, HEIGHT);
+						output.setBounds(X2 + (RADIO_WIDTH * 1), Y * 3, RADIO_WIDTH, HEIGHT);
+						JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
+						//separator.setBounds(X1, Y * 3 + (20), CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
+						setDefaultInputOption(columnScreen);
+						panel.add(type);
+						panel.add(input);
+						panel.add(flag);
+						panel.add(word);
+						panel.add(output);
+						//panel.add(separator);
+					}
+				else if (columnScreen.getTemp().equals(CoilType.OUTPUT))
+					{
+						type.setBounds(X1, Y * 2, RADIO_WIDTH, HEIGHT);
+						flag.setBounds(X2, Y * 2, RADIO_WIDTH, HEIGHT);
+						output.setBounds(X2 + (RADIO_WIDTH * 1), Y * 2, RADIO_WIDTH, HEIGHT);
+						JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
+						//separator.setBounds(X1, Y * 3 + (20), CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
+						setDefaultInputOption(columnScreen);
+						panel.add(type);
+						panel.add(flag);
+						panel.add(output);
+						//panel.add(separator);
+					}
+				;
 			}
 			
 		public void addRadioButtonsToOptionButtonGroup()
@@ -380,21 +411,42 @@ public class ColumnConfigurationScreen extends JFrame
 			
 		private void addSubmitToScreen(ColumnScreen columnScreen)
 			{
-				submit.setBounds(X1, Y * 7 + 20, WIDTH, HEIGHT);
+				if (columnScreen.getTemp().equals(CoilType.LOAD))
+					{
+						submit.setBounds(X1, Y * 7 + 20, WIDTH, HEIGHT);
+					}
+				else if (columnScreen.getTemp().equals(CoilType.OUTPUT))
+					{
+						submit.setBounds(X1, Y * 3 + 20, WIDTH, HEIGHT);
+					}
+					
 				panel.add(submit);
 				submit.addActionListener(event ->
 					{
 						setInputTagAndValue(columnScreen);
-						setNoNcValue(columnScreen);
-						setEdgeValue(columnScreen);
+						if (columnScreen.getTemp().equals(CoilType.LOAD))
+							{
+								setNoNcValue(columnScreen);
+								setEdgeValue(columnScreen);
+							}
 						SearchEngine.index(columnScreen);
 						dispose();
+						columnScreen.repaint();
+						columnScreen.apply();
 					});
 			}
 			
-		private void addCancelToScreen()
+		private void addCancelToScreen(ColumnScreen columnScreen)
 			{
-				cancel.setBounds(X2, Y * 7 + 20, WIDTH, HEIGHT);
+				if (columnScreen.getTemp().equals(CoilType.LOAD))
+					{
+						cancel.setBounds(X2, Y * 7 + 20, WIDTH, HEIGHT);
+					}
+				else if (columnScreen.getTemp().equals(CoilType.OUTPUT))
+					{
+						cancel.setBounds(X2, Y * 3 + 20, WIDTH, HEIGHT);
+					}
+					
 				panel.add(cancel);
 				cancel.addActionListener(event ->
 					{

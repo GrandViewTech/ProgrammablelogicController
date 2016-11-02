@@ -30,6 +30,7 @@ import javax.swing.BorderFactory;
 
 import org.grandviewtech.constants.CustomBorderList;
 import org.grandviewtech.entity.bo.ClipBoard;
+import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CLIPBOARD_ACTION;
 import org.grandviewtech.service.system.Printer;
 import org.grandviewtech.userinterface.helper.ColumnScreenGenerator;
@@ -37,6 +38,7 @@ import org.grandviewtech.userinterface.screen.ColumnScreen;
 
 public final class ActionBot extends BaseBot
 	{
+		final private static Screen SCREEN = Screen.getInstance();
 		
 		public static void defaultHalt()
 			{
@@ -80,7 +82,9 @@ public final class ActionBot extends BaseBot
 				ColumnScreenGenerator.createColumnNeighbourHood(ClipBoard.SCREEN.getRow(columnScreen.getRowNumber()), columnScreen);
 				select(columnScreen);
 				columnScreen.requestFocus();
-				CustomToolBar.setPointerValue("Row : " + columnScreen.getRowNumber() + " Column : " + columnScreen.getColumnNumber());
+				SCREEN.setActiveColumn(columnScreen);
+				String pointer = "Cell( " + columnScreen.getRowNumber() + "," + columnScreen.getColumnNumber() + " ) ";
+				CustomToolBar.setPointerValue(pointer);
 				ClipBoard.setCurrentRowNumber(columnScreen.getRowNumber());
 				ClipBoard.setCurrentColumnNumber(columnScreen.getColumnNumber());
 			}
@@ -88,10 +92,13 @@ public final class ActionBot extends BaseBot
 		public static void focusLost(ColumnScreen columnScreen)
 			{
 				Printer.print("Focus Lost For " + columnScreen.getColumnNumber());
+				SCREEN.setActiveColumn(null);
+				/*				
 				columnScreen.setAbove(null);
 				columnScreen.setBelow(null);
 				columnScreen.setPrevious(null);
 				columnScreen.setNext(null);
+				*/
 				resetSelection(columnScreen);
 			}
 			

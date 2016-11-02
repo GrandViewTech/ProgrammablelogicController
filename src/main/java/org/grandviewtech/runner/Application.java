@@ -3,7 +3,6 @@ package org.grandviewtech.runner;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.io.File;
-import java.lang.management.ManagementFactory;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -39,8 +38,6 @@ public class Application implements CommandLineRunner
 						Printer.print("Deteching Screen Resolution  : Width : " + width.intValue() + " X  Hieght : " + height.intValue());
 						String motherBoardUniqueInformation = getNetworkCardInformationToGetMACAddress();
 						Printer.print(motherBoardUniqueInformation);
-						String name = ManagementFactory.getRuntimeMXBean().getName();
-						Printer.print("Launching Process with PID : " + name);
 					}
 				catch (Exception exception)
 					{
@@ -51,7 +48,7 @@ public class Application implements CommandLineRunner
 		private static void addHockToShutdownListener()
 			{
 				
-				if ( systemPreference.getCleanUpActivity().equals(CleanUpActivity.ON_SHUTDOWN) )
+				if (systemPreference.getCleanUpActivity().equals(CleanUpActivity.ON_SHUTDOWN))
 					{
 						Runtime.getRuntime().addShutdownHook(new Thread()
 							{
@@ -69,10 +66,10 @@ public class Application implements CommandLineRunner
 			{
 				try
 					{
-						if ( !StringUtils.isBlank(SystemFileLocation.OUTPUT_FILE_LOCATION) )
+						if (!StringUtils.isBlank(SystemFileLocation.OUTPUT_FILE_LOCATION))
 							{
 								File folder = new File(SystemFileLocation.OUTPUT_FILE_LOCATION);
-								if ( folder.exists() )
+								if (folder.exists())
 									{
 										File[] files = folder.listFiles();
 										for (File file : files)
@@ -90,20 +87,19 @@ public class Application implements CommandLineRunner
 			
 		private static String getNetworkCardInformationToGetMACAddress() throws UnknownHostException, SocketException
 			{
-				// InetAddress inetAddress = InetAddress.getLocalHost();
 				NetworkInterface networkInterface = null;
 				boolean isMacFound = false;
 				for (Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces(); enumeration.hasMoreElements();)
 					{
 						NetworkInterface netInterface = enumeration.nextElement();
-						if ( netInterface.getHardwareAddress() != null )
+						if (netInterface.getHardwareAddress() != null)
 							{
 								isMacFound = true;
 								networkInterface = netInterface;
 								break;
 							}
 					}
-				if ( isMacFound == true )
+				if (isMacFound == true)
 					{
 						byte[] mac = networkInterface.getHardwareAddress();
 						StringBuilder stringBuilder = new StringBuilder();
@@ -133,13 +129,13 @@ public class Application implements CommandLineRunner
 			{
 				try
 					{
-						if ( systemPreference.getCleanUpActivity().equals(CleanUpActivity.ON_START_UP) )
+						if (systemPreference.getCleanUpActivity().equals(CleanUpActivity.ON_START_UP))
 							{
 								deletePreviousFiles();
 							}
-						SystemFileLocation.createRequiredFolderStructure();
 						generateProcessInformation();
 						addHockToShutdownListener();
+						SystemFileLocation.createRequiredFolderStructure();
 						BackGroundLayer backGroundLayer = new BackGroundLayer();
 						backGroundLayer.init();
 					}

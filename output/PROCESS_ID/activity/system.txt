@@ -1,6 +1,0 @@
-Generating Activity File : /puneetsharma/project/grandviewtech/ladder/workspace/ProgrammablelogicController/output/PROCESS_ID/activity/system.txt
-Generating Activity File : /puneetsharma/project/grandviewtech/ladder/workspace/ProgrammablelogicController/output/PROCESS_ID/activity/user.txt
-Generating Folder : output
-Generating Folder : output/PROCESS_ID/system
-Generating Folder : output/PROCESS_ID/indexes
-Generating Folder : output/PROCESS_ID/activity

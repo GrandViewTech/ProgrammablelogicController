@@ -25,29 +25,42 @@ package org.grandviewtech.userinterface.misc;
 import java.awt.Color;
 import java.awt.Dimension;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
+import javax.swing.Timer;
+import javax.swing.border.Border;
 
 import org.grandviewtech.constants.CustomIcon;
 import org.grandviewtech.entity.bo.ClipBoard;
+import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CoilType;
+import org.grandviewtech.service.runtime.user.useractivity.Activities;
+import org.grandviewtech.service.runtime.user.useractivity.Activity;
+import org.grandviewtech.service.validation.RowValidation;
 import org.grandviewtech.userinterface.listeners.CopyButtonListerner;
 import org.grandviewtech.userinterface.listeners.CutButtonListener;
 import org.grandviewtech.userinterface.listeners.PasteButtonListener;
+import org.grandviewtech.userinterface.screen.ColumnScreen;
 import org.grandviewtech.userinterface.ui.DragLabel;
 import org.grandviewtech.userinterface.ui.ToolBarLabel;
 
 public class CustomToolBar
 	{
-		final static JToolBar	toolBar				= new JToolBar("Ribbon");
-		final static JToolBar	columnsBar			= new JToolBar("Columns");
-		private static JLabel	pointerValue		= new JLabel("");
-		private static JLabel	rungComment			= new JLabel("Comment : ");
-		private static JLabel	rungCommentValue	= new JLabel("");
-		private static JLabel	pointerLabel		= new JLabel("Pointer : ");
+		private static Activities	activities			= Activities.getInstance();
+		final static Screen			screen				= Screen.getInstance();
+		final static JToolBar		toolBar				= new JToolBar("Ribbon");
+		final static JToolBar		columnsBar			= new JToolBar("Columns");
+		private static JLabel		pointerValue		= new JLabel("");
+		private static JLabel		rungComment			= new JLabel("Comment : ");
+		private static JLabel		rungCommentValue	= new JLabel("");
+		private static JLabel		pointerLabel		= new JLabel("Pointer : ");
 		
 		public static JToolBar getToolBar()
 			{
@@ -120,36 +133,69 @@ public class CustomToolBar
 			
 		public static void setCoilTypeFunctions()
 			{
-				DragLabel load = new DragLabel(CustomIcon.LOAD, CoilType.LOAD.getCoilType());
-				DragLabel line = new DragLabel(CoilType.LINE.getCoilType());
-				line.repaint();
+				DragLabel load = new DragLabel(CustomIcon.COIL_LOAD, CoilType.LOAD.getCoilType());
+				DragLabel line = new DragLabel(CustomIcon.COIL_LINE, CoilType.LINE.getCoilType());
 				//
-				DragLabel parellel = new DragLabel(CoilType.PARALLEL.getCoilType());
-				DragLabel leftLink = new DragLabel(CoilType.LEFT_LINK.getCoilType());
-				DragLabel righLink = new DragLabel(CoilType.RIGHT_LINK.getCoilType());
-				
+				DragLabel parellel = new DragLabel(CustomIcon.COIL_PARALLEL, CoilType.PARALLEL.getCoilType());
+				DragLabel leftLink = new DragLabel(CustomIcon.COIL_LEFT_LINK, CoilType.LEFT_LINK.getCoilType());
+				DragLabel righLink = new DragLabel(CustomIcon.COIL_RIGHT_LINK, CoilType.RIGHT_LINK.getCoilType());
 				//
-				// DragLabel delete = new DragLabel(CoilType.DELETE.getCoil());
-				DragLabel end = new DragLabel(CoilType.END.getCoilType());
+				//DragLabel delete = new DragLabel(CustomIcon.COIL_DELETE, CoilType.DELETE.getCoilType());
+				DragLabel end = new DragLabel(CustomIcon.COIL_END, CoilType.END.getCoilType());
 				// DragLabel compile = new
 				// DragLabel(CoilType.COMPLIE.getCoil());
 				//
-				DragLabel output = new DragLabel(CustomIcon.OUTPUT, CoilType.OUTPUT.getCoilType());
-				DragLabel jump = new DragLabel(CoilType.JUMP.getCoilType());
+				DragLabel output = new DragLabel(CustomIcon.COIL_OUTPUT, CoilType.OUTPUT.getCoilType());
+				DragLabel jump = new DragLabel(CustomIcon.COIL_JUMP, CoilType.JUMP.getCoilType());
 				
-				DragLabel routine = new DragLabel(CoilType.ROUTINE.getCoilType());
+				DragLabel routine = new DragLabel(CustomIcon.COIL_ROUTINE, CoilType.ROUTINE.getCoilType());
+				DragLabel label = new DragLabel(CustomIcon.COIL_LABEL, CoilType.LABEL.getCoilType());
 				//
+				JButton delete = new JButton(CustomIcon.COIL_DELETE);
+				delete.setOpaque(true);
+				Border paddingBorder = BorderFactory.createEmptyBorder(2, 5, 5, 2);
+				Border border = BorderFactory.createLineBorder(Color.white);
+				delete.setBorder(BorderFactory.createCompoundBorder(border, paddingBorder));
+				delete.addActionListener(event ->
+					{
+						ColumnScreen activeColumn = screen.getActiveColumn();
+						String message = "";
+						if (activeColumn != null)
+							{
+								activeColumn.reset();
+								activities.addActivity(new Activity("Cell( " + activeColumn.getRowNumber() + "," + activeColumn.getColumnNumber() + " ) " + activeColumn.getRowNumber() + " is deleted", Activity.Category.USER));
+								message = "Cell( " + activeColumn.getRowNumber() + "," + activeColumn.getColumnNumber() + " ) Successfully Deleted.";
+								RowValidation.validateNeighBourHood(activeColumn);
+							}
+						else
+							{
+								message = "No Cell is Selected To Delete.";
+							}
+						JOptionPane optionPane = new JOptionPane(message, JOptionPane.INFORMATION_MESSAGE);
+						JDialog dialog = optionPane.createDialog(null, "Delete Cell");
+						dialog.setModal(false);
+						dialog.setVisible(true);
+						// http://docs.oracle.com/javase/tutorial/uiswing/components/dialog.html#stayup
+						Timer timer = new Timer(600, timerEvent ->
+					        {
+						        dialog.setVisible(false);
+						        dialog.dispose();
+					        });
+						timer.start();
+					});
 				toolBar.add(load);
 				toolBar.add(line);
 				// toolBar.add(compile);
-				// toolBar.add(delete);
-				toolBar.add(jump);
+				
 				toolBar.add(output);
 				toolBar.add(parellel);
 				toolBar.add(leftLink);
 				toolBar.add(righLink);
 				toolBar.add(routine);
+				toolBar.add(label);
+				toolBar.add(jump);
 				toolBar.add(end);
+				toolBar.add(delete);
 				toolBar.repaint();
 			}
 			

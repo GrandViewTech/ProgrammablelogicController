@@ -27,6 +27,8 @@ import java.awt.event.KeyListener;
 
 import org.grandviewtech.constants.CustomBorderList;
 import org.grandviewtech.entity.bo.ClipBoard;
+import org.grandviewtech.service.system.PropertyReader;
+import org.grandviewtech.service.system.SystemFileLocation;
 
 public class DefaultKeyListener implements KeyListener
 	{
@@ -53,6 +55,13 @@ public class DefaultKeyListener implements KeyListener
 				else if (keyEvent.getKeyCode() == KeyEvent.VK_ESCAPE)
 					{
 						actionOnEscape();
+					}
+				if (keyEvent.isControlDown() && keyEvent.getKeyCode() == KeyEvent.VK_S)
+					{
+						String saveCounter = PropertyReader.getProperties("saveCounter");
+						Integer counter = Integer.parseInt(saveCounter) + 1;
+						SystemFileLocation.regenerateFolderStructure(counter);
+						PropertyReader.setProperty("saveCounter", "" + counter);
 					}
 			}
 			

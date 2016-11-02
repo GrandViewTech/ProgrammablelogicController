@@ -35,6 +35,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 
 import org.grandviewtech.constants.CustomDimension;
+import org.grandviewtech.constants.CustomIcon;
 import org.grandviewtech.entity.bo.PlcFile;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.userinterface.helper.RowGenerator;
@@ -59,6 +60,7 @@ public class BackGroundLayer extends JFrame
 				setPositioning();
 				container = getContentPane();
 				container.add(addRulerJScrolBar());
+				
 				postConstruct();
 			}
 			
@@ -86,6 +88,7 @@ public class BackGroundLayer extends JFrame
 				setHeader();
 				setMinMaxDimension();
 				plcFile.setFileName("temp_" + System.nanoTime());
+				setIconImage(CustomIcon.ULTRA_LOGO.getImage());
 			}
 			
 		private void setHeader()

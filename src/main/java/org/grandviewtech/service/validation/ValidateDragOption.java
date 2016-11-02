@@ -1,5 +1,7 @@
 package org.grandviewtech.service.validation;
 
+import org.grandviewtech.constants.ApplicationConstant;
+
 /*
  * #%L
  * Programmable Login Controller Inteface
@@ -26,10 +28,11 @@ import org.grandviewtech.entity.bo.Response;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CoilType;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
+import org.grandviewtech.userinterface.screen.RowScreen;
 
 public class ValidateDragOption
 	{
-		static Screen screen = Screen.getInstance();
+		private static Screen SCREEN = Screen.getInstance();
 		
 		public static Response validateDragOption(ColumnScreen columnScreen, CoilType dragOption)
 			{
@@ -41,7 +44,7 @@ public class ValidateDragOption
 							{
 								case LINE:
 									{
-										response = validateLineDrag(response, CoilType.LINE, columnScreen);
+										response = validateLine(response, columnScreen);
 										break;
 									}
 								case OUTPUT:
@@ -68,7 +71,25 @@ public class ValidateDragOption
 									{
 										break;
 									}
-								
+								case DEFAULT:
+									{
+										break;
+									}
+								case LEFT_LINK:
+									{
+										response = validateLeftLink(response, columnScreen);
+										break;
+									}
+								case PARALLEL:
+									{
+										response = validateParallelLink(response, columnScreen);
+										break;
+									}
+								case RIGHT_LINK:
+									{
+										response = validateRightLink(response, columnScreen);
+										break;
+									}
 							}
 					}
 				return response;
@@ -84,11 +105,6 @@ public class ValidateDragOption
 				return validateCoil(response, dragOption, columnScreen);
 			}
 			
-		private static Response validateLineDrag(Response response, CoilType dragOption, ColumnScreen columnScreen)
-			{
-				return validateCoil(response, dragOption, columnScreen);
-			}
-			
 		private static Response validateEndCase(Response response, CoilType dragOption, ColumnScreen columnScreen)
 			{
 				if (columnScreen.getRowNumber() == 1 && columnScreen.getColumnNumber() == 1)
@@ -100,10 +116,10 @@ public class ValidateDragOption
 								response.addMessage("cannot " + dragOption.getCoilType().toUpperCase() + " in Row 1 , column 1");
 							}
 					}
-				else if (columnScreen.getRowNumber() > screen.getEndRowNumber() || columnScreen.getColumnNumber() > screen.getEndColumnNumber())
+				else if (columnScreen.getRowNumber() >= SCREEN.getEndRowNumber() && columnScreen.getColumnNumber() > SCREEN.getEndColumnNumber())
 					{
 						response.setError(true);
-						response.addMessage("Cannot Place Coil After End of File | Row : " + screen.getEndRowNumber() + " | Column : " + screen.getEndColumnNumber());
+						response.addMessage("Cannot Place Coil After End of File | Row : " + SCREEN.getEndRowNumber() + " | Column : " + SCREEN.getEndColumnNumber());
 					}
 				return response;
 			}
@@ -113,16 +129,19 @@ public class ValidateDragOption
 				CoilType previousOption = previous.getCoilType();
 				if (previousOption == null)
 					{
+						response.setError(true);
 						response.addMessage("cannot place coil in between , previous option is undefined");
 					}
 				else
 					{
 						if (previousOption.equals(CoilType.OUTPUT))
 							{
+								response.setError(true);
 								response.addMessage("Cannot place coil after OUTPUT coil");
 							}
 						else if (previousOption.equals(CoilType.JUMP))
 							{
+								response.setError(true);
 								response.addMessage("Cannot place coil after JUMP coil");
 							}
 					}
@@ -139,17 +158,88 @@ public class ValidateDragOption
 							{
 								if (coilType == null)
 									{
+										response.setError(true);
 										response.addMessage("cannot place coil in between , previous option is undefined");
 									}
 								else if (!coilType.equals(CoilType.LOAD) && !coilType.equals(CoilType.END))
 									{
+										response.setError(true);
 										response.addMessage("cannot place coil in between , previous option is undefined");
+									}
+								else
+									{
+										if (coilType.equals(CoilType.LEFT_LINK) || coilType.equals(CoilType.RIGHT_LINK) || coilType.equals(CoilType.PARALLEL))
+											{
+												
+											}
 									}
 							}
 						else
 							{
 								response = validatePreviousOption(response, previous, columnScreen);
 							}
+					}
+				return response;
+			}
+			
+		private static Response validateLeftLink(Response response, ColumnScreen columnScreen)
+			{
+				int rowNumber = columnScreen.getRowNumber();
+				RowScreen rowScreen = SCREEN.getRow(rowNumber - 1);
+				if (rowScreen == null)
+					{
+						response.setError(true);
+						response.addMessage("No Parent Rung Available To Create Left Link");
+						
+					}
+				else
+					{
+						CoilType parentCoilType = (rowScreen.getColumnScreens(columnScreen.getColumnNumber()).getCoilType());
+						if (parentCoilType == null || parentCoilType.equals(CoilType.DEFAULT))
+							{
+								response.setError(true);
+								response.addMessage("Cannot Place Left Linked , CoilType of Parent Rung is Undefined");
+							}
+						else if (parentCoilType.equals(CoilType.OUTPUT) || parentCoilType.equals(CoilType.END) || parentCoilType.equals(CoilType.ROUTINE))
+							{
+								response.setError(true);
+								response.addMessage("Cannot Place Left Link below " + parentCoilType.getCoilType());
+							}
+					}
+				return response;
+			}
+			
+		private static Response validateRightLink(Response response, ColumnScreen columnScreen)
+			{
+				int rowNumber = columnScreen.getRowNumber();
+				RowScreen rowScreen = SCREEN.getRow(rowNumber - 1);
+				if (rowScreen == null)
+					{
+						response.setError(true);
+						response.addMessage("No Parent Row Available To Create Left Link");
+					}
+				return response;
+			}
+			
+		private static Response validateParallelLink(Response response, ColumnScreen columnScreen)
+			{
+				int rowNumber = columnScreen.getRowNumber();
+				RowScreen rowScreen = SCREEN.getRow(rowNumber - 1);
+				if (rowScreen == null)
+					{
+						response.setError(true);
+						response.addMessage("No Parent Row Available To Create Left Link");
+					}
+				return response;
+			}
+			
+		private static Response validateLine(Response response, ColumnScreen columnScreen)
+			{
+				int columnNumber = columnScreen.getColumnNumber();
+				if (columnNumber == 1 || columnNumber == ApplicationConstant.MAX_CELL)
+					{
+						response.setError(true);
+						response.addMessage("Line Cannot be Place in ColumnNumber : " + columnNumber);
 					}
 				return response;
 			}

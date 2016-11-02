@@ -110,8 +110,6 @@ public class RungComment extends JFrame
 						textArea.setText(comment);
 					}
 				scrollPane.setBounds(150, 10, 200, 100);
-				// scrollPane.add(textArea);
-				// scrollPane.set
 				jpanel.add(scrollPane);
 			}
 			

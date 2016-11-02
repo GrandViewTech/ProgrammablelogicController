@@ -22,8 +22,7 @@ import org.springframework.core.io.Resource;
 
 public class Run
 	{
-		private static Logger		logger	= Logger.getLogger(Run.class);
-		private static Properties	properties;
+		private static Logger logger = Logger.getLogger(Run.class);
 		
 		static
 			{
@@ -51,31 +50,27 @@ public class Run
 			{
 				try
 					{
-						
-						properties = PropertyReader.getProperties();
 						String path = "properties" + File.separator + "application.properties";
-						Resource resource = new ClassPathResource(path);
-						properties.load(resource.getInputStream());
-						PropertyReader.setProperties(properties);
-						//
+						PropertyReader.loadProperties(path);
 						Properties systemProperties = new Properties();
 						String pid_HostName = ManagementFactory.getRuntimeMXBean().getName();
-						if ( pid_HostName != null )
+						if (pid_HostName != null)
 							{
-								if ( pid_HostName.contains("@") )
+								if (pid_HostName.contains("@"))
 									{
 										String[] data = org.apache.commons.lang3.StringUtils.split(pid_HostName, "@");
-										properties.put("pId".toLowerCase(), data[0]);
-										properties.put("hostName".toLowerCase(), data[1]);
-										properties.put("serialNumber".toLowerCase(), "" + (new BigInteger(data[1].getBytes())));
+										PropertyReader.setProperty("pId".toLowerCase(), data[0]);
+										PropertyReader.setProperty("hostName".toLowerCase(), data[1]);
+										PropertyReader.setProperty("serialNumber".toLowerCase(), "" + (new BigInteger(data[1].getBytes())));
 										systemProperties.put("pId".toLowerCase(), data[0]);
 										systemProperties.put("hostName".toLowerCase(), data[1]);
 										systemProperties.put("serialNumber".toLowerCase(), "" + (new BigInteger(data[1].getBytes())));
 									}
 							}
+						PropertyReader.setProperty("saveCounter", "" + 0);
 						String FOLDER = SystemFileLocation.SYSTEM_FILE_LOCATION;
 						File folder = new File(FOLDER);
-						if ( !folder.exists() )
+						if (!folder.exists())
 							{
 								FileUtils.forceMkdir(folder);
 							}
@@ -91,8 +86,14 @@ public class Run
 					}
 			}
 			
+		private static void initiateLogo()
+			{
+				
+			}
+			
 		public static void main(String[] args)
 			{
+				initiateLogo();
 				SpringApplication springApplication = new SpringApplication(Application.class);
 				springApplication.setHeadless(false);
 				springApplication.setBannerMode(Banner.Mode.OFF);

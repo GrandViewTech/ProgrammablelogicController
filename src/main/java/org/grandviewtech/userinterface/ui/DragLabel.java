@@ -39,12 +39,14 @@ import javax.swing.Icon;
 import javax.swing.JLabel;
 
 import org.grandviewtech.constants.CustomBorderList;
+import org.grandviewtech.service.system.DragDropCursor;
 import org.grandviewtech.service.system.Printer;
 
 public class DragLabel extends JLabel implements DragGestureListener, DragSourceListener
 	{
 		private static final long	serialVersionUID	= 4128980357528030474L;
 		private DragSource			dragSource;
+		private String				value;
 		
 		public DragLabel(String text)
 			{
@@ -60,7 +62,8 @@ public class DragLabel extends JLabel implements DragGestureListener, DragSource
 			
 		private void initDefault(String text)
 			{
-				setText(text);
+				this.value = (text);
+				setToolTipText(text);
 				setBorder(BorderFactory.createCompoundBorder(CustomBorderList.BORDER, CustomBorderList.PADDING_BORDER));
 				dragSource = new DragSource();
 				dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
@@ -71,12 +74,14 @@ public class DragLabel extends JLabel implements DragGestureListener, DragSource
 		@Override
 		public void dragEnter(DragSourceDragEvent dragSourceDragEvent)
 			{
+				DragDropCursor.setCursor4DragOption(getValue());
 				Printer.print("DragLabel dragEnter");
 			}
 			
 		@Override
 		public void dragOver(DragSourceDragEvent dragSourceDragEvent)
 			{
+				
 				Printer.print("DragLabel dragOver");
 			}
 			
@@ -95,6 +100,8 @@ public class DragLabel extends JLabel implements DragGestureListener, DragSource
 		@Override
 		public void dragDropEnd(DragSourceDropEvent dragSourceDragEvent)
 			{
+				
+				DragDropCursor.setCursor4DropOption();
 				Printer.print("DragLabel dragDropEnd");
 			}
 			
@@ -102,8 +109,13 @@ public class DragLabel extends JLabel implements DragGestureListener, DragSource
 		public void dragGestureRecognized(DragGestureEvent dragSourceDragEvent)
 			{
 				Printer.print("DragLabel dragGestureRecognized");
-				Transferable transferable = new StringSelection(getText());
+				Transferable transferable = new StringSelection(getValue());
 				dragSource.startDrag(dragSourceDragEvent, DragSource.DefaultCopyDrop, transferable, this);
+			}
+			
+		public String getValue()
+			{
+				return value;
 			}
 			
 	}

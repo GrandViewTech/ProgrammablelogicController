@@ -36,12 +36,12 @@ public class SystemFileLocation
 							{
 								field.setAccessible(true);
 								String fieldName = field.getName();
-								if ( fieldName.contains("FILE_LOCATION") )
+								if (fieldName.contains("FILE_LOCATION"))
 									{
 										try
 											{
 												String value = (String) FieldUtils.readDeclaredStaticField(clazz, fieldName, forceAccess);
-												if ( !StringUtils.isBlank(value) && !StringUtils.isEmpty(value) )
+												if (!StringUtils.isBlank(value) && !StringUtils.isEmpty(value))
 													{
 														String folderName = value;
 														generateFolder(folderName);
@@ -65,10 +65,26 @@ public class SystemFileLocation
 					}
 			}
 			
+		public static void regenerateFolderStructure(Integer saveCounter)
+			{
+				try
+					{
+						
+						String PROCESS_ID = (PropertyReader.getProperties("pId") != null) ? PropertyReader.getProperties("pId") : "PROCESS_ID";
+						String INDEX_FILE_LOCATION = OUTPUT_FILE_LOCATION + File.separator + PROCESS_ID + File.separator + PROCESS_ID + "_" + saveCounter + File.separator + PropertyReader.getProperties("indexPath");
+						generateFolder(INDEX_FILE_LOCATION);
+						activities.addActivity(new Activity("Generating Folder : " + INDEX_FILE_LOCATION, Activity.Category.SYSTEM));
+					}
+				catch (Exception exception)
+					{
+						logger.error("Error while Re-Generating Folder Structure", exception);
+					}
+			}
+			
 		private static void generateFolder(String folderName)
 			{
 				File folder = new File(folderName);
-				if ( !folder.exists() )
+				if (!folder.exists())
 					{
 						try
 							{
