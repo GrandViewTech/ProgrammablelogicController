@@ -26,7 +26,11 @@ import java.awt.Font;
 
 public class CustomFont
 	{
-		public static Font	font	= new java.awt.Font("SansSerif", java.awt.Font.BOLD, 9);
-		public static Font	font1	= new Font("SansSerif", java.awt.Font.PLAIN, 11);
+		private CustomFont()
+			{
+			}
+			
+		public static Font	font	= new Font("SansSerif", Font.BOLD, 9);
+		public static Font	font1	= new Font("SansSerif", Font.PLAIN, 11);
 		
 	}
