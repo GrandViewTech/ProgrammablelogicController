@@ -166,11 +166,11 @@ public class Screen implements Serializable
 			
 		public void setActiveColumn(ColumnScreen activeColumn)
 			{
-				if (activeColumn != null)
+				if (activeColumn != null && !activeColumn.isBlank())
 					{
 						activities.addActivity(new Activity("Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " ) is Turned Active", Activity.Category.USER));
-					}
-				this.activeColumn = activeColumn;
+						this.activeColumn = activeColumn;
+					}		
 			}
 			
 	}

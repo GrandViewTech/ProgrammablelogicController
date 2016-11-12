@@ -60,7 +60,6 @@ public class BackGroundLayer extends JFrame
 				setPositioning();
 				container = getContentPane();
 				container.add(addRulerJScrolBar());
-				
 				postConstruct();
 			}
 			

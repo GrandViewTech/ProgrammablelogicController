@@ -39,6 +39,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+import org.apache.commons.lang3.StringUtils;
 import org.grandviewtech.constants.CustomDimension;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CoilType;
@@ -47,6 +48,8 @@ import org.grandviewtech.entity.enums.InputType;
 import org.grandviewtech.entity.enums.NoNc;
 import org.grandviewtech.entity.helper.Dimension;
 import org.grandviewtech.runner.Application;
+import org.grandviewtech.service.runtime.user.useractivity.Activities;
+import org.grandviewtech.service.runtime.user.useractivity.Activity;
 import org.grandviewtech.service.searching.SearchEngine;
 import org.grandviewtech.service.system.PropertyReader;
 import org.grandviewtech.service.system.RoutineFileReader;
@@ -54,7 +57,7 @@ import org.grandviewtech.service.system.RoutineFileReader;
 public class ColumnConfigurationScreen extends JFrame
 	{
 		private static org.apache.log4j.Logger	logger							= org.apache.log4j.Logger.getLogger(ColumnConfigurationScreen.class);
-		
+		private static Activities				activities						= Activities.getInstance();
 		final static Screen						SCREEN							= Screen.getInstance();
 		private static final long				serialVersionUID				= 1L;
 		
@@ -86,7 +89,7 @@ public class ColumnConfigurationScreen extends JFrame
 		
 		private JLabel							ncnoLabel						= new JLabel("NC/NO");
 		
-		private JLabel							inputValue						= new JLabel("Input");
+		private JLabel							inputValue						= new JLabel("Value");
 		
 		private JTextField						value							= new JTextField();
 		
@@ -106,10 +109,10 @@ public class ColumnConfigurationScreen extends JFrame
 		
 		private JScrollPane						scrollableConfigurationScreen	= null;
 		
-		private String							resourcePath					= PropertyReader.getProperties("resourcePath");
+		private String							resourcePath					= PropertyReader.getProperties("resourcePath") + File.separator + PropertyReader.getProperties("routinePath");
 		
 		private Map<String, JTextField>			dataset							= new HashMap<String, JTextField>();
-		
+		private String							fileName						= "";
 		private static final int				X1								= 10;
 		private static final int				X2								= 150;
 		private static final int				Y								= 30;
@@ -161,6 +164,8 @@ public class ColumnConfigurationScreen extends JFrame
 			{
 				loadCategory();
 				loadSubCategory();
+				addSubmitToScreen(columnScreen);
+				addCancelToScreen(columnScreen);
 				invokeFrame(CustomDimension.ROUTINE_CONFIGURATION_SCREEN);
 			}
 			
@@ -171,13 +176,23 @@ public class ColumnConfigurationScreen extends JFrame
 				if (folder != null)
 					{
 						category.removeAllItems();
+						int i = 1;
 						for (String folderName : folder)
 							{
-								category.addItem(folderName);
+								File temp = new File(resourcePath + File.separator + folderName);
+								if (temp.list().length > 0)
+									{
+										category.addItem(folderName);
+										if (i == 1)
+											{
+												loadSubCategory(folderName);
+											}
+										i = i + 1;
+									}
 							}
 						JLabel label = new JLabel("Category : ");
 						label.setBounds(X1, Y - 5, WIDTH, HEIGHT);
-						category.setBounds(X2, Y - 5, CATEGORY_WIDTH, HEIGHT);
+						category.setBounds(X2 - 10, Y - 5, CATEGORY_WIDTH, HEIGHT);
 						panel.add(label);
 						panel.add(category);
 					}
@@ -190,6 +205,7 @@ public class ColumnConfigurationScreen extends JFrame
 					{
 						Object object = routine.getSelectedItem();
 						String selectedRoutine = (object == null) ? "" : (((String) object).trim().length() == 0) ? "" : ((String) object).trim();
+						activities.addActivity(new Activity("Routine : " + selectedRoutine + " Selected", Activity.Category.USER));
 						routine.setToolTipText(selectedRoutine);
 						if (selectedRoutine.trim().length() > 0)
 							{
@@ -219,16 +235,22 @@ public class ColumnConfigurationScreen extends JFrame
 					{
 						routine.removeAllItems();
 						String categoryFileName = (String) category.getSelectedItem();
-						File file = new File(resourcePath + File.separator + categoryFileName);
-						String[] folder = file.list();
-						if (folder != null)
-							{
-								for (String folderName : folder)
-									{
-										routine.addItem(folderName);
-									}
-							}
+						loadSubCategory(categoryFileName);
 					});
+			}
+			
+		private void loadSubCategory(String categoryFileName)
+			{
+				File file = new File(resourcePath + File.separator + categoryFileName);
+				String[] folder = file.list();
+				if (folder != null)
+					{
+						for (String folderName : folder)
+							{
+								String fileName = StringUtils.split(folderName, ".")[0];
+								routine.addItem(fileName);
+							}
+					}
 			}
 			
 		private void loadSubCategory()
@@ -236,12 +258,12 @@ public class ColumnConfigurationScreen extends JFrame
 				int x = 2;
 				JLabel label = new JLabel("Routine : ");
 				label.setBounds(X1, (Y - 5) * x, WIDTH, HEIGHT);
-				routine.setBounds(X2, (Y - 5) * x, CATEGORY_WIDTH, HEIGHT);
-				JLabel selectedSubCategory = new JLabel("");
-				selectedSubCategory.setBounds(X1, (Y - 5) * (x + 2), WIDTH * 3, HEIGHT);
+				routine.setBounds(X2 - 10, (Y - 5) * x, CATEGORY_WIDTH, HEIGHT);
+				/*JLabel selectedSubCategory = new JLabel("");
+				selectedSubCategory.setBounds(X1, (Y - 5) * (x + 2), WIDTH * 3, HEIGHT);*/
 				panel.add(label);
 				panel.add(routine);
-				panel.add(selectedSubCategory);
+				//panel.add(selectedSubCategory);
 				addChangeListernerForRoutine();
 			}
 			
@@ -415,21 +437,33 @@ public class ColumnConfigurationScreen extends JFrame
 					{
 						submit.setBounds(X1, Y * 7 + 20, WIDTH, HEIGHT);
 					}
-				else if (columnScreen.getTemp().equals(CoilType.OUTPUT))
+				else if (columnScreen.getTemp().equals(CoilType.OUTPUT) || columnScreen.getTemp().equals(CoilType.ROUTINE))
 					{
 						submit.setBounds(X1, Y * 3 + 20, WIDTH, HEIGHT);
+					}
+				else if (columnScreen.getTemp().equals(CoilType.ROUTINE))
+					{
+						submit.setBounds(X1, Y * 4 + 20, WIDTH, HEIGHT);
 					}
 					
 				panel.add(submit);
 				submit.addActionListener(event ->
 					{
-						setInputTagAndValue(columnScreen);
+						boolean isRoutine = false;
 						if (columnScreen.getTemp().equals(CoilType.LOAD))
 							{
 								setNoNcValue(columnScreen);
 								setEdgeValue(columnScreen);
 							}
-						SearchEngine.index(columnScreen);
+						else if (columnScreen.getTemp().equals(CoilType.ROUTINE))
+							{
+								isRoutine = true;
+							}
+						if (!isRoutine)
+							{
+								setInputTagAndValue(columnScreen);
+								SearchEngine.index(columnScreen);
+							}
 						dispose();
 						columnScreen.repaint();
 						columnScreen.apply();
@@ -446,7 +480,10 @@ public class ColumnConfigurationScreen extends JFrame
 					{
 						cancel.setBounds(X2, Y * 3 + 20, WIDTH, HEIGHT);
 					}
-					
+				else if (columnScreen.getTemp().equals(CoilType.ROUTINE))
+					{
+						cancel.setBounds(X2, Y * 3 + 20, WIDTH, HEIGHT);
+					}
 				panel.add(cancel);
 				cancel.addActionListener(event ->
 					{
