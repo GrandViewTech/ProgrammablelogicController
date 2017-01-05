@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.grandviewtech.constants.ApplicationConstant;
+import org.grandviewtech.entity.enums.CoilType;
+import org.grandviewtech.entity.enums.LoadType;
 import org.grandviewtech.service.runtime.user.useractivity.Activities;
 import org.grandviewtech.service.runtime.user.useractivity.Activity;
 import org.grandviewtech.service.system.Printer;
@@ -168,9 +170,22 @@ public class Screen implements Serializable
 			{
 				if (activeColumn != null && !activeColumn.isBlank())
 					{
-						activities.addActivity(new Activity("Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " ) is Turned Active", Activity.Category.USER));
-						this.activeColumn = activeColumn;
-					}		
+						activities.addActivity(new Activity("Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " ) | ( " +activeColumn.getCoilType().getCoilType()+ " | "+activeColumn.isBlank()+" ) is Turned Active", Activity.Category.USER));
+					}
+				else
+					{
+						if (this.activeColumn != null)
+							{
+								int rowNumber=this.activeColumn.getRowNumber();
+								int columnNumber=this.activeColumn.getColumnNumber();
+								LoadType coilType = this.activeColumn.getChildType();
+								String coilTypeValue=(coilType==null) ? null : coilType.getType();
+								boolean isBlank=this.activeColumn.isBlank();
+								activities.addActivity(new Activity("Cell( " +rowNumber  + " , " + columnNumber + " ) |  ( " +coilTypeValue+ " | "+isBlank+" ) is Turned InActive", Activity.Category.USER));
+							}
+					}
+				this.activeColumn = activeColumn;
+				
 			}
 			
 	}

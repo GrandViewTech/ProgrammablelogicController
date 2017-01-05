@@ -1,38 +1,12 @@
 package org.grandviewtech.userinterface.misc;
 
-/*
- * #%L
- * Programmable Login Controller Inteface
- * %%
- * Copyright (C) 2016 GrandViewTech
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-3.0.html>.
- * #L%
- */
-
-import java.awt.Color;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.swing.BorderFactory;
 
 import org.grandviewtech.constants.CustomBorderList;
 import org.grandviewtech.entity.bo.ClipBoard;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CLIPBOARD_ACTION;
-import org.grandviewtech.service.system.Printer;
 import org.grandviewtech.userinterface.helper.ColumnScreenGenerator;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 
@@ -56,13 +30,13 @@ public final class ActionBot extends BaseBot
 			{
 				if (ClipBoard.isControlKeyActive() == false)
 					{
-						columnScreen.setBorder(BorderFactory.createLineBorder(Color.blue, 1));
+						//columnScreen.setBorder(BorderFactory.createLineBorder(Color.blue, 1));
 					}
 				else
 					{
-						if (columnScreen.isBlank() == false)
+						 if (columnScreen.isBlank() == false)
 							{
-								columnScreen.setBorder(CustomBorderList.DASHED_BORDER);
+								//columnScreen.setBorder(CustomBorderList.DASHED_BORDER);
 								ClipBoard.addCopiedCell(columnScreen);
 							}
 					}
@@ -78,7 +52,7 @@ public final class ActionBot extends BaseBot
 			
 		public static void focusGained(ColumnScreen columnScreen)
 			{
-				Printer.print("Focus Gained For " + columnScreen.getColumnNumber());
+				//Printer.print("Focus Gained For " + columnScreen.getColumnNumber());
 				ColumnScreenGenerator.createColumnNeighbourHood(ClipBoard.SCREEN.getRow(columnScreen.getRowNumber()), columnScreen);
 				select(columnScreen);
 				columnScreen.requestFocus();
@@ -91,14 +65,14 @@ public final class ActionBot extends BaseBot
 			
 		public static void focusLost(ColumnScreen columnScreen)
 			{
-				Printer.print("Focus Lost For " + columnScreen.getColumnNumber());
+				//Printer.print("Focus Lost For " + columnScreen.getColumnNumber());
 				SCREEN.setActiveColumn(null);
-				/*				
+							
 				columnScreen.setAbove(null);
 				columnScreen.setBelow(null);
 				columnScreen.setPrevious(null);
 				columnScreen.setNext(null);
-				*/
+				
 				resetSelection(columnScreen);
 			}
 			

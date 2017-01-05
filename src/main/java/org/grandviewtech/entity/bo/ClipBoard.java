@@ -30,12 +30,15 @@ import javax.swing.border.Border;
 
 import org.grandviewtech.constants.CustomBorderList;
 import org.grandviewtech.entity.enums.CLIPBOARD_ACTION;
+import org.grandviewtech.service.runtime.user.useractivity.Activities;
+import org.grandviewtech.service.runtime.user.useractivity.Activity;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 import org.grandviewtech.userinterface.screen.RowScreen;
 import org.grandviewtech.userinterface.screen.Rung;
 
 final public class ClipBoard
 	{
+		static Activities activities = Activities.getInstance();
 		
 		private ClipBoard()
 			{
@@ -143,7 +146,8 @@ final public class ClipBoard
 								ClipBoard.tempData.add(columnScreen);
 							}
 					}
-				System.out.println(ClipBoard.tempData.toString());
+				// Activity
+				activities.addActivity(new Activity("Row : " + columnScreen.getRowNumber() + " | Column : " + columnScreen.getColumnNumber() + " Clipboard data " + ClipBoard.tempData.toString(), Activity.Category.USER));
 			}
 			
 		public static boolean isControlKeyActive()

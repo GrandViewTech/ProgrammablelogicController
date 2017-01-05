@@ -75,7 +75,7 @@ public class ColumnScreenMouseClickListener implements MouseListener
 		@Override
 		public void mouseReleased(MouseEvent event)
 			{
-				source.setBackground(null);
+				source.setBackground(Color.GRAY);
 			}
 			
 		@Override

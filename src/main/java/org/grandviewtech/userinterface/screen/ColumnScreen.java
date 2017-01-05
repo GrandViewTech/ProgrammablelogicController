@@ -21,13 +21,13 @@ import javax.swing.border.Border;
 
 import org.grandviewtech.constants.CustomBorderList;
 import org.grandviewtech.constants.CustomDimension;
-import org.grandviewtech.constants.CustomIcon;
 import org.grandviewtech.entity.bo.ClipBoard;
 import org.grandviewtech.entity.bo.Response;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CoilType;
 import org.grandviewtech.entity.enums.Edge;
 import org.grandviewtech.entity.enums.InputType;
+import org.grandviewtech.entity.enums.LoadType;
 import org.grandviewtech.entity.enums.NoNc;
 import org.grandviewtech.service.validation.RowValidation;
 import org.grandviewtech.service.validation.ValidateDragOption;
@@ -37,7 +37,6 @@ import org.grandviewtech.userinterface.helper.CustomBorder;
 import org.grandviewtech.userinterface.listeners.ColumnScreenFocusListener;
 import org.grandviewtech.userinterface.listeners.ColumnScreenKeyPressListener;
 import org.grandviewtech.userinterface.listeners.ColumnScreenMouseClickListener;
-import org.grandviewtech.userinterface.listeners.SettingsMouseClickListener;
 
 public class ColumnScreen extends JPanel implements DropTargetListener, Comparable<ColumnScreen>
 	{
@@ -49,7 +48,7 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 		private int					rowNumber;
 		private int					columnNumber;
 		static Screen				SCREEN				= Screen.getInstance();
-		private JLabel				setting				= new JLabel(CustomIcon.SETTING);
+		//private JLabel				setting				= new JLabel(CustomIcon.SETTING);
 		private JLabel				valueLabel			= new JLabel("");
 		private boolean				isBlank				= true;
 		private JLabel				tagLabel			= new JLabel();
@@ -57,12 +56,11 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 		private String				value;
 		private CoilType			temp				= CoilType.DEFAULT;
 		private CoilType			coilType			= CoilType.DEFAULT;
-		private CoilType			childType			= CoilType.DEFAULT;
+		private LoadType			childType			= LoadType.DEFAULT;
 		private String				comment;
 		private InputType			inputType;
 		private NoNc				nonc				= NoNc.DEFAULT;
 		private Edge				edge				= Edge.DEFAULT;
-		private boolean				parent				= false;
 		private boolean				error				= false;
 		
 		public int getColumnNumber()
@@ -187,11 +185,6 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 				repaint();
 			}
 			
-		public JLabel getSetting()
-			{
-				return setting;
-			}
-			
 		public String getValue()
 			{
 				return value;
@@ -214,6 +207,13 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public boolean isBlank()
 			{
+				if (isBlank)
+					{
+						if (!(this.coilType.getCoilType().equalsIgnoreCase(CoilType.DEFAULT.getCoilType())))
+							{
+								isBlank = false;
+							}
+					}
 				return isBlank;
 			}
 			
@@ -224,7 +224,7 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public void reset()
 			{
-				remove(setting);
+				//remove(setting);
 				setBlank(true);
 				setCoilType(null);
 				setValue(null);
@@ -301,7 +301,7 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			{
 				super.paintComponent(graphics);
 				this.valueLabel.setText(this.valueLabel.getText());
-				if (isBlank)
+				if (isBlank())
 					{
 						PaintCoilsOnScreen.paintDefault(this, graphics);
 					}
@@ -414,8 +414,8 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 				tagLabel.setBounds(10, 40, 50, 20);
 				add(tagLabel);
 				setPreferredSize(CustomDimension.CELL_SIZE);
-				setting.setBounds(getX() + 55, 0, 50, 20);
-				setting.addMouseListener(new SettingsMouseClickListener(this));
+				//setting.setBounds(getX() + 55, 0, 50, 20);
+				//setting.addMouseListener(new SettingsMouseClickListener(this));
 				setBorder(new CustomBorder());
 				setTransferHandler(new TransferHandler("icon"));
 				new DropTarget(this, this);
@@ -432,7 +432,7 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 					{
 						case LINE:
 							{
-								apply();
+								
 								break;
 							}
 						case OUTPUT:
@@ -462,14 +462,14 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 							}
 						case JUMP:
 							{
-								apply();
+								//apply();
 								break;
 							}
 						case END:
 							{
 								SCREEN.setEndRowNumber(rowNumber);
 								SCREEN.setEndColumnNumber(columnNumber);
-								apply();
+								//apply();
 								break;
 							}
 						case ROUTINE:
@@ -493,18 +493,22 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 							{
 								break;
 							}
-						
+							
 					}
+				apply();
 			}
 			
-		public CoilType getChildType()
+		public LoadType getChildType()
 			{
 				return childType;
 			}
 			
-		public void setChildType(CoilType childType)
+		public void setChildType(LoadType childType)
 			{
-				this.parent = true;
+				if(childType==null)
+					{
+						childType=LoadType.DEFAULT;
+					}
 				this.childType = childType;
 			}
 			
@@ -521,12 +525,7 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public boolean isParent()
 			{
-				return parent;
-			}
-			
-		public void setParent(boolean parent)
-			{
-				this.parent = parent;
+				return (!this.childType.equals(LoadType.DEFAULT));
 			}
 			
 		public CoilType getTemp()
@@ -556,28 +555,28 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 		public void setError(boolean error)
 			{
 				this.error = error;
-				if (error == true)
+				/*if (error == true)
 					{
 						setBorder(CustomBorderList.ERROR_BORDER);
 					}
 				else
 					{
 						setBorder(CustomBorderList.CUSTOM_BORDER);
-					}
+					}*/
 				repaint();
 			}
 			
 		@Override
 		public void setBorder(Border border)
 			{
-				if (!error)
+				/*if (!error)
 					{
 						super.setBorder(border);
 					}
 				else
 					{
 						super.setBorder(CustomBorderList.ERROR_BORDER);
-					}
+					}*/
 			}
 			
 		@Override

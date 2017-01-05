@@ -2,7 +2,7 @@ package org.grandviewtech.entity.enums;
 
 public enum LoadType
 	{
-	RIGHT_LINK("RIGHT_LINK"), LEFT_LINK("LEFT_LINK");
+	DEFAULT("DEFAULT"), RIGHT_LINK("RIGHT_LINK"), LEFT_LINK("LEFT_LINK");
 		
 		private String type;
 		

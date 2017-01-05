@@ -166,6 +166,7 @@ public class CustomToolBar
 								activities.addActivity(new Activity("Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " ) " + activeColumn.getRowNumber() + " is deleted", Activity.Category.USER));
 								message = "Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " ) Successfully Deleted.";
 								RowValidation.validateNeighBourHood(activeColumn);
+								screen.setActiveColumn(null);
 							}
 						else
 							{

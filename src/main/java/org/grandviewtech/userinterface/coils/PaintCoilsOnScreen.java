@@ -30,25 +30,33 @@ import java.awt.geom.QuadCurve2D;
 
 import org.grandviewtech.constants.ApplicationConstant;
 import org.grandviewtech.constants.CustomFont;
+import org.grandviewtech.entity.bo.ClipBoard;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CoilType;
 import org.grandviewtech.entity.enums.InputType;
 import org.grandviewtech.entity.enums.LoadType;
 import org.grandviewtech.entity.enums.NoNc;
+import org.grandviewtech.service.runtime.user.useractivity.Activities;
+import org.grandviewtech.service.runtime.user.useractivity.Activity;
+import org.grandviewtech.userinterface.helper.ColumnScreenGenerator;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 import org.grandviewtech.userinterface.screen.RowScreen;
 import org.grandviewtech.userinterface.ui.DragLabel;
 
 public class PaintCoilsOnScreen
 	{
-		final static Screen SCREEN = Screen.getInstance();
+		final static Screen	SCREEN		= Screen.getInstance();
+		static Activities	activities	= Activities.getInstance();
 		
-		public static void paintDragOption(ColumnScreen columnScreen, Graphics graphics)
+		public static void paintDragOption(ColumnScreen child, Graphics graphics)
 			{
-				CoilType coilType = columnScreen.getCoilType();
-				coilType = (coilType == null) ? CoilType.DEFAULT : coilType;
-				paint(columnScreen, graphics, columnScreen.getCoilType());
-				paint(columnScreen, graphics, columnScreen.getChildType());
+				//CoilType coilType = columnScreen.getCoilType();
+				//coilType = (coilType == null) ? CoilType.DEFAULT : coilType;
+				ColumnScreenGenerator.createColumnNeighbourHood(ClipBoard.SCREEN.getRow(child.getRowNumber()), child);
+				// Painting Child First
+				activities.addActivity(new Activity("Painting Child : Cell( " + child.getRowNumber() + " , " + child.getColumnNumber() + " ) as Parent : " + child.getCoilType().getCoilType() + " | child " + child.getChildType().getType(), Activity.Category.USER));
+				paint(child, graphics, child.getCoilType());
+				
 			}
 			
 		private static void paintLoadCoil(ColumnScreen columnScreen, Graphics graphics)
@@ -167,13 +175,12 @@ public class PaintCoilsOnScreen
 				((Graphics2D) graphics).draw(new QuadCurve2D.Double((ApplicationConstant.SECTION_WIDTH / 2) + 5, (ApplicationConstant.SECTION_HEIGHT / 2) - offsetY, (ApplicationConstant.SECTION_WIDTH / 2) + 15, (ApplicationConstant.SECTION_HEIGHT / 2), (ApplicationConstant.SECTION_WIDTH / 2) + 5, (ApplicationConstant.SECTION_HEIGHT / 2) + offsetY));
 			}
 			
-		private static void paintLoadTypeCoil(boolean isParent, LoadType loadType, ColumnScreen child, Graphics graphics)
+		private static void paintLoadTypeCoil(LoadType loadType, ColumnScreen child, Graphics graphics)
 			{
-				RowScreen rowScreen = SCREEN.getRow(child.getRowNumber() - 1);
-				if (rowScreen != null)
+				ColumnScreen parent = child.getAbove(false);
+				if (parent != null)
 					{
-						ColumnScreen parent = (isParent == false) ? rowScreen.getColumnScreens(child.getColumnNumber()) : null;
-						
+						parent.setChildType(loadType);
 						switch (loadType)
 							{
 								case LEFT_LINK:
@@ -183,12 +190,6 @@ public class PaintCoilsOnScreen
 												parent.getGraphics().drawLine(0, ApplicationConstant.SECTION_HEIGHT / 2, 0, ApplicationConstant.SECTION_HEIGHT);
 											}
 										graphics.drawLine(0, 0, 0, ApplicationConstant.SECTION_HEIGHT / 2);
-										/*if (parent != null)
-											{
-												child.setAbove(parent);
-												parent.setParent(true);
-												parent.setChildType(CoilType.LEFT_LINK);
-											}*/
 										break;
 									}
 								case RIGHT_LINK:
@@ -198,24 +199,11 @@ public class PaintCoilsOnScreen
 												parent.getGraphics().drawLine(ApplicationConstant.SECTION_WIDTH - 1, ApplicationConstant.SECTION_HEIGHT / 2, ApplicationConstant.SECTION_WIDTH - 1, ApplicationConstant.SECTION_HEIGHT);
 											}
 										graphics.drawLine(ApplicationConstant.SECTION_WIDTH - 1, 0, ApplicationConstant.SECTION_WIDTH - 1, ApplicationConstant.SECTION_HEIGHT / 2);
-										/*if (parent != null)
-											{
-												child.setAbove(parent);
-												parent.setParent(true);
-												parent.setChildType(CoilType.RIGHT_LINK);
-												parent.repaint();
-											}*/
 										break;
 									}
-								
+									
 							}
-						//						if (parent != null)
-						//							{
-						//								parent.revalidate();
-						//								parent.repaint();
-						//							}
-						//						child.revalidate();
-						//						child.repaint();
+						activities.addActivity(new Activity("Painting Parent : Cell( " + parent.getRowNumber() + " , " + parent.getColumnNumber() + " ) as Parent : " + parent.getCoilType().getCoilType() + " | child " + parent.getChildType().getType(), Activity.Category.USER));
 					}
 			}
 			
@@ -226,6 +214,7 @@ public class PaintCoilsOnScreen
 						case LINE:
 							{
 								paintLineCoil(graphics);
+								
 								break;
 							}
 						case OUTPUT:
@@ -236,6 +225,11 @@ public class PaintCoilsOnScreen
 						case LOAD:
 							{
 								paintLoadCoil(current, graphics);
+								if (!current.getChildType().equals(LoadType.DEFAULT))
+									{
+										ColumnScreen child=current.getBelow(false);
+										paintDragOption(child, child.getGraphics());
+									}
 								break;
 							}
 						case JUMP:
@@ -260,20 +254,20 @@ public class PaintCoilsOnScreen
 						case LEFT_LINK:
 							{
 								paintLoadCoil(current, graphics);
-								paintLoadTypeCoil(current.isParent(), LoadType.LEFT_LINK, current, graphics);
+								paintLoadTypeCoil(LoadType.LEFT_LINK, current, graphics);
 								break;
 							}
 						case PARALLEL:
 							{
 								paintLoadCoil(current, graphics);
-								paintLoadTypeCoil(current.isParent(), LoadType.LEFT_LINK, current, graphics);
-								paintLoadTypeCoil(current.isParent(), LoadType.RIGHT_LINK, current, graphics);
+								paintLoadTypeCoil(LoadType.LEFT_LINK, current, graphics);
+								paintLoadTypeCoil(LoadType.RIGHT_LINK, current, graphics);
 								break;
 							}
 						case RIGHT_LINK:
 							{
 								paintLoadCoil(current, graphics);
-								paintLoadTypeCoil(current.isParent(), LoadType.RIGHT_LINK, current, graphics);
+								paintLoadTypeCoil(LoadType.RIGHT_LINK, current, graphics);
 								break;
 							}
 					}
