@@ -53,14 +53,14 @@ import org.grandviewtech.userinterface.ui.ToolBarLabel;
 
 public class CustomToolBar
 	{
-		private static Activities	activities			= Activities.getInstance();
-		final static Screen			screen				= Screen.getInstance();
-		final static JToolBar		toolBar				= new JToolBar("Ribbon");
-		final static JToolBar		columnsBar			= new JToolBar("Columns");
-		private static JLabel		pointerValue		= new JLabel("");
-		private static JLabel		rungComment			= new JLabel("Comment : ");
-		private static JLabel		rungCommentValue	= new JLabel("");
-		private static JLabel		pointerLabel		= new JLabel("Pointer : ");
+		private static Activities activities	   = Activities.getInstance();
+		final static Screen		  screen		   = Screen.getInstance();
+		final static JToolBar	  toolBar		   = new JToolBar("Ribbon");
+		final static JToolBar	  columnsBar	   = new JToolBar("Columns");
+		private static JLabel	  pointerValue	   = new JLabel("");
+		private static JLabel	  rungComment	   = new JLabel("Comment : ");
+		private static JLabel	  rungCommentValue = new JLabel("");
+		private static JLabel	  pointerLabel	   = new JLabel(" Pointer : ");
 		
 		public static JToolBar getToolBar()
 			{
@@ -140,7 +140,8 @@ public class CustomToolBar
 				DragLabel leftLink = new DragLabel(CustomIcon.COIL_LEFT_LINK, CoilType.LEFT_LINK.getCoilType());
 				DragLabel righLink = new DragLabel(CustomIcon.COIL_RIGHT_LINK, CoilType.RIGHT_LINK.getCoilType());
 				//
-				//DragLabel delete = new DragLabel(CustomIcon.COIL_DELETE, CoilType.DELETE.getCoilType());
+				// DragLabel delete = new DragLabel(CustomIcon.COIL_DELETE,
+				// CoilType.DELETE.getCoilType());
 				DragLabel end = new DragLabel(CustomIcon.COIL_END, CoilType.END.getCoilType());
 				// DragLabel compile = new
 				// DragLabel(CoilType.COMPLIE.getCoil());
@@ -162,6 +163,20 @@ public class CustomToolBar
 						String message = "";
 						if (activeColumn != null)
 							{
+								if (!activeColumn.isBlank())
+									{
+										activeColumn.reset();
+										activities.addActivity(new Activity("Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " ) " + activeColumn.getRowNumber() + " is deleted", Activity.Category.USER));
+										message = "Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " ) Successfully Deleted.";
+										RowValidation.validateNeighBourHood(activeColumn);
+									}
+								else
+									{
+										activeColumn.reset();
+										activities.addActivity(new Activity("Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " ) " + activeColumn.getRowNumber() + " is attempted to delete but cell was empty", Activity.Category.USER));
+										message = "Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " is Empty";
+										RowValidation.validateNeighBourHood(activeColumn);
+									}
 								activeColumn.reset();
 								activities.addActivity(new Activity("Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " ) " + activeColumn.getRowNumber() + " is deleted", Activity.Category.USER));
 								message = "Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " ) Successfully Deleted.";
@@ -178,16 +193,15 @@ public class CustomToolBar
 						dialog.setVisible(true);
 						// http://docs.oracle.com/javase/tutorial/uiswing/components/dialog.html#stayup
 						Timer timer = new Timer(600, timerEvent ->
-					        {
-						        dialog.setVisible(false);
-						        dialog.dispose();
-					        });
+							{
+								dialog.setVisible(false);
+								dialog.dispose();
+							});
 						timer.start();
 					});
 				toolBar.add(load);
 				toolBar.add(line);
 				// toolBar.add(compile);
-				
 				toolBar.add(output);
 				toolBar.add(parellel);
 				toolBar.add(leftLink);

@@ -30,34 +30,33 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 
 import org.grandviewtech.entity.bo.SearchResult;
-import org.grandviewtech.userinterface.listeners.NextButtonMouseListener;
-import org.grandviewtech.userinterface.listeners.PreviousButtonMouseListener;
-import org.grandviewtech.userinterface.listeners.SearchButtonListeners;
+import org.grandviewtech.userinterface.listeners.SearchListener;
 
 final public class Search
 	{
-		private static int					currentIndex	= -1;
-		private static List<SearchResult>	searchResults	= new ArrayList<SearchResult>();
-		private static JLabel				searchLabel		= new JLabel("Search :");
-		private static JLabel				previous		= new JLabel("previous");
-		private static JLabel				next			= new JLabel("next");
-		private static JButton				go				= new JButton("Go");
-		private static JTextField			searchTextField	= new JTextField(10);
+		private static int				  currentIndex	  = -1;
+		private static List<SearchResult> searchResults	  = new ArrayList<SearchResult>();
+		private static JLabel			  searchLabel	  = new JLabel("Search :");
+		private static JLabel			  previous		  = new JLabel(" < ");
+		private static JLabel			  next			  = new JLabel(" > ");
+		private static JButton			  go			  = new JButton(" Go ");
+		private static JTextField		  searchTextField = new JTextField(10);
 		
 		static
 			{
 				searchLabel.setToolTipText("Free Text Search");
 				searchTextField.setToolTipText("Enter the Search Value");
 				searchTextField.setMaximumSize(searchTextField.getPreferredSize());
-				previous.setToolTipText("Previous");
+				previous.setToolTipText("-Previous-");
 				previous.setEnabled(false);
-				previous.addMouseListener(new PreviousButtonMouseListener());
-				next.setToolTipText("Next");
-				next.addMouseListener(new NextButtonMouseListener());
+				SearchListener searchListener = new SearchListener();
+				previous.addMouseListener(searchListener);
+				next.setToolTipText("-Next-");
+				next.addMouseListener(searchListener);
 				next.setEnabled(false);
-				go.setToolTipText("Proceed For Search");
-				go.addMouseListener(new SearchButtonListeners());
-				searchTextField.addKeyListener(new SearchButtonListeners());
+				go.setToolTipText("-Search-");
+				go.addMouseListener(searchListener);
+				searchTextField.addKeyListener(searchListener);
 			}
 			
 		public static JLabel getSearchLabel()

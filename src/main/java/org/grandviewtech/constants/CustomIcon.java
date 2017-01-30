@@ -23,7 +23,7 @@ public class CustomIcon
 		final public static ImageIcon	EDIT			= new ImageIcon(FILE_PATH + File.separator + "edit.png");
 		final public static ImageIcon	COIL_LOAD		= new ImageIcon(COIL_PATH + File.separator + "load.png");
 		final public static ImageIcon	COIL_OUTPUT		= new ImageIcon(COIL_PATH + File.separator + "output.png");
-		final public static ImageIcon	ULTRA_LOGO		= new ImageIcon(MISC_PATH + File.separator + "ultra_logo.png");
+		final public static ImageIcon	ULTRA_LOGO		= new ImageIcon(MISC_PATH + File.separator + "ultra.png");
 		final public static ImageIcon	COIL_LEFT_LINK	= new ImageIcon(COIL_PATH + File.separator + "leftLink.png");
 		final public static ImageIcon	COIL_RIGHT_LINK	= new ImageIcon(COIL_PATH + File.separator + "rightLink.png");
 		final public static ImageIcon	COIL_PARALLEL	= new ImageIcon(COIL_PATH + File.separator + "Parallel.png");

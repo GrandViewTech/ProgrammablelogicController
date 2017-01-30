@@ -32,6 +32,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -56,70 +57,70 @@ import org.grandviewtech.service.system.RoutineFileReader;
 
 public class ColumnConfigurationScreen extends JFrame
 	{
-		private static org.apache.log4j.Logger	logger							= org.apache.log4j.Logger.getLogger(ColumnConfigurationScreen.class);
-		private static Activities				activities						= Activities.getInstance();
-		final static Screen						SCREEN							= Screen.getInstance();
-		private static final long				serialVersionUID				= 1L;
+		private static org.apache.log4j.Logger logger						 = org.apache.log4j.Logger.getLogger(ColumnConfigurationScreen.class);
+		private static Activities			   activities					 = Activities.getInstance();
+		final static Screen					   SCREEN						 = Screen.getInstance();
+		private static final long			   serialVersionUID				 = 1L;
 		
-		private ButtonGroup						buttonGroup						= new ButtonGroup();
+		private ButtonGroup					   buttonGroup					 = new ButtonGroup();
 		
-		private JRadioButton					input							= new JRadioButton("Input", true);
+		private JRadioButton				   input						 = new JRadioButton("Input");
 		
-		private JRadioButton					flag							= new JRadioButton("Flag");
+		private JRadioButton				   flag							 = new JRadioButton("Flag");
 		
-		private JRadioButton					word							= new JRadioButton("Word");
+		private JRadioButton				   word							 = new JRadioButton("Word");
 		
-		private JRadioButton					output							= new JRadioButton("Output");
+		private JRadioButton				   output						 = new JRadioButton("Output");
 		
-		private ButtonGroup						edgeButtonGroup					= new ButtonGroup();
+		private ButtonGroup					   edgeButtonGroup				 = new ButtonGroup();
 		
-		private JRadioButton					risingEdge						= new JRadioButton("Rising", true);
+		private JRadioButton				   risingEdge					 = new JRadioButton("Rising");
 		
-		private JRadioButton					fallingEdge						= new JRadioButton("Falling");
+		private JRadioButton				   fallingEdge					 = new JRadioButton("Falling");
 		
-		private ButtonGroup						nc_noButtonGroup				= new ButtonGroup();
+		private ButtonGroup					   nc_noButtonGroup				 = new ButtonGroup();
 		
-		private JRadioButton					NC								= new JRadioButton("NC", true);
+		private JRadioButton				   NC							 = new JRadioButton("NC");
 		
-		private JRadioButton					NO								= new JRadioButton("NO");
+		private JRadioButton				   NO							 = new JRadioButton("NO");
 		
-		private JPanel							panel							= new JPanel();
+		private JPanel						   panel						 = new JPanel();
 		
-		private JLabel							edgeLabel						= new JLabel("Edge");
+		private JLabel						   edgeLabel					 = new JLabel("Edge");
 		
-		private JLabel							ncnoLabel						= new JLabel("NC/NO");
+		private JLabel						   ncnoLabel					 = new JLabel("NC/NO");
 		
-		private JLabel							inputValue						= new JLabel("Value");
+		private JLabel						   inputValue					 = new JLabel("Value");
 		
-		private JTextField						value							= new JTextField();
+		private JTextField					   value						 = new JTextField();
 		
-		private JLabel							type							= new JLabel("Type");
+		private JLabel						   type							 = new JLabel("Type");
 		
-		private JLabel							tagLabel						= new JLabel("Tag");
+		private JLabel						   tagLabel						 = new JLabel("Tag");
 		
-		private JTextField						tagValue						= new JTextField();
+		private JTextField					   tagValue						 = new JTextField();
 		
-		private JButton							submit							= new JButton("Submit");
+		private JButton						   submit						 = new JButton("Submit");
 		
-		private JButton							cancel							= new JButton("Canel");
+		private JButton						   cancel						 = new JButton("Canel");
 		
-		private JComboBox<String>				category						= new JComboBox<String>();
+		private JComboBox<String>			   category						 = new JComboBox<String>();
 		
-		private JComboBox<String>				routine							= new JComboBox<String>();
+		private JComboBox<String>			   routine						 = new JComboBox<String>();
 		
-		private JScrollPane						scrollableConfigurationScreen	= null;
+		private JScrollPane					   scrollableConfigurationScreen = null;
 		
-		private String							resourcePath					= PropertyReader.getProperties("resourcePath") + File.separator + PropertyReader.getProperties("routinePath");
+		private String						   resourcePath					 = PropertyReader.getProperties("resourcePath") + File.separator + PropertyReader.getProperties("routinePath");
 		
-		private Map<String, JTextField>			dataset							= new HashMap<String, JTextField>();
-		private String							fileName						= "";
-		private static final int				X1								= 10;
-		private static final int				X2								= 150;
-		private static final int				Y								= 30;
-		private static final int				WIDTH							= 120;
-		private static final int				RADIO_WIDTH						= 80;
-		private static final int				HEIGHT							= 20;
-		private static final int				CATEGORY_WIDTH					= (WIDTH * 2);
+		private Map<String, JTextField>		   dataset						 = new HashMap<String, JTextField>();
+		private String						   fileName						 = "";
+		private static final int			   X1							 = 10;
+		private static final int			   X2							 = 150;
+		private static final int			   Y							 = 30;
+		private static final int			   WIDTH						 = 120;
+		private static final int			   RADIO_WIDTH					 = 80;
+		private static final int			   HEIGHT						 = 20;
+		private static final int			   CATEGORY_WIDTH				 = (WIDTH * 2);
 		
 		public ColumnConfigurationScreen()
 			{
@@ -140,7 +141,7 @@ public class ColumnConfigurationScreen extends JFrame
 				try
 					{
 						setAlwaysOnTop(true);
-						setTitle("Configure Coil | Row : " + columnScreen.getRowNumber() + " Column Number : " + columnScreen.getColumnNumber());
+						setTitle(" Row : " + columnScreen.getRowNumber() + " | Column : " + columnScreen.getColumnNumber());
 						if (columnScreen.getTemp().equals(CoilType.LOAD))
 							{
 								loadCoilConfiguration(columnScreen);
@@ -164,8 +165,8 @@ public class ColumnConfigurationScreen extends JFrame
 			{
 				loadCategory();
 				loadSubCategory();
-				addSubmitToScreen(columnScreen);
-				addCancelToScreen(columnScreen);
+				addSubmitToScreen(7, columnScreen);
+				addCancelToScreen(7, columnScreen);
 				invokeFrame(CustomDimension.ROUTINE_CONFIGURATION_SCREEN);
 			}
 			
@@ -259,11 +260,14 @@ public class ColumnConfigurationScreen extends JFrame
 				JLabel label = new JLabel("Routine : ");
 				label.setBounds(X1, (Y - 5) * x, WIDTH, HEIGHT);
 				routine.setBounds(X2 - 10, (Y - 5) * x, CATEGORY_WIDTH, HEIGHT);
-				/*JLabel selectedSubCategory = new JLabel("");
-				selectedSubCategory.setBounds(X1, (Y - 5) * (x + 2), WIDTH * 3, HEIGHT);*/
+				/*
+				 * JLabel selectedSubCategory = new JLabel("");
+				 * selectedSubCategory.setBounds(X1, (Y - 5) * (x + 2), WIDTH *
+				 * 3, HEIGHT);
+				 */
 				panel.add(label);
 				panel.add(routine);
-				//panel.add(selectedSubCategory);
+				// panel.add(selectedSubCategory);
 				addChangeListernerForRoutine();
 			}
 			
@@ -271,8 +275,9 @@ public class ColumnConfigurationScreen extends JFrame
 			{
 				addInputValueToScreen(columnScreen);
 				addInputOptionsToScreen(columnScreen);
-				addSubmitToScreen(columnScreen);
-				addCancelToScreen(columnScreen);
+				addTagToScreen(4, columnScreen);
+				addSubmitToScreen(5, columnScreen);
+				addCancelToScreen(5, columnScreen);
 				invokeFrame(CustomDimension.OUTPUT_CONFIGURATION_SCREEN);
 			}
 			
@@ -282,9 +287,9 @@ public class ColumnConfigurationScreen extends JFrame
 				addInputOptionsToScreen(columnScreen);
 				addEdgeOptionToScreen(columnScreen);
 				addNcNoOptionToScreen(columnScreen);
-				addTagToScreen(columnScreen);
-				addSubmitToScreen(columnScreen);
-				addCancelToScreen(columnScreen);
+				addTagToScreen(6, columnScreen);
+				addSubmitToScreen(7, columnScreen);
+				addCancelToScreen(7, columnScreen);
 				invokeFrame(CustomDimension.LOAD_CONFIGURATION_SCREEN);
 			}
 			
@@ -297,53 +302,69 @@ public class ColumnConfigurationScreen extends JFrame
 						value.setText(columnScreen.getValue());
 					}
 				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
-				//separator.setBounds(X1, Y * 1 + (20), CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
+				// separator.setBounds(X1, Y * 1 + (20),
+				// CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
 				panel.add(inputValue);
 				panel.add(value);
-				//panel.add(separator);
+				// panel.add(separator);
 			}
 			
 		public void addInputOptionsToScreen(ColumnScreen columnScreen)
 			{
-				addRadioButtonsToOptionButtonGroup();
+				
 				if (columnScreen.getTemp().equals(CoilType.LOAD))
 					{
+						addRadioButtonsToInputButtonGroup();
 						type.setBounds(X1, Y * 2, RADIO_WIDTH, HEIGHT);
 						input.setBounds(X2, Y * 2, RADIO_WIDTH, HEIGHT);
+						// input.setSelected(true);
 						word.setBounds(X2 + (RADIO_WIDTH * 1), Y * 2, RADIO_WIDTH, HEIGHT);
 						flag.setBounds(X2, Y * 3, RADIO_WIDTH, HEIGHT);
 						output.setBounds(X2 + (RADIO_WIDTH * 1), Y * 3, RADIO_WIDTH, HEIGHT);
 						JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
-						//separator.setBounds(X1, Y * 3 + (20), CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
-						setDefaultInputOption(columnScreen);
+						// separator.setBounds(X1, Y * 3 + (20),
+						// CustomDimension.CONFIGURATION_SCREEN.width - (X1 *
+						// 4), 10);
+						// setDefaultInputOption(1, columnScreen);
 						panel.add(type);
 						panel.add(input);
 						panel.add(flag);
 						panel.add(word);
 						panel.add(output);
-						//panel.add(separator);
+						// panel.add(separator);
 					}
 				else if (columnScreen.getTemp().equals(CoilType.OUTPUT))
 					{
+						addRadioButtonsToOutputButtonGroup();
 						type.setBounds(X1, Y * 2, RADIO_WIDTH, HEIGHT);
+						// flag.setSelected(true);
 						flag.setBounds(X2, Y * 2, RADIO_WIDTH, HEIGHT);
 						output.setBounds(X2 + (RADIO_WIDTH * 1), Y * 2, RADIO_WIDTH, HEIGHT);
 						JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
-						//separator.setBounds(X1, Y * 3 + (20), CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
-						setDefaultInputOption(columnScreen);
+						// separator.setBounds(X1, Y * 3 + (20),
+						// CustomDimension.CONFIGURATION_SCREEN.width - (X1 *
+						// 4), 10);
+						// setDefaultInputOption(2, columnScreen);
 						panel.add(type);
 						panel.add(flag);
 						panel.add(output);
-						//panel.add(separator);
+						// panel.add(separator);
 					}
 				;
 			}
 			
-		public void addRadioButtonsToOptionButtonGroup()
+		public void addRadioButtonsToInputButtonGroup()
 			{
 				buttonGroup.add(input);
 				buttonGroup.add(flag);
 				buttonGroup.add(word);
+				buttonGroup.add(output);
+				addMnemonicToOptionRadioButton();
+			}
+			
+		public void addRadioButtonsToOutputButtonGroup()
+			{
+				buttonGroup.add(flag);
 				buttonGroup.add(output);
 				addMnemonicToOptionRadioButton();
 			}
@@ -376,12 +397,13 @@ public class ColumnConfigurationScreen extends JFrame
 				risingEdge.setBounds(X2, Y * 4, RADIO_WIDTH, HEIGHT);
 				fallingEdge.setBounds(X2 + (RADIO_WIDTH * 1), Y * 4, RADIO_WIDTH, HEIGHT);
 				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
-				//separator.setBounds(X1, Y * 4 + (20), CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
-				setDefaultEdgeOption(columnScreen);
+				// separator.setBounds(X1, Y * 4 + (20),
+				// CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
+				// setDefaultEdgeOption(columnScreen);
 				panel.add(edgeLabel);
 				panel.add(risingEdge);
 				panel.add(fallingEdge);
-				//panel.add(separator);
+				// panel.add(separator);
 			}
 			
 		// NC
@@ -405,84 +427,95 @@ public class ColumnConfigurationScreen extends JFrame
 				NC.setBounds(X2, Y * 5, RADIO_WIDTH, HEIGHT);
 				NO.setBounds(X2 + (RADIO_WIDTH * 1), Y * 5, RADIO_WIDTH, HEIGHT);
 				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
-				//separator.setBounds(X1, Y * 5 + (20), CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
-				setDefaultNoNcOption(columnScreen);
+				// separator.setBounds(X1, Y * 5 + (20),
+				// CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
+				// setDefaultNoNcOption(columnScreen);
 				panel.add(ncnoLabel);
 				panel.add(NC);
 				panel.add(NO);
-				//panel.add(separator);
+				// panel.add(separator);
 			}
 			
-		public void addTagToScreen(ColumnScreen columnScreen)
+		public void addTagToScreen(int x, ColumnScreen columnScreen)
 			{
-				tagLabel.setBounds(X1, Y * 6, WIDTH, HEIGHT);
+				tagLabel.setBounds(X1, Y * x, WIDTH, HEIGHT);
 				tagLabel.setEnabled(true);
 				tagLabel.setToolTipText("Add A Tag for Current Coil");
-				tagValue.setBounds(X2, Y * 6, WIDTH, HEIGHT);
+				tagValue.setBounds(X2, Y * x, WIDTH, HEIGHT);
 				String tag = columnScreen.getTag();
 				if (tag != null && tag.trim().length() > 0)
 					{
 						tagValue.setText(tag);
 					}
 				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
-				//separator.setBounds(X1, Y * 6 + (20), CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
+				// separator.setBounds(X1, Y * 6 + (20),
+				// CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
 				panel.add(tagLabel);
 				panel.add(tagValue);
-				//panel.add(separator);
+				// panel.add(separator);
 			}
 			
-		private void addSubmitToScreen(ColumnScreen columnScreen)
+		private void addSubmitToScreen(int x, ColumnScreen columnScreen)
 			{
 				if (columnScreen.getTemp().equals(CoilType.LOAD))
 					{
-						submit.setBounds(X1, Y * 7 + 20, WIDTH, HEIGHT);
+						submit.setBounds(X1, Y * x + 20, WIDTH, HEIGHT);
 					}
 				else if (columnScreen.getTemp().equals(CoilType.OUTPUT) || columnScreen.getTemp().equals(CoilType.ROUTINE))
 					{
-						submit.setBounds(X1, Y * 3 + 20, WIDTH, HEIGHT);
+						submit.setBounds(X1, Y * x + 20, WIDTH, HEIGHT);
 					}
 				else if (columnScreen.getTemp().equals(CoilType.ROUTINE))
 					{
-						submit.setBounds(X1, Y * 4 + 20, WIDTH, HEIGHT);
+						submit.setBounds(X1, Y * x + 20, WIDTH, HEIGHT);
 					}
 					
 				panel.add(submit);
 				submit.addActionListener(event ->
 					{
-						boolean isRoutine = false;
-						if (columnScreen.getTemp().equals(CoilType.LOAD))
+						
+						if (input.isSelected() || flag.isSelected() || output.isSelected() || word.isSelected())
 							{
-								setNoNcValue(columnScreen);
-								setEdgeValue(columnScreen);
+								
+								boolean isRoutine = false;
+								if (columnScreen.getTemp().equals(CoilType.LOAD))
+									{
+										setNoNcValue(columnScreen);
+										setEdgeValue(columnScreen);
+									}
+								else if (columnScreen.getTemp().equals(CoilType.ROUTINE))
+									{
+										isRoutine = true;
+									}
+								if (!isRoutine)
+									{
+										setInputTagAndValue(columnScreen);
+										SearchEngine.index(columnScreen);
+									}
+								dispose();
+								columnScreen.repaint();
+								columnScreen.apply();
 							}
-						else if (columnScreen.getTemp().equals(CoilType.ROUTINE))
-							{
-								isRoutine = true;
+						else
+							{//
+								JOptionPane.showMessageDialog(submit, "Please Select Coil Type");
 							}
-						if (!isRoutine)
-							{
-								setInputTagAndValue(columnScreen);
-								SearchEngine.index(columnScreen);
-							}
-						dispose();
-						columnScreen.repaint();
-						columnScreen.apply();
 					});
 			}
 			
-		private void addCancelToScreen(ColumnScreen columnScreen)
+		private void addCancelToScreen(int x, ColumnScreen columnScreen)
 			{
 				if (columnScreen.getTemp().equals(CoilType.LOAD))
 					{
-						cancel.setBounds(X2, Y * 7 + 20, WIDTH, HEIGHT);
+						cancel.setBounds(X2, Y * x + 20, WIDTH, HEIGHT);
 					}
 				else if (columnScreen.getTemp().equals(CoilType.OUTPUT))
 					{
-						cancel.setBounds(X2, Y * 3 + 20, WIDTH, HEIGHT);
+						cancel.setBounds(X2, Y * x + 20, WIDTH, HEIGHT);
 					}
 				else if (columnScreen.getTemp().equals(CoilType.ROUTINE))
 					{
-						cancel.setBounds(X2, Y * 3 + 20, WIDTH, HEIGHT);
+						cancel.setBounds(X2, Y * x + 20, WIDTH, HEIGHT);
 					}
 				panel.add(cancel);
 				cancel.addActionListener(event ->
@@ -510,22 +543,22 @@ public class ColumnConfigurationScreen extends JFrame
 				if (input.isSelected())
 					{
 						inputType = InputType.INPUT;
-						optionType = "I/";
+						optionType = " I / ";
 					}
 				else if (flag.isSelected())
 					{
 						inputType = InputType.FLAG;
-						optionType = "F/";
+						optionType = " F / ";
 					}
 				else if (word.isSelected())
 					{
 						inputType = InputType.WORD;
-						optionType = "D/";
+						optionType = " D / ";
 					}
 				else if (output.isSelected())
 					{
 						inputType = InputType.OUTPUT;
-						optionType = "O/";
+						optionType = " O / ";
 					}
 				columnScreen.setInputType(inputType);
 				columnScreen.setValue(value.getText());
@@ -563,18 +596,19 @@ public class ColumnConfigurationScreen extends JFrame
 				columnScreen.setEdge(edge);
 			}
 			
-		private void setDefaultInputOption(ColumnScreen columnScreen)
+		private void setDefaultInputOption(int i, ColumnScreen columnScreen)
 			{
 				InputType inputType = columnScreen.getInputType();
-				if (inputType == null)
+				if (inputType != null)
 					{
-						input.setSelected(true);
-						flag.setSelected(false);
-						output.setSelected(false);
-						word.setSelected(false);
-					}
-				else
-					{
+						/*
+						 * if (i == 1) { input.setSelected(true);
+						 * flag.setSelected(false); } else {
+						 * input.setSelected(false); flag.setSelected(true); }
+						 * 
+						 * output.setSelected(false); word.setSelected(false); }
+						 * else {
+						 */
 						switch (inputType)
 							{
 								case FLAG:
@@ -624,12 +658,7 @@ public class ColumnConfigurationScreen extends JFrame
 		private void setDefaultNoNcOption(ColumnScreen columnScreen)
 			{
 				NoNc nonc = columnScreen.getNonc();
-				if (nonc == null)
-					{
-						NO.setSelected(true);
-						NC.setSelected(false);
-					}
-				else
+				if (nonc != null)
 					{
 						switch (nonc)
 							{
@@ -658,35 +687,28 @@ public class ColumnConfigurationScreen extends JFrame
 		private void setDefaultEdgeOption(ColumnScreen columnScreen)
 			{
 				Edge edge = columnScreen.getEdge();
-				if (edge == null)
-					{
-						risingEdge.setSelected(true);
-						fallingEdge.setSelected(false);
-					}
-				else
-					{
-						switch (edge)
-							{
-								case FALLING:
-									{
-										risingEdge.setSelected(false);
-										fallingEdge.setSelected(true);
-										break;
-									}
-								case RISING:
-									{
-										risingEdge.setSelected(true);
-										fallingEdge.setSelected(false);
-										break;
-									}
-								default:
-									{
-										risingEdge.setSelected(true);
-										fallingEdge.setSelected(false);
-										break;
-									}
-								
-							}
-					}
+				if (edge != null)
+					
+					switch (edge)
+						{
+							case FALLING:
+								{
+									risingEdge.setSelected(false);
+									fallingEdge.setSelected(true);
+									break;
+								}
+							case RISING:
+								{
+									risingEdge.setSelected(true);
+									fallingEdge.setSelected(false);
+									break;
+								}
+							default:
+								{
+									risingEdge.setSelected(true);
+									fallingEdge.setSelected(false);
+									break;
+								}
+						}
 			}
 	}

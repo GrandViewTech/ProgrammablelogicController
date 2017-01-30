@@ -30,15 +30,12 @@ import javax.swing.border.Border;
 
 import org.grandviewtech.constants.CustomBorderList;
 import org.grandviewtech.entity.enums.CLIPBOARD_ACTION;
-import org.grandviewtech.service.runtime.user.useractivity.Activities;
-import org.grandviewtech.service.runtime.user.useractivity.Activity;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 import org.grandviewtech.userinterface.screen.RowScreen;
 import org.grandviewtech.userinterface.screen.Rung;
 
 final public class ClipBoard
 	{
-		static Activities activities = Activities.getInstance();
 		
 		private ClipBoard()
 			{
@@ -56,22 +53,22 @@ final public class ClipBoard
 				return ClipBoardInstanceFactory.instance;
 			}
 			
-		private static JLabel				selection			= new JLabel("SELECTION : OFF ");
-		private static CLIPBOARD_ACTION		clipboardAction		= CLIPBOARD_ACTION.DEFUALT;
-		public static JLabel				cutLabel;
-		public static JLabel				copyLabel;
-		public static JLabel				pasteLabel;
+		private static JLabel			  selection			 = new JLabel("SELECTION : OFF ");
+		private static CLIPBOARD_ACTION	  clipboardAction	 = CLIPBOARD_ACTION.DEFUALT;
+		public static JLabel			  cutLabel;
+		public static JLabel			  copyLabel;
+		public static JLabel			  pasteLabel;
 		
-		private static boolean				isControlKeyActive	= false;
+		private static boolean			  isControlKeyActive = false;
 		
-		private static String				clipBoardType;
-		private static List<Rung>			copiedTempRung		= new ArrayList<Rung>();
-		private static List<Rung>			copiedRung			= new ArrayList<Rung>();
-		private static List<ColumnScreen>	tempData			= new ArrayList<ColumnScreen>();
-		private static List<ColumnScreen>	copiedCell			= new ArrayList<ColumnScreen>();
+		private static String			  clipBoardType;
+		private static List<Rung>		  copiedTempRung	 = new ArrayList<Rung>();
+		private static List<Rung>		  copiedRung		 = new ArrayList<Rung>();
+		private static List<ColumnScreen> tempData			 = new ArrayList<ColumnScreen>();
+		private static List<ColumnScreen> copiedCell		 = new ArrayList<ColumnScreen>();
 		
-		private static int					currentRowNumber;
-		private static int					currentColumnNumber;
+		private static int				  currentRowNumber;
+		private static int				  currentColumnNumber;
 		
 		public static String getClipBoardType()
 			{
@@ -146,8 +143,6 @@ final public class ClipBoard
 								ClipBoard.tempData.add(columnScreen);
 							}
 					}
-				// Activity
-				activities.addActivity(new Activity("Row : " + columnScreen.getRowNumber() + " | Column : " + columnScreen.getColumnNumber() + " Clipboard data " + ClipBoard.tempData.toString(), Activity.Category.USER));
 			}
 			
 		public static boolean isControlKeyActive()

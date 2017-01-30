@@ -100,6 +100,7 @@ public class RowValidation
 				ColumnScreen below = columnScreen.getBelow(isFocusRequired);
 				if (previous != null && previous.isBlank())
 					{
+						
 						hasError(columnScreen);
 						columnScreen.setError(error);
 					}

@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.grandViewTech</groupId>
 	<artifactId>ProgrammableLogicController-RELEASE</artifactId>
@@ -66,7 +67,9 @@
 		<lucene.analyzers.common.version>6.0.0</lucene.analyzers.common.version>
 		<lucene.queries.version>6.0.0</lucene.queries.version>
 		<start-class>org.grandviewtech.runner.Run</start-class>
+		<spring.boot.groupId>org.springframework.boot</spring.boot.groupId>
 		<commons.lang3.version>3.4</commons.lang3.version>
+		<spring.boot.starter.pack>spring-boot-starter</spring.boot.starter.pack>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -85,12 +88,11 @@
 			<version>${lucene.analyzers.common.version}</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/net.java.dev.jna/jna-platform -->
-		<!-- <dependency> <groupId>net.java.dev.jna</groupId> <artifactId>jna-platform</artifactId> <version>4.2.2</version> </dependency> -->
+		<!-- <dependency> <groupId>net.java.dev.jna</groupId> <artifactId>jna-platform</artifactId> 
+			<version>4.2.2</version> </dependency> -->
 		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-web -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
+		<!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-web</artifactId> 
+			</dependency> -->
 		<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -119,6 +121,24 @@
 			<groupId>org.springframework.integration</groupId>
 			<artifactId>spring-integration-mail</artifactId>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<!-- <version>2.7</version> -->
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.16</version>
+			<!-- <scope>runtime</scope> -->
+		</dependency>
+		<dependency>
+			<groupId>${spring.boot.groupId}</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+		<!-- <dependency> <groupId>${spring.boot.groupId}</groupId> <artifactId>spring-boot-starter-test</artifactId> 
+			</dependency> -->
 	</dependencies>
 	<build>
 		<plugins>

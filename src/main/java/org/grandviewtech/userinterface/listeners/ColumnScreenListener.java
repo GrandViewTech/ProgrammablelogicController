@@ -22,29 +22,117 @@ package org.grandviewtech.userinterface.listeners;
  * #L%
  */
 
+import java.awt.Color;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+
+import javax.swing.JLabel;
 
 import org.grandviewtech.constants.CustomBorderList;
 import org.grandviewtech.entity.bo.ClipBoard;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CoilType;
+import org.grandviewtech.service.runtime.user.useractivity.Activities;
+import org.grandviewtech.service.runtime.user.useractivity.Activity;
 import org.grandviewtech.service.system.PropertyReader;
 import org.grandviewtech.service.system.SystemFileLocation;
 import org.grandviewtech.userinterface.helper.ColumnScreenGenerator;
 import org.grandviewtech.userinterface.misc.ActionBot;
+import org.grandviewtech.userinterface.misc.CustomToolBar;
 import org.grandviewtech.userinterface.screen.ColumnConfigurationScreen;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 
-public class ColumnScreenKeyPressListener implements KeyListener
+public class ColumnScreenListener implements MouseListener, FocusListener, KeyListener
 	{
-		final static Screen		SCREEN	= Screen.getInstance();
+		private JLabel		 setting;
 		
-		private ColumnScreen	source;
+		final static Screen	 SCREEN		= Screen.getInstance();
 		
-		public ColumnScreenKeyPressListener(ColumnScreen source)
+		private ColumnScreen source;
+		
+		private Activities	 activities	= Activities.getInstance();
+		
+		public ColumnScreenListener(ColumnScreen columnScreen)
 			{
-				this.source = source;
+				source = columnScreen;
+			}
+			
+		@Override
+		public void mouseClicked(MouseEvent eventvent)
+			{
+				ColumnScreen active = Screen.getInstance().getActiveColumn();
+				boolean selected = (active != null && (active.equals(source) == true));
+				if (!selected)
+					{
+						activities.addActivity(new Activity("Row : " + source.getRowNumber() + " | Column : " + source.getColumnNumber() + " Gained Focus", Activity.Category.USER));
+						Screen.getInstance().setActiveColumn(source);
+						ColumnScreenGenerator.createColumnNeighbourHood(ClipBoard.SCREEN.getRow(source.getRowNumber()), source);
+						String pointer = "Cell( " + source.getRowNumber() + "," + source.getColumnNumber() + " ) ";
+						CustomToolBar.setPointerValue(pointer);
+						ClipBoard.setCurrentRowNumber(source.getRowNumber());
+						ClipBoard.setCurrentColumnNumber(source.getColumnNumber());
+						ActionBot.focusGained(source);
+						
+					}
+				else
+					{
+						Screen.getInstance().setActiveColumn(null);
+						activities.addActivity(new Activity("Row : " + source.getRowNumber() + " | Column : " + source.getColumnNumber() + " Lost Focus", Activity.Category.USER));
+						ActionBot.focusLost(source);
+					}
+					
+			}
+			
+		@Override
+		public void mousePressed(MouseEvent event)
+			{
+				source.setBackground(Color.GREEN);
+			}
+			
+		@Override
+		public void mouseReleased(MouseEvent event)
+			{
+				this.source.setBackground(null);
+			}
+			
+		@Override
+		public void mouseEntered(MouseEvent event)
+			{
+			}
+			
+		@Override
+		public void mouseExited(MouseEvent event)
+			{
+			}
+			
+		@Override
+		public void focusGained(FocusEvent event)
+			{
+				/**
+				 * if (source.isBlank() == false) { setting.setVisible(true); //
+				 * source.add(setting); } ActionBot.focusGained(source);
+				 **/
+				ActionBot.focusGained(source);
+				
+			}
+			
+		@Override
+		public void focusLost(FocusEvent event)
+			{
+				/**
+				 * if (source.isBlank() == false) {
+				 * 
+				 * setting.setVisible(false); // source.remove(setting); } //
+				 * ActionBot.focusLost(source);
+				 * 
+				 * source.remove(setting); }
+				 **/
+				ActionBot.focusLost(source);
+				
 			}
 			
 		@Override

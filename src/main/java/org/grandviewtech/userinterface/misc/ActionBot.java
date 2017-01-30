@@ -7,7 +7,6 @@ import org.grandviewtech.constants.CustomBorderList;
 import org.grandviewtech.entity.bo.ClipBoard;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CLIPBOARD_ACTION;
-import org.grandviewtech.userinterface.helper.ColumnScreenGenerator;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 
 public final class ActionBot extends BaseBot
@@ -28,18 +27,13 @@ public final class ActionBot extends BaseBot
 			
 		public static void select(ColumnScreen columnScreen)
 			{
-				if (ClipBoard.isControlKeyActive() == false)
-					{
-						//columnScreen.setBorder(BorderFactory.createLineBorder(Color.blue, 1));
-					}
-				else
-					{
-						 if (columnScreen.isBlank() == false)
-							{
-								//columnScreen.setBorder(CustomBorderList.DASHED_BORDER);
-								ClipBoard.addCopiedCell(columnScreen);
-							}
-					}
+				/*
+				 * if (ClipBoard.isControlKeyActive() == false) {
+				 * columnScreen.setBorder(BorderFactory.createLineBorder(Color.
+				 * blue, 1)); } else { if (columnScreen.isBlank() == false) {
+				 * columnScreen.setBorder(CustomBorderList.DASHED_BORDER);
+				 * ClipBoard.addCopiedCell(columnScreen); } }
+				 */
 			}
 			
 		public static void resetSelection(ColumnScreen columnScreen)
@@ -52,27 +46,15 @@ public final class ActionBot extends BaseBot
 			
 		public static void focusGained(ColumnScreen columnScreen)
 			{
-				//Printer.print("Focus Gained For " + columnScreen.getColumnNumber());
-				ColumnScreenGenerator.createColumnNeighbourHood(ClipBoard.SCREEN.getRow(columnScreen.getRowNumber()), columnScreen);
-				select(columnScreen);
+				// select(columnScreen);
 				columnScreen.requestFocus();
-				SCREEN.setActiveColumn(columnScreen);
-				String pointer = "Cell( " + columnScreen.getRowNumber() + "," + columnScreen.getColumnNumber() + " ) ";
-				CustomToolBar.setPointerValue(pointer);
-				ClipBoard.setCurrentRowNumber(columnScreen.getRowNumber());
-				ClipBoard.setCurrentColumnNumber(columnScreen.getColumnNumber());
+				// SCREEN.setActiveColumn(columnScreen);
+				
 			}
 			
 		public static void focusLost(ColumnScreen columnScreen)
 			{
-				//Printer.print("Focus Lost For " + columnScreen.getColumnNumber());
-				SCREEN.setActiveColumn(null);
-							
-				columnScreen.setAbove(null);
-				columnScreen.setBelow(null);
-				columnScreen.setPrevious(null);
-				columnScreen.setNext(null);
-				
+				// SCREEN.setActiveColumn(null);
 				resetSelection(columnScreen);
 			}
 			
@@ -136,7 +118,7 @@ public final class ActionBot extends BaseBot
 							{
 								break;
 							}
-						
+							
 					}
 					
 			}

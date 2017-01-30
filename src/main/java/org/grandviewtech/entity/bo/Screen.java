@@ -27,8 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.grandviewtech.constants.ApplicationConstant;
-import org.grandviewtech.entity.enums.CoilType;
-import org.grandviewtech.entity.enums.LoadType;
 import org.grandviewtech.service.runtime.user.useractivity.Activities;
 import org.grandviewtech.service.runtime.user.useractivity.Activity;
 import org.grandviewtech.service.system.Printer;
@@ -38,8 +36,8 @@ import org.grandviewtech.userinterface.screen.Sheet;
 
 public class Screen implements Serializable
 	{
-		private static Activities	activities			= Activities.getInstance();
-		private static final long	serialVersionUID	= 5158611639703073759L;
+		private static Activities activities	   = Activities.getInstance();
+		private static final long serialVersionUID = 5158611639703073759L;
 		
 		private Screen()
 			{
@@ -55,13 +53,13 @@ public class Screen implements Serializable
 				return ScreenFactoryInstance.instance;
 			}
 			
-		private Sheet			sheet			= new Sheet();
-		private int				totalRow		= 1;
-		private int				endColumnNumber	= ApplicationConstant.MAX_CELL;
+		private Sheet		 sheet			 = new Sheet();
+		private int			 totalRow		 = 1;
+		private int			 endColumnNumber = ApplicationConstant.MAX_CELL;
 		
-		private int				maxNumberOffRow	= 50;
-		private int				endRowNumber	= maxNumberOffRow;
-		private ColumnScreen	activeColumn	= null;
+		private int			 maxNumberOffRow = 50;
+		private int			 endRowNumber	 = maxNumberOffRow;
+		private ColumnScreen activeColumn	 = null;
 		
 		public Sheet getSheet()
 			{
@@ -119,7 +117,9 @@ public class Screen implements Serializable
 		 * @methodName : getRow <br>
 		 * @methodPackage : org.grandviewtech.entity.bo <br>
 		 * @Description : <br>
-		 *              Do not modify the index before retriving the reduction of index from n to n-1 is taken care by the method itself.
+		 *              Do not modify the index before retriving the reduction
+		 *              of index from n to n-1 is taken care by the method
+		 *              itself.
 		 * @StepsWithExplanation : <br>
 		 * @TODO : <br>
 		 * @param index
@@ -166,26 +166,55 @@ public class Screen implements Serializable
 				return activeColumn;
 			}
 			
-		public void setActiveColumn(ColumnScreen activeColumn)
+		/*public void setActiveColumn(ColumnScreen activeColumn)
 			{
-				if (activeColumn != null && !activeColumn.isBlank())
+				if (this.activeColumn != null)
 					{
-						activities.addActivity(new Activity("Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " ) | ( " +activeColumn.getCoilType().getCoilType()+ " | "+activeColumn.isBlank()+" ) is Turned Active", Activity.Category.USER));
+						// this.activeColumn.setBackground(null);
+						activities.addActivity(new Activity("Cell( " + this.activeColumn.getRowNumber() + " , " + this.activeColumn.getColumnNumber() + " ) is Turned In-Active And Lost Focus", Activity.Category.USER));
+					}
+				if (activeColumn != null)
+					{
+						// activeColumn.setBackground(Color.LIGHT_GRAY);
+						if (activeColumn.isBlank())
+							{
+								activities.addActivity(new Activity("Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " ) is Turned Active But is Blank", Activity.Category.USER));
+							}
+						else
+							{
+								activities.addActivity(new Activity("Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " ) is Turned Active", Activity.Category.USER));
+							}
 					}
 				else
 					{
-						if (this.activeColumn != null)
-							{
-								int rowNumber=this.activeColumn.getRowNumber();
-								int columnNumber=this.activeColumn.getColumnNumber();
-								LoadType coilType = this.activeColumn.getChildType();
-								String coilTypeValue=(coilType==null) ? null : coilType.getType();
-								boolean isBlank=this.activeColumn.isBlank();
-								activities.addActivity(new Activity("Cell( " +rowNumber  + " , " + columnNumber + " ) |  ( " +coilTypeValue+ " | "+isBlank+" ) is Turned InActive", Activity.Category.USER));
-							}
+						activities.addActivity(new Activity("Attempted was made to make empty cell active", Activity.Category.USER));
 					}
+					
 				this.activeColumn = activeColumn;
 				
-			}
+			}*/
 			
+		public void setActiveColumn(ColumnScreen activeColumn)
+			{
+				if (this.activeColumn != null)
+					{
+						activities.addActivity(new Activity("Cell( " + this.activeColumn.getRowNumber() + " , " + this.activeColumn.getColumnNumber() + " ) is Turned In-Active And Lost Focus", Activity.Category.USER));
+					}
+				if (activeColumn != null)
+					{
+						if (activeColumn.isBlank())
+							{
+								activities.addActivity(new Activity("Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " ) is Turned Active But is Blank", Activity.Category.USER));
+							}
+						else
+							{
+								activities.addActivity(new Activity("Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " ) is Turned Active", Activity.Category.USER));
+							}
+					}
+				else
+					{
+						activities.addActivity(new Activity("Attempted was made to make empty cell active", Activity.Category.USER));
+					}
+				this.activeColumn = activeColumn;
+			}
 	}

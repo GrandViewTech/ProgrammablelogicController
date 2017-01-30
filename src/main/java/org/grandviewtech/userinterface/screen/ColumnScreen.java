@@ -21,47 +21,47 @@ import javax.swing.border.Border;
 
 import org.grandviewtech.constants.CustomBorderList;
 import org.grandviewtech.constants.CustomDimension;
+import org.grandviewtech.constants.CustomIcon;
 import org.grandviewtech.entity.bo.ClipBoard;
 import org.grandviewtech.entity.bo.Response;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CoilType;
 import org.grandviewtech.entity.enums.Edge;
 import org.grandviewtech.entity.enums.InputType;
-import org.grandviewtech.entity.enums.LoadType;
 import org.grandviewtech.entity.enums.NoNc;
 import org.grandviewtech.service.validation.RowValidation;
 import org.grandviewtech.service.validation.ValidateDragOption;
 import org.grandviewtech.userinterface.coils.PaintCoilsOnScreen;
 import org.grandviewtech.userinterface.helper.ColumnScreenGenerator;
 import org.grandviewtech.userinterface.helper.CustomBorder;
-import org.grandviewtech.userinterface.listeners.ColumnScreenFocusListener;
-import org.grandviewtech.userinterface.listeners.ColumnScreenKeyPressListener;
-import org.grandviewtech.userinterface.listeners.ColumnScreenMouseClickListener;
+import org.grandviewtech.userinterface.listeners.ColumnScreenListener;
+import org.grandviewtech.userinterface.listeners.SettingsMouseClickListener;
 
 public class ColumnScreen extends JPanel implements DropTargetListener, Comparable<ColumnScreen>
 	{
-		private static final long	serialVersionUID	= -4357735797077739462L;
-		private ColumnScreen		previous;
-		private ColumnScreen		next;
-		private ColumnScreen		above;
-		private ColumnScreen		below;
-		private int					rowNumber;
-		private int					columnNumber;
-		static Screen				SCREEN				= Screen.getInstance();
-		//private JLabel				setting				= new JLabel(CustomIcon.SETTING);
-		private JLabel				valueLabel			= new JLabel("");
-		private boolean				isBlank				= true;
-		private JLabel				tagLabel			= new JLabel();
-		private String				tag					= "";
-		private String				value;
-		private CoilType			temp				= CoilType.DEFAULT;
-		private CoilType			coilType			= CoilType.DEFAULT;
-		private LoadType			childType			= LoadType.DEFAULT;
-		private String				comment;
-		private InputType			inputType;
-		private NoNc				nonc				= NoNc.DEFAULT;
-		private Edge				edge				= Edge.DEFAULT;
-		private boolean				error				= false;
+		private static final long serialVersionUID = -4357735797077739462L;
+		private ColumnScreen	  previous;
+		private ColumnScreen	  next;
+		private ColumnScreen	  above;
+		private ColumnScreen	  below;
+		private int				  rowNumber;
+		private int				  columnNumber;
+		static Screen			  SCREEN		   = Screen.getInstance();
+		private JLabel			  setting		   = new JLabel(CustomIcon.SETTING);
+		private JLabel			  valueLabel	   = new JLabel("");
+		private boolean			  isBlank		   = true;
+		private JLabel			  tagLabel		   = new JLabel();
+		private String			  tag			   = "";
+		private String			  value;
+		private CoilType		  temp			   = CoilType.DEFAULT;
+		private CoilType		  coilType		   = CoilType.DEFAULT;
+		private CoilType		  childType		   = CoilType.DEFAULT;
+		private String			  comment;
+		private InputType		  inputType;
+		private NoNc			  nonc			   = NoNc.DEFAULT;
+		private Edge			  edge			   = Edge.DEFAULT;
+		private boolean			  parent		   = false;
+		private boolean			  error			   = false;
 		
 		public int getColumnNumber()
 			{
@@ -179,10 +179,15 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public void apply()
 			{
-				SCREEN.setActiveColumn(this);
+				// SCREEN.setActiveColumn(this);
 				setCoilType(temp);
 				RowValidation.validate(this);
 				repaint();
+			}
+			
+		public JLabel getSetting()
+			{
+				return setting;
 			}
 			
 		public String getValue()
@@ -207,13 +212,6 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public boolean isBlank()
 			{
-				if (isBlank)
-					{
-						if (!(this.coilType.getCoilType().equalsIgnoreCase(CoilType.DEFAULT.getCoilType())))
-							{
-								isBlank = false;
-							}
-					}
 				return isBlank;
 			}
 			
@@ -224,7 +222,7 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public void reset()
 			{
-				//remove(setting);
+				remove(setting);
 				setBlank(true);
 				setCoilType(null);
 				setValue(null);
@@ -275,6 +273,10 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public void setNonc(NoNc nonc)
 			{
+				if (nonc == null)
+					{
+						nonc = NoNc.DEFAULT;
+					}
 				this.nonc = nonc;
 			}
 			
@@ -285,6 +287,10 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public void setEdge(Edge edge)
 			{
+				if (edge == null)
+					{
+						edge = Edge.DEFAULT;
+					}
 				this.edge = edge;
 			}
 			
@@ -301,7 +307,7 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			{
 				super.paintComponent(graphics);
 				this.valueLabel.setText(this.valueLabel.getText());
-				if (isBlank())
+				if (isBlank)
 					{
 						PaintCoilsOnScreen.paintDefault(this, graphics);
 					}
@@ -336,17 +342,17 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 								boolean isError = response.isError();
 								if (!isError)
 									{
-										//dropTargetDragEvent.getDropTargetContext().getComponent().setCursor(DragSource.DefaultCopyDrop);
+										// dropTargetDragEvent.getDropTargetContext().getComponent().setCursor(DragSource.DefaultCopyDrop);
 										dropTargetDragEvent.acceptDrop(DnDConstants.ACTION_MOVE);
 										selectTheRigthCoilUsingDragOption(temp);
-										//Graphics graphics = getGraphics();
-										//paintComponent(graphics);
+										// Graphics graphics = getGraphics();
+										// paintComponent(graphics);
 										DropTargetContext dropTargetContext = dropTargetDragEvent.getDropTargetContext();
 										dropTargetContext.dropComplete(true);
 									}
 								else
 									{
-										//dropTargetDragEvent.getDropTargetContext().getComponent().setCursor(DragSource.DefaultCopyNoDrop);
+										// dropTargetDragEvent.getDropTargetContext().getComponent().setCursor(DragSource.DefaultCopyNoDrop);
 										dropTargetDragEvent.rejectDrop();
 										StringBuffer stringBuffer = new StringBuffer();
 										int i = 1;
@@ -414,14 +420,16 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 				tagLabel.setBounds(10, 40, 50, 20);
 				add(tagLabel);
 				setPreferredSize(CustomDimension.CELL_SIZE);
-				//setting.setBounds(getX() + 55, 0, 50, 20);
-				//setting.addMouseListener(new SettingsMouseClickListener(this));
+				setting.setBounds(getX() + 55, 0, 50, 20);
+				setting.addMouseListener(new SettingsMouseClickListener(this));
 				setBorder(new CustomBorder());
 				setTransferHandler(new TransferHandler("icon"));
 				new DropTarget(this, this);
-				addMouseListener(new ColumnScreenMouseClickListener(this));
-				addKeyListener(new ColumnScreenKeyPressListener(this));
-				addFocusListener(new ColumnScreenFocusListener(this));
+				ColumnScreenListener columnScreenListener = new ColumnScreenListener(this);
+				addMouseListener(columnScreenListener);
+				addKeyListener(columnScreenListener);
+				addFocusListener(columnScreenListener);
+				setToolTipText("Row : " + getRowNumber() + " |  Column : " + getColumnNumber());
 				repaint();
 			}
 			
@@ -432,7 +440,7 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 					{
 						case LINE:
 							{
-								
+								apply();
 								break;
 							}
 						case OUTPUT:
@@ -462,14 +470,14 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 							}
 						case JUMP:
 							{
-								//apply();
+								apply();
 								break;
 							}
 						case END:
 							{
 								SCREEN.setEndRowNumber(rowNumber);
 								SCREEN.setEndColumnNumber(columnNumber);
-								//apply();
+								apply();
 								break;
 							}
 						case ROUTINE:
@@ -491,24 +499,21 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 							}
 						case LABEL:
 							{
+								apply();
 								break;
 							}
 							
 					}
-				apply();
 			}
 			
-		public LoadType getChildType()
+		public CoilType getChildType()
 			{
 				return childType;
 			}
 			
-		public void setChildType(LoadType childType)
+		public void setChildType(CoilType childType)
 			{
-				if(childType==null)
-					{
-						childType=LoadType.DEFAULT;
-					}
+				this.parent = true;
 				this.childType = childType;
 			}
 			
@@ -525,7 +530,12 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public boolean isParent()
 			{
-				return (!this.childType.equals(LoadType.DEFAULT));
+				return parent;
+			}
+			
+		public void setParent(boolean parent)
+			{
+				this.parent = parent;
 			}
 			
 		public CoilType getTemp()
@@ -545,6 +555,7 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 				columnConfigurationScreen.requestFocusInWindow();
 				ClipBoard.setCurrentRowNumber(rowNumber);
 				ClipBoard.setCurrentColumnNumber(columnNumber);
+				apply();
 			}
 			
 		public boolean isError()
@@ -555,28 +566,28 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 		public void setError(boolean error)
 			{
 				this.error = error;
-				/*if (error == true)
+				if (error == true)
 					{
 						setBorder(CustomBorderList.ERROR_BORDER);
 					}
 				else
 					{
 						setBorder(CustomBorderList.CUSTOM_BORDER);
-					}*/
+					}
 				repaint();
 			}
 			
 		@Override
 		public void setBorder(Border border)
 			{
-				/*if (!error)
+				if (!error)
 					{
 						super.setBorder(border);
 					}
 				else
 					{
 						super.setBorder(CustomBorderList.ERROR_BORDER);
-					}*/
+					}
 			}
 			
 		@Override
@@ -585,4 +596,16 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 				return "ColumnScreen [previous=" + previous + ", next=" + next + ", above=" + above + ", below=" + below + ", rowNumber=" + rowNumber + ", columnNumber=" + columnNumber + ", isBlank=" + isBlank + ", tag=" + tag + ", value=" + value + ", coilType=" + coilType + ", comment=" + comment + ", inputType=" + inputType + ", nonc=" + nonc + ", edge=" + edge + "]";
 			}
 			
+		@Override
+		public boolean equals(Object object)
+			{
+				if (object != null && object instanceof ColumnScreen)
+					{
+						ColumnScreen columnScreen = (ColumnScreen) object;
+						int row = columnScreen.getRowNumber();
+						int column = columnScreen.getColumnNumber();
+						return ((row == this.rowNumber) && (this.columnNumber == column));
+					}
+				return false;
+			}
 	}
