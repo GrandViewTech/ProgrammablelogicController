@@ -23,15 +23,20 @@ public class RoutineScreen extends JFrame
 		private static final long		serialVersionUID	= -7808536714907991917L;
 		
 		private static int				maxLength			= 500;
+		
 		private JLabel					function			= new JLabel("Function : ");
 		
-		private JLabel					name			= new JLabel("name : ");
+		private JLabel					descriptionLabel	= new JLabel("Descrition : ");
+		
+		private JLabel					name				= new JLabel("name : ");
 		
 		private JButton					submit				= new JButton("Add");
 		
 		private JButton					cancel				= new JButton("Cancel");
 		
 		private JTextArea				textArea			= new JTextArea(5, 100);
+		
+		private JTextArea				descriptionTextArea	= new JTextArea(5, 100);
 		
 		private JPanel					jpanel				= new JPanel();
 		
