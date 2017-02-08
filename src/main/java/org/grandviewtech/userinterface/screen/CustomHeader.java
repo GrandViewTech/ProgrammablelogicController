@@ -26,10 +26,12 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -50,6 +52,7 @@ public class CustomHeader
 			{
 				JMenuBar menuBar = new JMenuBar();
 				menuBar.add(getFileMenu());
+				menuBar.add(getToolMenu());
 				Helper.setCursor(menuBar);
 				JButton advancedSearch = new JButton("Advanced Search");
 				advancedSearch.addMouseListener(new AdvancedSearchMouseListener());
@@ -69,6 +72,43 @@ public class CustomHeader
 				menuBar.add(Search.getNext());
 				menuBar.add(new JLabel("  "));
 				return menuBar;
+			}
+			
+		public static JMenu getToolMenu()
+			{
+				JMenu tool = new JMenu("Routine");
+				//
+				JMenuItem addRoutine = new JMenuItem("Add");
+				addRoutine.setToolTipText("Add");
+				addRoutine.addActionListener(click ->
+					{
+						RoutineScreen routineScreen = new RoutineScreen();
+						routineScreen.init();
+					});
+				tool.add(addRoutine);
+				tool.addSeparator();
+				//
+				
+				JMenuItem importRoutine = new JMenuItem("Import");
+				importRoutine.setToolTipText("Import");
+				importRoutine.addActionListener(click ->
+					{
+						JFileChooser fileChooser = new JFileChooser();
+						fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+						int result = fileChooser.showOpenDialog(importRoutine);
+						if (result == JFileChooser.APPROVE_OPTION)
+							{
+								File selectedFile = fileChooser.getSelectedFile();
+								System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+							}
+					});
+				tool.add(importRoutine);
+				//
+				JMenuItem exportRoutine = new JMenuItem("Export");
+				exportRoutine.setToolTipText("Export");
+				tool.add(exportRoutine);
+				
+				return tool;
 			}
 			
 		public static JMenu getFileMenu()
