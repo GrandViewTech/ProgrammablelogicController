@@ -32,8 +32,10 @@ public class CustomDimension extends ApplicationConstant
 		public static Dimension	CELL_SIZE						= new Dimension(SECTION_WIDTH, SECTION_HEIGHT);
 		public static Dimension	RUNG_SIZE						= new Dimension(20, SECTION_HEIGHT);
 		public static Dimension	LOAD_CONFIGURATION_SCREEN		= new Dimension(350, 300);
-		public static Dimension	OUTPUT_CONFIGURATION_SCREEN	 = new Dimension(350, 250);
+		public static Dimension	OUTPUT_CONFIGURATION_SCREEN		= new Dimension(350, 250);
 		public static Dimension	ROUTINE_CONFIGURATION_SCREEN	= new Dimension(400, 200);
 		public static Dimension	RUNG_COMMENT_SCREEN				= new Dimension(400, 250);
+		public static Dimension	ROUTINE_COMMENT_SCREEN			= new Dimension(800, 500);
+		
 		// Dimension CONFIGURATION_SCREEN = new Dimension(500, 200);
 	}

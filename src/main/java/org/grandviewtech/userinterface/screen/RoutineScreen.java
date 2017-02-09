@@ -20,114 +20,104 @@ import org.grandviewtech.userinterface.listeners.DocumentSizeFilter;
 
 public class RoutineScreen extends JFrame
 	{
-		private static final long		serialVersionUID	= -7808536714907991917L;
+		private static final long	serialVersionUID	= -7808536714907991917L;
 		
-		private static int				maxLength			= 500;
+		private static int			maxLength			= 500;
 		
-		private JLabel					function			= new JLabel("Function : ");
+		private static int			maxNameLength		= 80;
 		
-		private JLabel					descriptionLabel	= new JLabel("Descrition : ");
+		private JLabel				functionLabel		= new JLabel("Function : ");
 		
-		private JLabel					name				= new JLabel("name : ");
+		private JLabel				descriptionLabel	= new JLabel("Descrition : ");
 		
-		private JButton					submit				= new JButton("Add");
+		private JLabel				nameLabel			= new JLabel("name : ");
 		
-		private JButton					cancel				= new JButton("Cancel");
+		private JLabel				nameCounterLabel	= new JLabel(maxNameLength + " characters remaining");
 		
-		private JTextArea				textArea			= new JTextArea(5, 100);
+		private JTextArea			nameTextField		= new JTextArea(2, 100);
 		
-		private JTextArea				descriptionTextArea	= new JTextArea(5, 100);
+		private JButton				submit				= new JButton("Add");
 		
-		private JPanel					jpanel				= new JPanel();
+		private JButton				cancel				= new JButton("Cancel");
 		
-		private JScrollPane				scrollPane			= new JScrollPane(textArea);
+		private JTextArea			functionTextArea	= new JTextArea(20, 1000);
 		
-		private JLabel					remainingLabel		= new JLabel("" + maxLength + " characters remaining");
+		private JTextArea			descriptionTextArea	= new JTextArea(3, 500);
 		
-		private DefaultStyledDocument	defaultStyledDocument;
+		private JPanel				jpanel				= new JPanel();
 		
-		public RoutineScreen()
-			{
-				scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-				scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-			}
-			
+		private JLabel				remainingLabel		= new JLabel("" + maxLength + " characters remaining");
+		
 		public void init()
 			{
 				setTitle("Add Routine");
-				addComment();
-				addRemainingLabel();
-				addSubmitToScreen();
-				addCancel();
+				int x = 20;
+				int y = 20;
+				addName(x, y);
+				//addDescription();
+				addFunction(x, y = y + 100);
+				addSubmitToScreen(x, y = y + 400);
+				addCancel(x + 150, y);
 				invokeFrame();
 			}
 			
 		private void invokeFrame()
 			{
-				jpanel.setPreferredSize(CustomDimension.RUNG_COMMENT_SCREEN);
+				jpanel.setPreferredSize(CustomDimension.ROUTINE_COMMENT_SCREEN);
 				jpanel.setLayout(null);
 				add(jpanel);
 				Dimension dimension = Application.calculateCenterAlignment(getPreferredSize());
 				setLocation(dimension.getX(), dimension.getY());
-				setPreferredSize(CustomDimension.RUNG_COMMENT_SCREEN);
+				setPreferredSize(CustomDimension.ROUTINE_COMMENT_SCREEN);
 				pack();
 				setVisible(true);
 			}
 			
-		private void addComment()
+		private void addName(int x, int y)
 			{
-				function.setBounds(20, 10, 100, 25);
-				jpanel.add(function);
-				configureTextArea();
+				nameLabel.setBounds(x, y, 100, 25);
+				// JTextField Configuration
+				//nameTextField.setPreferredSize(new java.awt.Dimension(100, 25));
+				nameTextField.setBounds(x + 80, y, 600, 20);
+				configure(nameTextField, nameCounterLabel, maxNameLength, true);
+				// Name Counter Label
+				//nameCounterLabel.setBounds(x + 80, y + scrollPane.getHeight(), 325, 25);
+				jpanel.add(nameLabel);
+				jpanel.add(nameTextField);
+				jpanel.add(nameCounterLabel);
 			}
 			
-		private void configureTextArea()
+		private void addDescription(int x, int y)
 			{
-				defaultStyledDocument = new DefaultStyledDocument();
-				defaultStyledDocument.setDocumentFilter(new DocumentSizeFilter(500));
-				defaultStyledDocument.addDocumentListener(new DocumentListener()
-					{
-						@Override
-						public void changedUpdate(DocumentEvent e)
-							{
-								updateCount();
-							}
-							
-						@Override
-						public void insertUpdate(DocumentEvent e)
-							{
-								updateCount();
-							}
-							
-						@Override
-						public void removeUpdate(DocumentEvent e)
-							{
-								updateCount();
-							}
-					});
-				textArea.setDocument(defaultStyledDocument);
-				textArea.setWrapStyleWord(true);
-				textArea.setLineWrap(true);
-				
-				String comment = textArea.getText();
-				if (comment != null && comment.trim().length() > 0)
-					{
-						remainingLabel.setText((maxLength - comment.length()) + " characters remaining");
-						textArea.setText(comment);
-					}
-				scrollPane.setBounds(150, 10, 200, 100);
+				JScrollPane scrollPane = new JScrollPane(descriptionTextArea);
+				scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+				scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+				descriptionLabel.setBounds(x, y, 100, 25);
+				scrollPane.setBounds(x, y, 600, 20);
+				jpanel.add(descriptionLabel);
 				jpanel.add(scrollPane);
 			}
 			
-		private void addRemainingLabel()
+		private void addFunction(int x, int y)
 			{
-				remainingLabel.setBounds(20, 120, 325, 25);
+				JScrollPane scrollPane = new JScrollPane(functionTextArea);
+				scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+				scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+				functionLabel.setBounds(x, y, 100, 25);
+				jpanel.add(functionLabel);
+				// function block
+				scrollPane.setBounds(x + 80, y, 600, 200);
+				jpanel.add(scrollPane);
+				// Remaining Block
+				remainingLabel.setBounds(x, y + scrollPane.getHeight(), 325, 25);
 				jpanel.add(remainingLabel);
+				//	configureTextArea();
+				configure(functionTextArea, remainingLabel, maxLength, false);
 			}
 			
-		private void addCancel()
+		private void addCancel(int x, int y)
 			{
-				cancel.setBounds(150, 150, 100, 25);
+				cancel.setBounds(x, y, 100, 25);
 				cancel.addActionListener(event ->
 					{
 						dispose();
@@ -135,13 +125,13 @@ public class RoutineScreen extends JFrame
 				jpanel.add(cancel);
 			}
 			
-		private void addSubmitToScreen()
+		private void addSubmitToScreen(int x, int y)
 			{
-				submit.setBounds(20, 150, 100, 25);
+				submit.setBounds(x, y, 100, 25);
 				JFrame frame = this;
 				submit.addActionListener(event ->
 					{
-						String comment = textArea.getText();
+						String comment = functionTextArea.getText();
 						//rung.setComment(comment);
 						JOptionPane optionPane = new JOptionPane("Comment submitted Successfully", JOptionPane.INFORMATION_MESSAGE);
 						JDialog dialog = optionPane.createDialog(null, "Rung Comment");
@@ -160,8 +150,45 @@ public class RoutineScreen extends JFrame
 				jpanel.add(submit);
 			}
 			
-		private void updateCount()
+		private void configure(JTextArea component, JLabel countLabel, int maxLength, boolean remaining)
 			{
-				remainingLabel.setText((maxLength - defaultStyledDocument.getLength()) + " characters remaining");
+				DefaultStyledDocument defaultStyledDocument = new DefaultStyledDocument();
+				defaultStyledDocument.setDocumentFilter(new DocumentSizeFilter(maxLength));
+				defaultStyledDocument.addDocumentListener(new DocumentListener()
+					{
+						@Override
+						public void changedUpdate(DocumentEvent e)
+							{
+								count(countLabel, maxLength, defaultStyledDocument.getLength(), remaining);
+							}
+							
+						@Override
+						public void insertUpdate(DocumentEvent e)
+							{
+								count(countLabel, maxLength, defaultStyledDocument.getLength(), remaining);
+							}
+							
+						@Override
+						public void removeUpdate(DocumentEvent e)
+							{
+								count(countLabel, maxLength, defaultStyledDocument.getLength(), remaining);
+							}
+					});
+				component.setDocument(defaultStyledDocument);
+				component.setWrapStyleWord(true);
+				component.setLineWrap(true);
+				
+				String comment = component.getText();
+				if (comment != null && comment.trim().length() > 0)
+					{
+						count(countLabel, maxLength, comment.length(), remaining);
+						component.setText(comment);
+					}
+			}
+			
+		private void count(JLabel countLabel, int maxLength, int textLength, boolean remaining)
+			{
+				String count = (remaining) ? (maxLength - textLength) + " characters remaining." : textLength + " characters.";
+				countLabel.setText(count);
 			}
 	}
