@@ -26,27 +26,42 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
+import javax.swing.Timer;
 import javax.swing.TransferHandler;
 
+import org.apache.log4j.Logger;
+import org.grandviewtech.entity.bo.Routine;
+import org.grandviewtech.service.system.PropertyReader;
 import org.grandviewtech.userinterface.listeners.AdvancedSearchMouseListener;
 import org.grandviewtech.userinterface.misc.CustomToolBar;
 import org.grandviewtech.userinterface.misc.Helper;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
+
 public class CustomHeader
 	{
+		final private static Logger LOGGER = Logger.getLogger(CustomHeader.class);
 		
 		public static JMenuBar getJMenuBar()
 			{
@@ -93,13 +108,39 @@ public class CustomHeader
 				importRoutine.setToolTipText("Import");
 				importRoutine.addActionListener(click ->
 					{
-						JFileChooser fileChooser = new JFileChooser();
-						fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
-						int result = fileChooser.showOpenDialog(importRoutine);
-						if (result == JFileChooser.APPROVE_OPTION)
+						try
 							{
-								File selectedFile = fileChooser.getSelectedFile();
-								System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+								JFileChooser fileChooser = new JFileChooser();
+								fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+								int result = fileChooser.showOpenDialog(importRoutine);
+								if (result == JFileChooser.APPROVE_OPTION)
+									{
+										File selectedFile = fileChooser.getSelectedFile();
+										XStream stream = new XStream();
+										Object object = stream.fromXML(new FileInputStream(selectedFile));
+										Routine routine = (Routine) object;
+										String name = routine.getName();
+										FileOutputStream fileOutputStream = new FileOutputStream(new File(PropertyReader.getProperties("resourcePath") + File.separator + PropertyReader.getProperties("routinePath") + File.separator + name + ".xml"));
+										//stream.toXML(routine, fileOutputStream);
+										stream.marshal(routine, new PrettyPrintWriter(new OutputStreamWriter(fileOutputStream)));
+										// Notification
+										JOptionPane optionPane = new JOptionPane("Routine Impoted Successfully", JOptionPane.INFORMATION_MESSAGE);
+										JDialog dialog = optionPane.createDialog(null, "Import Routine");
+										dialog.setModal(false);
+										dialog.setVisible(true);
+										// http://docs.oracle.com/javase/tutorial/uiswing/components/dialog.html#stayup
+										//CustomToolBar.setRungComment(rung.getRowNumber(), comment);
+										Timer timer = new Timer(600, timerEvent ->
+											{
+												dialog.setVisible(false);
+												dialog.dispose();
+											});
+										timer.start();
+									}
+							}
+						catch (FileNotFoundException exception)
+							{
+								LOGGER.error(exception.getLocalizedMessage(), exception);
 							}
 					});
 				tool.add(importRoutine);

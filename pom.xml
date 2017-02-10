@@ -137,8 +137,19 @@
 			<groupId>${spring.boot.groupId}</groupId>
 			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
-		<!-- <dependency> <groupId>${spring.boot.groupId}</groupId> <artifactId>spring-boot-starter-test</artifactId> 
-			</dependency> -->
+		<!-- https://mvnrepository.com/artifact/junit/junit -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/xstream/xstream -->
+		<dependency>
+			<groupId>com.thoughtworks.xstream</groupId>
+			<artifactId>xstream</artifactId>
+			<version>1.2.2</version>
+		</dependency>
+
+
 	</dependencies>
 	<build>
 		<plugins>

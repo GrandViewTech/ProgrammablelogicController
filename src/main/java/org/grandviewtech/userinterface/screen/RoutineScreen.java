@@ -1,5 +1,15 @@
 package org.grandviewtech.userinterface.screen;
 
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -13,40 +23,51 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.DefaultStyledDocument;
 
+import org.apache.log4j.Logger;
 import org.grandviewtech.constants.CustomDimension;
+import org.grandviewtech.entity.bo.Routine;
 import org.grandviewtech.entity.helper.Dimension;
 import org.grandviewtech.runner.Application;
+import org.grandviewtech.runner.Run;
+import org.grandviewtech.service.system.PropertyReader;
 import org.grandviewtech.userinterface.listeners.DocumentSizeFilter;
+
+import com.thoughtworks.xstream.XStream;
 
 public class RoutineScreen extends JFrame
 	{
-		private static final long	serialVersionUID	= -7808536714907991917L;
+		final private static Logger		LOGGER				= Logger.getLogger(RoutineScreen.class);
+		private static final long		serialVersionUID	= -7808536714907991917L;
 		
-		private static int			maxLength			= 500;
+		private static int				maxLength			= 500;
 		
-		private static int			maxNameLength		= 80;
+		private static int				maxNameLength		= 80;
 		
-		private JLabel				functionLabel		= new JLabel("Function : ");
+		private JLabel					functionLabel		= new JLabel("Function : ");
 		
-		private JLabel				descriptionLabel	= new JLabel("Descrition : ");
+		private JLabel					descriptionLabel	= new JLabel("Descrition : ");
 		
-		private JLabel				nameLabel			= new JLabel("name : ");
+		private JLabel					nameLabel			= new JLabel("name : ");
 		
-		private JLabel				nameCounterLabel	= new JLabel(maxNameLength + " characters remaining");
+		private JLabel					nameCounterLabel	= new JLabel(maxNameLength + " characters remaining");
 		
-		private JTextArea			nameTextField		= new JTextArea(2, 100);
+		private JTextArea				nameTextField		= new JTextArea(2, 100);
 		
-		private JButton				submit				= new JButton("Add");
+		private JButton					submit				= new JButton("Add");
 		
-		private JButton				cancel				= new JButton("Cancel");
+		private JButton					cancel				= new JButton("Cancel");
 		
-		private JTextArea			functionTextArea	= new JTextArea(20, 1000);
+		private JTextArea				functionTextArea	= new JTextArea(20, 1000);
 		
-		private JTextArea			descriptionTextArea	= new JTextArea(3, 500);
+		private JTextArea				descriptionTextArea	= new JTextArea(3, 500);
 		
-		private JPanel				jpanel				= new JPanel();
+		private JPanel					jpanel				= new JPanel();
 		
-		private JLabel				remainingLabel		= new JLabel("" + maxLength + " characters remaining");
+		private JLabel					remainingLabel		= new JLabel("" + maxLength + " characters remaining");
+		
+		private Map<Integer, String>	inputs				= new LinkedHashMap<Integer, String>();
+		
+		private String					result				= null;
 		
 		public void init()
 			{
@@ -54,10 +75,10 @@ public class RoutineScreen extends JFrame
 				int x = 20;
 				int y = 20;
 				addName(x, y);
-				//addDescription();
+				addDescription(x, y = y + 50);
 				addFunction(x, y = y + 100);
-				addSubmitToScreen(x, y = y + 400);
-				addCancel(x + 150, y);
+				addSubmitToScreen(x + 100, y = y + 250);
+				addCancel(x + 250, y);
 				invokeFrame();
 			}
 			
@@ -93,7 +114,7 @@ public class RoutineScreen extends JFrame
 				scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 				scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 				descriptionLabel.setBounds(x, y, 100, 25);
-				scrollPane.setBounds(x, y, 600, 20);
+				scrollPane.setBounds(x + 80, y, 600, 60);
 				jpanel.add(descriptionLabel);
 				jpanel.add(scrollPane);
 			}
@@ -113,6 +134,7 @@ public class RoutineScreen extends JFrame
 				jpanel.add(remainingLabel);
 				//	configureTextArea();
 				configure(functionTextArea, remainingLabel, maxLength, false);
+				addKeyListener();
 			}
 			
 		private void addCancel(int x, int y)
@@ -125,16 +147,54 @@ public class RoutineScreen extends JFrame
 				jpanel.add(cancel);
 			}
 			
+		private void addKeyListener()
+			{
+				functionTextArea.addKeyListener(new KeyListener()
+					{
+						@Override
+						public void keyTyped(KeyEvent e)
+							{
+							}
+							
+						@Override
+						public void keyReleased(KeyEvent e)
+							{
+								Pattern pattern = Pattern.compile("\\$\\{([^}]*)\\}");
+								Matcher matcher = pattern.matcher(functionTextArea.getText());
+								int from = 0;
+								int count = 0;
+								while (matcher.find(from))
+									{
+										count++;
+										from = matcher.start() + 1;
+										String find = matcher.group(0);
+										if (find.contains("INPUT"))
+											{
+												inputs.put(new Integer(count), "${INPUT" + count + "}");
+											}
+										else if (find.contains("RESULT"))
+											{
+												result = "${RESULT}";
+											}
+									}
+							}
+							
+						@Override
+						public void keyPressed(KeyEvent e)
+							{
+							}
+					});
+			}
+			
 		private void addSubmitToScreen(int x, int y)
 			{
 				submit.setBounds(x, y, 100, 25);
 				JFrame frame = this;
 				submit.addActionListener(event ->
 					{
-						String comment = functionTextArea.getText();
-						//rung.setComment(comment);
-						JOptionPane optionPane = new JOptionPane("Comment submitted Successfully", JOptionPane.INFORMATION_MESSAGE);
-						JDialog dialog = optionPane.createDialog(null, "Rung Comment");
+						saveRoutine(new Routine(nameTextField.getText(), descriptionTextArea.getText(), functionTextArea.getText(), inputs, result));
+						JOptionPane optionPane = new JOptionPane("Routine Added Successfully", JOptionPane.INFORMATION_MESSAGE);
+						JDialog dialog = optionPane.createDialog(null, "Add Routine");
 						dialog.setModal(false);
 						dialog.setVisible(true);
 						// http://docs.oracle.com/javase/tutorial/uiswing/components/dialog.html#stayup
@@ -190,5 +250,21 @@ public class RoutineScreen extends JFrame
 			{
 				String count = (remaining) ? (maxLength - textLength) + " characters remaining." : textLength + " characters.";
 				countLabel.setText(count);
+			}
+			
+		private void saveRoutine(Routine routine)
+			{
+				XStream stream = new XStream();
+				FileOutputStream fileOutputStream;
+				try
+					{
+						fileOutputStream = new FileOutputStream(new File(PropertyReader.getProperties("resourcePath") + File.separator + PropertyReader.getProperties("routinePath") + File.separator + routine.getName() + ".xml"));
+						stream.toXML(routine, fileOutputStream);
+					}
+				catch (FileNotFoundException exception)
+					{
+						LOGGER.error(exception.getLocalizedMessage(), exception);
+					}
+					
 			}
 	}
