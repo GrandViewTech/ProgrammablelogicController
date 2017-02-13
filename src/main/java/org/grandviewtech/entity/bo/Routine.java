@@ -11,6 +11,7 @@ public class Routine implements Serializable
 		private String					name;
 		private String					functionalBlock;
 		private Map<Integer, String>	inputs				= new LinkedHashMap<>();
+		private Map<Integer, String>	values				= new LinkedHashMap<>();
 		private String					result;
 		
 		public String getDescription()
@@ -71,6 +72,21 @@ public class Routine implements Serializable
 				this.functionalBlock = functionalBlock;
 				this.inputs = inputs;
 				this.result = result;
+			}
+			
+		public Map<Integer, String> getValues()
+			{
+				return values;
+			}
+			
+		public void addValue(Integer key, String value)
+			{
+				System.out.println("Key : " + key + " | Value : " + value);
+				if(this.values==null)
+					{
+						this.values=new LinkedHashMap<>();
+					}
+				this.values.put(key, value);
 			}
 			
 	}
