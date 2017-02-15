@@ -37,11 +37,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -54,6 +56,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.Timer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -184,28 +187,15 @@ public class ColumnConfigurationScreen extends JFrame
 			
 		private void routineCoilConfiguration(ColumnScreen columnScreen)
 			{
-				//loadCategory();
-				//loadSubCategory();
-				//addSubmitToScreen(7, columnScreen);
-				//addCancelToScreen(7, columnScreen);
-				routineList();
+				routineList(columnScreen);
 				invokeFrame(CustomDimension.ROUTINE_CONFIGURATION_SCREEN);
 			}
 			
-		private void routineList()
+		private Routine selectedRoutine = null;
+		
+		private void routineList(ColumnScreen columnScreen)
 			{
-				Map<String, JTextField> inputFields = new LinkedHashMap<String, JTextField>();
-				JLabel name = new JLabel();
-				name.setText("Name      : ");
-				name.setBounds(X1 + 170, Y - 5, 150, 25);
-				panel.add(name);
-				JLabel description = new JLabel();
-				description.setText("Descrption : ");
-				description.setBounds(X1 + 170, (Y - 5) + 25, 150, 25);
-				panel.add(description);
-				JTextArea descriptionTextArea = new JTextArea(3, 500);
-				descriptionTextArea.setBounds(X1 + 250, (Y - 5) + 25, 600, 60);
-				panel.add(descriptionTextArea);
+				
 				List<String> dataList = new ArrayList<>();
 				for (File file : (new File(resourcePath)).listFiles())
 					{
@@ -229,54 +219,21 @@ public class ColumnConfigurationScreen extends JFrame
 						defaultListModel.addElement(data);
 					}
 				JList<String> routineList = new JList<String>(defaultListModel);
+				if (dataList.size() > 0)
+					{
+						routineList.setSelectedIndex(0);
+						selectRoutine(dataList.get(0));
+					}
 				routineList.addListSelectionListener(new ListSelectionListener()
 					{
 						@Override
-						public void valueChanged(ListSelectionEvent e)
+						public void valueChanged(ListSelectionEvent event)
 							{
-								if (!e.getValueIsAdjusting())
+								if (!event.getValueIsAdjusting())
 									{
-										try
+										if (routineList.getSelectedValuesList().size() > 0)
 											{
-												final List<String> selectedValuesList = routineList.getSelectedValuesList();
-												if (selectedValuesList.size() > 0)
-													{
-														String selectedRoutineName = selectedValuesList.get(0);
-														name.setText("Name : " + selectedRoutineName);
-														File selectedFile = new File(PropertyReader.getProperties("resourcePath") + File.separator + PropertyReader.getProperties("routinePath") + File.separator + selectedRoutineName + ".xml");
-														XStream stream = new XStream();
-														Object object;
-														object = stream.fromXML(new FileInputStream(selectedFile));
-														Routine routine = (Routine) object;
-														descriptionTextArea.setText(routine.getDescription());
-														descriptionTextArea.setToolTipText(descriptionTextArea.getText());
-														descriptionTextArea.setEditable(false);
-														int height = (Y - 5) + 70;
-														int counter = 1;
-														for (Map.Entry<Integer, String> input : routine.getInputs().entrySet())
-															{
-																String value = input.getValue();
-																JLabel label = new JLabel("Input(" + input.getKey() + ") :");
-																label.setName(value);
-																JTextField inputTextField = new JTextField();
-																inputTextField.setName(value);
-																inputFields.put(inputTextField.getName(), inputTextField);
-																label.setBounds(((counter % 2 != 0) ? X1 : X2 + 100) + 170, ((counter % 2 != 0) ? height = height + 25 : height), 150, 25);
-																inputTextField.setBounds(((counter % 2 != 0) ? X1 : X2 + 100) + 250, height, 100, 25);
-																inputTextField.addActionListener(action ->
-					                                                {
-						                                                routine.addValue(input.getKey(), inputTextField.getText());
-					                                                });
-																panel.add(label);
-																panel.add(inputTextField);
-																counter = counter + 1;
-															}
-														panel.repaint();
-													}
-											}
-										catch (FileNotFoundException fileNotFoundException)
-											{
-												logger.error(fileNotFoundException.getLocalizedMessage(), fileNotFoundException);
+												selectRoutine(routineList.getSelectedValuesList().get(0));
 											}
 									}
 							}
@@ -288,25 +245,100 @@ public class ColumnConfigurationScreen extends JFrame
 				scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 				scrollPane.setBounds(X1, Y - 5, 150, 400);
 				panel.add(scrollPane);
+				JButton submit = new JButton("Submit");
+				submit.setBounds(X1 + 180, 410, 150, 25);
+				submit.addActionListener(onSubmit ->
+					{
+						JOptionPane optionPane = null;
+						if (selectedRoutine != null)
+							{
+								for (Entry<String, JTextField> data : dataset.entrySet())
+									{
+										selectedRoutine.addValue(new Integer(data.getKey()), data.getValue().getText());
+									}
+								columnScreen.setRoutine(selectedRoutine);
+								optionPane = new JOptionPane("Routine Selected Successfully", JOptionPane.INFORMATION_MESSAGE);
+							}
+						else
+							{
+								optionPane = new JOptionPane("Error While Selecting Routine", JOptionPane.INFORMATION_MESSAGE);
+							}
+						JDialog dialog = optionPane.createDialog(null, "Select Routine");
+						dialog.setModal(false);
+						dialog.setVisible(true);
+						// http://docs.oracle.com/javase/tutorial/uiswing/components/dialog.html#stayup
+						Timer timer = new Timer(600, timerEvent ->
+							{
+								dialog.setVisible(false);
+								dialog.dispose();
+								columnScreen.apply();
+							});
+						timer.start();
+						dispose();
+					});
+				cancel.setBounds(X1 + 350, 410, 150, 25);
+				panel.add(submit);
+				panel.add(cancel);
 			}
 			
-		private void loadCategory()
+		private void selectRoutine(String selectedRoutineName)
 			{
-				category.removeAllItems();
-				for (File file : (new File(resourcePath)).listFiles())
+				try
 					{
-						if (file.isFile() && FilenameUtils.getExtension(file.getName()).contains("xml"))
+						Map<String, JTextField> inputFields = new LinkedHashMap<String, JTextField>();
+						JLabel name = new JLabel();
+						name.setText("Name      : ");
+						name.setBounds(X1 + 170, Y - 5, 150, 25);
+						panel.add(name);
+						JLabel description = new JLabel();
+						description.setText("Descrption : ");
+						description.setBounds(X1 + 170, (Y - 5) + 25, 150, 25);
+						panel.add(description);
+						JTextArea descriptionTextArea = new JTextArea(3, 500);
+						descriptionTextArea.setBounds(X1 + 250, (Y - 5) + 25, 600, 60);
+						panel.add(descriptionTextArea);
+						name.setText("Name : " + selectedRoutineName);
+						File selectedFile = new File(PropertyReader.getProperties("resourcePath") + File.separator + PropertyReader.getProperties("routinePath") + File.separator + selectedRoutineName + ".xml");
+						XStream stream = new XStream();
+						Object object;
+						object = stream.fromXML(new FileInputStream(selectedFile));
+						Routine routine = (Routine) object;
+						descriptionTextArea.setText(routine.getDescription());
+						descriptionTextArea.setToolTipText(descriptionTextArea.getText());
+						descriptionTextArea.setEditable(false);
+						int height = (Y - 5) + 70;
+						int counter = 1;
+						for (Map.Entry<Integer, String> input : routine.getInputs().entrySet())
 							{
-								String name = FilenameUtils.getBaseName(file.getName());
-								category.addItem(name);
+								String value = input.getValue();
+								JLabel label = new JLabel("Input(" + input.getKey() + ") :");
+								label.setName(value);
+								JTextField inputTextField = new JTextField();
+								inputTextField.setName("" + input.getKey());
+								inputFields.put(inputTextField.getName(), inputTextField);
+								label.setBounds(((counter % 2 != 0) ? X1 : X2 + 100) + 170, ((counter % 2 != 0) ? height = height + 25 : height), 150, 25);
+								inputTextField.setBounds(((counter % 2 != 0) ? X1 : X2 + 100) + 250, height, 100, 25);
+								inputTextField.addActionListener(action ->
+									{
+										routine.addValue(new Integer(inputTextField.getName()), inputTextField.getText());
+									});
+								panel.add(label);
+								panel.add(inputTextField);
+								dataset.put(inputTextField.getName(), inputTextField);
+								counter = counter + 1;
 							}
+						selectedRoutine = routine;
+						panel.repaint();
 					}
-				JLabel label = new JLabel("Category : ");
-				label.setBounds(X1, Y - 5, WIDTH, HEIGHT);
-				category.setBounds(X2 - 10, Y - 5, CATEGORY_WIDTH, HEIGHT);
-				panel.add(label);
-				panel.add(category);
-				addChangeListernerForCategory();
+				catch (FileNotFoundException fileNotFoundException)
+					{
+						logger.error(fileNotFoundException.getLocalizedMessage(), fileNotFoundException);
+					}
+				catch (Exception exception)
+					{
+						logger.error(exception.getLocalizedMessage(), exception);
+					}
+					
 			}
 			
 		private void addChangeListernerForRoutine()

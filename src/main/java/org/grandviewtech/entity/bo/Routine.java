@@ -36,11 +36,19 @@ public class Routine implements Serializable
 			
 		public Map<Integer, String> getInputs()
 			{
+				if (this.inputs == null)
+					{
+						this.inputs = new LinkedHashMap<>();
+					}
 				return inputs;
 			}
 			
 		public void setInputs(Map<Integer, String> inputs)
 			{
+				if (this.inputs == null)
+					{
+						this.inputs = new LinkedHashMap<>();
+					}
 				this.inputs = inputs;
 			}
 			
@@ -82,9 +90,9 @@ public class Routine implements Serializable
 		public void addValue(Integer key, String value)
 			{
 				System.out.println("Key : " + key + " | Value : " + value);
-				if(this.values==null)
+				if (this.values == null)
 					{
-						this.values=new LinkedHashMap<>();
+						this.values = new LinkedHashMap<>();
 					}
 				this.values.put(key, value);
 			}

@@ -1,3 +1,4 @@
+
 package org.grandviewtech.userinterface.screen;
 
 import java.awt.Color;
@@ -12,6 +13,8 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -24,7 +27,10 @@ import org.grandviewtech.constants.CustomDimension;
 import org.grandviewtech.constants.CustomIcon;
 import org.grandviewtech.entity.bo.ClipBoard;
 import org.grandviewtech.entity.bo.Response;
+import org.grandviewtech.entity.bo.Routine;
 import org.grandviewtech.entity.bo.Screen;
+import org.grandviewtech.entity.enums.Behavior;
+import org.grandviewtech.entity.enums.BehaviorLayout;
 import org.grandviewtech.entity.enums.CoilType;
 import org.grandviewtech.entity.enums.Edge;
 import org.grandviewtech.entity.enums.InputType;
@@ -39,30 +45,61 @@ import org.grandviewtech.userinterface.listeners.SettingsMouseClickListener;
 
 public class ColumnScreen extends JPanel implements DropTargetListener, Comparable<ColumnScreen>
 	{
-		private static final long serialVersionUID = -4357735797077739462L;
-		private ColumnScreen	  previous;
-		private ColumnScreen	  next;
-		private ColumnScreen	  above;
-		private ColumnScreen	  below;
-		private int				  rowNumber;
-		private int				  columnNumber;
-		static Screen			  SCREEN		   = Screen.getInstance();
-		private JLabel			  setting		   = new JLabel(CustomIcon.SETTING);
-		private JLabel			  valueLabel	   = new JLabel("");
-		private boolean			  isBlank		   = true;
-		private JLabel			  tagLabel		   = new JLabel();
-		private String			  tag			   = "";
-		private String			  value;
-		private CoilType		  temp			   = CoilType.DEFAULT;
-		private CoilType		  coilType		   = CoilType.DEFAULT;
-		private CoilType		  childType		   = CoilType.DEFAULT;
-		private String			  comment;
-		private InputType		  inputType;
-		private NoNc			  nonc			   = NoNc.DEFAULT;
-		private Edge			  edge			   = Edge.DEFAULT;
-		private boolean			  parent		   = false;
-		private boolean			  error			   = false;
+		private static final long		serialVersionUID	= -4357735797077739462L;
+		private ColumnScreen			previous;
+		private ColumnScreen			next;
+		private ColumnScreen			above;
+		private ColumnScreen			below;
+		private int						rowNumber;
+		private int						columnNumber;
+		static Screen					SCREEN				= Screen.getInstance();
+		private JLabel					setting				= new JLabel(CustomIcon.SETTING);
+		private JLabel					valueLabel			= new JLabel("");
+		private boolean					isBlank				= true;
+		private JLabel					tagLabel			= new JLabel();
+		private String					tag					= "";
+		private String					value;
+		private CoilType				temp				= CoilType.DEFAULT;
+		private CoilType				coilType			= CoilType.DEFAULT;
+		private CoilType				childType			= CoilType.DEFAULT;
+		private String					comment;
+		private InputType				inputType;
+		private NoNc					nonc				= NoNc.DEFAULT;
+		private Edge					edge				= Edge.DEFAULT;
+		private boolean					parent				= false;
+		private boolean					error				= false;
+		private Routine					routine;
+		// Need To Check Its Usage
+		private Behavior				behavior			= Behavior.DEFAULT;
+		private List<BehaviorLayout>	behaviorLayouts		= new ArrayList<>();
 		
+		public List<BehaviorLayout> getBehaviorLayouts()
+			{
+				return behaviorLayouts;
+			}
+			
+		public void addBehaviorLayout(BehaviorLayout behaviorLayout)
+			{
+				if (this.behaviorLayouts == null)
+					{
+						this.behaviorLayouts = new ArrayList<>();
+					}
+				if (behaviorLayout != null)
+					{
+						this.behaviorLayouts.add(behaviorLayout);
+					}
+			}
+			
+		public Behavior getBehavior()
+			{
+				return behavior;
+			}
+			
+		public void setBehavior(Behavior behavior)
+			{
+				this.behavior = behavior;
+			}
+			
 		public int getColumnNumber()
 			{
 				return columnNumber;
@@ -482,11 +519,12 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 							}
 						case ROUTINE:
 							{
-								ColumnConfigurationScreen columnConfigurationScreen = new ColumnConfigurationScreen();
+								/*ColumnConfigurationScreen columnConfigurationScreen = new ColumnConfigurationScreen();
 								columnConfigurationScreen.initiateInstance(this);
 								columnConfigurationScreen.requestFocusInWindow();
 								ClipBoard.setCurrentRowNumber(rowNumber);
-								ClipBoard.setCurrentColumnNumber(columnNumber);
+								ClipBoard.setCurrentColumnNumber(columnNumber);*/
+								initColumnConfigurationScreen();
 								break;
 							}
 						case DEFAULT:
@@ -546,6 +584,16 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 		public void setTemp(CoilType temp)
 			{
 				this.temp = temp;
+			}
+			
+		public Routine getRoutine()
+			{
+				return routine;
+			}
+			
+		public void setRoutine(Routine routine)
+			{
+				this.routine = routine;
 			}
 			
 		private void initColumnConfigurationScreen()
