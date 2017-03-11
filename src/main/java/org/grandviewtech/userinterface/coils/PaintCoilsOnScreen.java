@@ -27,18 +27,11 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.QuadCurve2D;
-import java.util.Map;
-import java.util.TreeMap;
-
-import javax.swing.JLabel;
 
 import org.grandviewtech.constants.ApplicationConstant;
 import org.grandviewtech.constants.CustomFont;
 import org.grandviewtech.entity.bo.ClipBoard;
-import org.grandviewtech.entity.bo.Routine;
 import org.grandviewtech.entity.bo.Screen;
-import org.grandviewtech.entity.enums.Behavior;
-import org.grandviewtech.entity.enums.BehaviorLayout;
 import org.grandviewtech.entity.enums.CoilType;
 import org.grandviewtech.entity.enums.Edge;
 import org.grandviewtech.entity.enums.InputType;
@@ -65,15 +58,6 @@ public class PaintCoilsOnScreen
 					{
 						ColumnScreenGenerator.createColumnNeighbourHood(ClipBoard.SCREEN.getRow(columnScreen.getRowNumber()), columnScreen);
 						paint(columnScreen, graphics, columnScreen.getChildType());
-					}
-				if (columnScreen.getBehavior() != null && columnScreen.getBehavior().equals(Behavior.DEFAULT) == false)
-					{
-						// Paint Behavior
-						if (columnScreen.getRoutine() != null)
-							{
-								// Validate Routine Behavior
-								paintRoutineCoil(columnScreen, graphics);
-							}
 					}
 			}
 			
@@ -121,55 +105,13 @@ public class PaintCoilsOnScreen
 					
 			}
 			
-		public static void paintRoutineCoil(ColumnScreen component, Graphics graphics)
+		public static void paintRoutineCoil(Component component, Graphics graphics)
 			{
-				
 				int offset = 1;
-				Behavior behavior = component.getBehavior();
-				Routine routine = component.getRoutine();
-				switch (behavior)
-					{
-						case END_ROUTINE:
-							{
-								graphics.drawLine(ApplicationConstant.SECTION_HEIGHT - offset, 0, ApplicationConstant.SECTION_WIDTH - offset, ApplicationConstant.SECTION_HEIGHT - offset);
-								graphics.drawLine(ApplicationConstant.SECTION_WIDTH - offset, 0, ApplicationConstant.SECTION_WIDTH - offset, ApplicationConstant.SECTION_HEIGHT - offset);
-								graphics.drawLine(ApplicationConstant.SECTION_WIDTH - offset, 0, ApplicationConstant.SECTION_WIDTH - offset, 0);
-								break;
-							}
-						case MIDDLE_ROUTINE:
-							{
-								graphics.drawLine(0, 0, ApplicationConstant.SECTION_WIDTH - offset, ApplicationConstant.SECTION_HEIGHT - offset);
-								graphics.drawLine(ApplicationConstant.SECTION_WIDTH - offset, 0, ApplicationConstant.SECTION_WIDTH - offset, ApplicationConstant.SECTION_HEIGHT - offset);
-								break;
-							}
-						case START_ROUTINE:
-							{
-								graphics.drawLine(0, 0, ApplicationConstant.SECTION_WIDTH - offset, 0);
-								graphics.drawLine(0, 0, ApplicationConstant.SECTION_WIDTH - offset, ApplicationConstant.SECTION_HEIGHT - offset);
-								graphics.drawLine(ApplicationConstant.SECTION_WIDTH - offset, 0, ApplicationConstant.SECTION_WIDTH - offset, ApplicationConstant.SECTION_HEIGHT - offset);
-								break;
-							}
-						case COMPLETE_ROUTINE:
-							{
-								graphics.drawLine(0, 0, ApplicationConstant.SECTION_WIDTH - offset, 0);
-								graphics.drawLine(0, 0, 0, ApplicationConstant.SECTION_HEIGHT - offset);
-								graphics.drawLine(ApplicationConstant.SECTION_WIDTH - offset, 0, ApplicationConstant.SECTION_WIDTH - offset, ApplicationConstant.SECTION_HEIGHT - offset);
-								graphics.drawLine(0, ApplicationConstant.SECTION_HEIGHT - offset, ApplicationConstant.SECTION_WIDTH - offset, ApplicationConstant.SECTION_HEIGHT - offset);
-								break;
-							}
-					}
-					
-				int counter = 1;
-				int height = 10;
-				for (Map.Entry<Integer, String> input : routine.getInputs().entrySet())
-					{
-						String value = routine.getValues().get(input.getKey());
-						JLabel label = new JLabel("I(" + input.getKey() + ") : " + value);
-						label.setName(value);
-						label.setBounds(5, ((counter % 2 == 0) ? height = height + 20 : height), 100, 10);
-						component.add(label);
-						counter = counter + 1;
-					}
+				graphics.drawLine(0, 0, ApplicationConstant.SECTION_WIDTH - offset, 0);
+				graphics.drawLine(0, 0, 0, ApplicationConstant.SECTION_HEIGHT - offset);
+				graphics.drawLine(ApplicationConstant.SECTION_WIDTH - offset, 0, ApplicationConstant.SECTION_WIDTH - offset, ApplicationConstant.SECTION_HEIGHT - offset);
+				graphics.drawLine(0, ApplicationConstant.SECTION_HEIGHT - offset, (ApplicationConstant.SECTION_WIDTH - offset), ApplicationConstant.SECTION_HEIGHT - offset);
 			}
 			
 		private static void paintOutputCoil(Component component, Graphics graphics)
@@ -324,6 +266,7 @@ public class PaintCoilsOnScreen
 					{
 						case LINE:
 							{
+								
 								paintLineCoil(graphics);
 								while (current.hasNext())
 									{
@@ -371,80 +314,7 @@ public class PaintCoilsOnScreen
 							}
 						case ROUTINE:
 							{
-								Routine routine = current.getRoutine();
-								if (routine != null)
-									{
-										Map<Integer, String> inputs = routine.getValues();
-										if (inputs != null && inputs.size() > 0)
-											{
-												if (inputs.size() <= 2)
-													{
-														current.setCoilType(CoilType.ROUTINE);
-														current.setBehavior(Behavior.COMPLETE_ROUTINE);
-														current.addBehaviorLayout(BehaviorLayout.LEFT);
-														current.addBehaviorLayout(BehaviorLayout.TOP);
-														current.addBehaviorLayout(BehaviorLayout.BOTTOM);
-														//
-														ColumnScreenGenerator.createColumnNeighbourHood(ClipBoard.SCREEN.getRow(current.getRowNumber()), current);
-														ColumnScreen neighbour1 = current.getNext(false);
-														if (neighbour1 != null && neighbour1.isBlank())
-															{
-																neighbour1.setCoilType(CoilType.ROUTINE);
-																neighbour1.setBehavior(Behavior.COMPLETE_ROUTINE);
-																neighbour1.addBehaviorLayout(BehaviorLayout.RIGHT);
-																neighbour1.addBehaviorLayout(BehaviorLayout.TOP);
-																neighbour1.addBehaviorLayout(BehaviorLayout.BOTTOM);
-															}
-														else
-															{
-																// Throw Error
-															}
-													}
-												else
-													{
-														int threshold = Math.round((inputs.size() / 2f));
-														int counter = 0;
-														current.setCoilType(CoilType.ROUTINE);
-														current.setBehavior(Behavior.START_ROUTINE);
-														TreeMap<Integer, String> sorted = new TreeMap<Integer, String>(inputs);
-														current.setRoutine(new Routine(routine.getName(), routine.getDescription(), null, sorted, routine.getResult()));
-														ColumnScreenGenerator.createColumnNeighbourHood(ClipBoard.SCREEN.getRow(current.getRowNumber()), current);
-														while (counter < threshold)
-															{
-																ColumnScreen neighbour1 = current.getBelow(false);
-																if (neighbour1 != null)
-																	{
-																		neighbour1.setCoilType(CoilType.ROUTINE);
-																		neighbour1.setBehavior((counter == (threshold - 1)) ? Behavior.END_ROUTINE : Behavior.MIDDLE_ROUTINE);
-																		neighbour1.setRoutine(new Routine(routine.getName(), routine.getDescription(), null, sorted, routine.getResult()));
-																		ColumnScreenGenerator.createColumnNeighbourHood(ClipBoard.SCREEN.getRow(neighbour1.getRowNumber()), neighbour1);
-																		ColumnScreenGenerator.createColumnNeighbourHood(ClipBoard.SCREEN.getRow(current.getRowNumber()), current);
-																		ColumnScreen neighbour2 = neighbour1.getNext(false);
-																		if (neighbour2 != null && neighbour2.isBlank())
-																			{
-																				neighbour2.setCoilType(CoilType.ROUTINE);
-																				neighbour2.setBehavior(Behavior.COMPLETE_ROUTINE);
-																				neighbour2.addBehaviorLayout(BehaviorLayout.RIGHT);
-																				neighbour2.addBehaviorLayout(BehaviorLayout.TOP);
-																				neighbour2.addBehaviorLayout(BehaviorLayout.BOTTOM);
-																			}
-																		else
-																			{
-																				// Throw Error
-																			}
-																		current = neighbour1.getBelow(false);
-																		counter = counter + 2;
-																	}
-															}
-													}
-											}
-										else
-											{
-												current.setCoilType(CoilType.ROUTINE);
-												current.setBehavior(Behavior.COMPLETE_ROUTINE);
-												//ColumnScreenGenerator.createColumnNeighbourHood(ClipBoard.SCREEN.getRow(current.getRowNumber()), current);
-											}
-									}
+								paintRoutineCoil(current, graphics);
 								break;
 							}
 						case DEFAULT:
@@ -491,5 +361,4 @@ public class PaintCoilsOnScreen
 					}
 					
 			}
-			
 	}
