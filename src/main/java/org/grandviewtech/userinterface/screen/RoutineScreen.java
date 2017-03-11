@@ -97,11 +97,13 @@ public class RoutineScreen extends JFrame
 			{
 				nameLabel.setBounds(x, y, 100, 25);
 				// JTextField Configuration
-				//nameTextField.setPreferredSize(new java.awt.Dimension(100, 25));
+				// nameTextField.setPreferredSize(new java.awt.Dimension(100,
+				// 25));
 				nameTextField.setBounds(x + 80, y, 600, 20);
 				configure(nameTextField, nameCounterLabel, maxNameLength, true);
 				// Name Counter Label
-				//nameCounterLabel.setBounds(x + 80, y + scrollPane.getHeight(), 325, 25);
+				// nameCounterLabel.setBounds(x + 80, y +
+				// scrollPane.getHeight(), 325, 25);
 				jpanel.add(nameLabel);
 				jpanel.add(nameTextField);
 				jpanel.add(nameCounterLabel);
@@ -131,7 +133,7 @@ public class RoutineScreen extends JFrame
 				// Remaining Block
 				remainingLabel.setBounds(x, y + scrollPane.getHeight(), 325, 25);
 				jpanel.add(remainingLabel);
-				//	configureTextArea();
+				// configureTextArea();
 				configure(functionTextArea, remainingLabel, maxLength, false);
 				addKeyListener();
 			}
@@ -191,13 +193,14 @@ public class RoutineScreen extends JFrame
 				JFrame frame = this;
 				submit.addActionListener(event ->
 					{
-						saveRoutine(new Routine(nameTextField.getText(), descriptionTextArea.getText(), functionTextArea.getText(), inputs, result));
+						saveRoutine(new Routine(("" + nameTextField.getText()).trim(), descriptionTextArea.getText(), functionTextArea.getText(), inputs, result));
 						JOptionPane optionPane = new JOptionPane("Routine Added Successfully", JOptionPane.INFORMATION_MESSAGE);
 						JDialog dialog = optionPane.createDialog(null, "Add Routine");
 						dialog.setModal(false);
 						dialog.setVisible(true);
 						// http://docs.oracle.com/javase/tutorial/uiswing/components/dialog.html#stayup
-						//CustomToolBar.setRungComment(rung.getRowNumber(), comment);
+						// CustomToolBar.setRungComment(rung.getRowNumber(),
+						// comment);
 						Timer timer = new Timer(600, timerEvent ->
 							{
 								dialog.setVisible(false);

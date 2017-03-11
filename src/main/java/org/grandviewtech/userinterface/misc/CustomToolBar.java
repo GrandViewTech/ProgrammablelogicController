@@ -53,14 +53,14 @@ import org.grandviewtech.userinterface.ui.ToolBarLabel;
 
 public class CustomToolBar
 	{
-		private static Activities activities	   = Activities.getInstance();
-		final static Screen		  screen		   = Screen.getInstance();
-		final static JToolBar	  toolBar		   = new JToolBar("Ribbon");
-		final static JToolBar	  columnsBar	   = new JToolBar("Columns");
-		private static JLabel	  pointerValue	   = new JLabel("");
-		private static JLabel	  rungComment	   = new JLabel("Comment : ");
-		private static JLabel	  rungCommentValue = new JLabel("");
-		private static JLabel	  pointerLabel	   = new JLabel(" Pointer : ");
+		private static Activities	activities			= Activities.getInstance();
+		final static Screen			screen				= Screen.getInstance();
+		final static JToolBar		toolBar				= new JToolBar("Ribbon");
+		final static JToolBar		columnsBar			= new JToolBar("Columns");
+		private static JLabel		pointerValue		= new JLabel("");
+		private static JLabel		rungComment			= new JLabel("Comment : ");
+		private static JLabel		rungCommentValue	= new JLabel("");
+		private static JLabel		pointerLabel		= new JLabel(" Pointer : ");
 		
 		public static JToolBar getToolBar()
 			{
@@ -95,11 +95,15 @@ public class CustomToolBar
 			
 		public static JToolBar getColoumnMarker()
 			{
+				columnsBar.setLayout(null);
 				columnsBar.setPreferredSize(new Dimension(1200, 20));
-				columnsBar.setBackground(Color.white);
+				columnsBar.setBackground(Color.WHITE);
 				columnsBar.setRollover(true);
+				JLabel version = new JLabel("Veriosn : 10.01");
+				version.setBounds(1190, 0, 100, 10);
+				columnsBar.add(version);
 				// columnsBar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-				Helper.setCursor(toolBar);
+				// Helper.setCursor(toolBar);
 				return columnsBar;
 			}
 			
