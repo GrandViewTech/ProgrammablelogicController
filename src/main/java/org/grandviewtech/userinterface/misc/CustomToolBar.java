@@ -37,6 +37,7 @@ import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.border.Border;
 
+import org.grandviewtech.constants.ApplicationConstant;
 import org.grandviewtech.constants.CustomIcon;
 import org.grandviewtech.entity.bo.ClipBoard;
 import org.grandviewtech.entity.bo.Screen;
@@ -51,7 +52,7 @@ import org.grandviewtech.userinterface.screen.ColumnScreen;
 import org.grandviewtech.userinterface.ui.DragLabel;
 import org.grandviewtech.userinterface.ui.ToolBarLabel;
 
-public class CustomToolBar
+public class CustomToolBar extends ApplicationConstant
 	{
 		private static Activities	activities			= Activities.getInstance();
 		final static Screen			screen				= Screen.getInstance();
@@ -99,7 +100,7 @@ public class CustomToolBar
 				columnsBar.setPreferredSize(new Dimension(1200, 20));
 				columnsBar.setBackground(Color.WHITE);
 				columnsBar.setRollover(true);
-				JLabel version = new JLabel("Veriosn : 10.01");
+				JLabel version = new JLabel(VERSION);
 				version.setBounds(1190, 0, 100, 10);
 				columnsBar.add(version);
 				// columnsBar.setCursor(new Cursor(Cursor.HAND_CURSOR));

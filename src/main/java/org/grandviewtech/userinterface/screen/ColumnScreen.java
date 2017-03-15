@@ -24,6 +24,7 @@ import org.grandviewtech.constants.CustomDimension;
 import org.grandviewtech.constants.CustomIcon;
 import org.grandviewtech.entity.bo.ClipBoard;
 import org.grandviewtech.entity.bo.Response;
+import org.grandviewtech.entity.bo.Routine;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CoilType;
 import org.grandviewtech.entity.enums.Edge;
@@ -58,11 +59,22 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 		private CoilType			childType			= CoilType.DEFAULT;
 		private String				comment;
 		private InputType			inputType;
-		private NoNc				nonc				= NoNc.DEFAULT;
-		private Edge				edge				= Edge.DEFAULT;
+		private NoNc				nonc;
+		private Edge				edge;
 		private boolean				parent				= false;
 		private boolean				error				= false;
+		private Routine				routine;
 		
+		public Routine getRoutine()
+			{
+				return routine;
+			}
+			
+		public void setRoutine(Routine routine)
+			{
+				this.routine = routine;
+			}
+			
 		public int getColumnNumber()
 			{
 				return columnNumber;
@@ -180,7 +192,10 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 		public void apply()
 			{
 				// SCREEN.setActiveColumn(this);
-				add(setting);
+				if (!temp.equals(CoilType.LINE))
+					{
+						add(setting);
+					}
 				setBlank(false);
 				setCoilType(temp);
 				RowValidation.validate(this);

@@ -27,10 +27,14 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.QuadCurve2D;
+import java.util.Map;
+
+import javax.swing.JLabel;
 
 import org.grandviewtech.constants.ApplicationConstant;
 import org.grandviewtech.constants.CustomFont;
 import org.grandviewtech.entity.bo.ClipBoard;
+import org.grandviewtech.entity.bo.Routine;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CoilType;
 import org.grandviewtech.entity.enums.Edge;
@@ -105,13 +109,28 @@ public class PaintCoilsOnScreen
 					
 			}
 			
-		public static void paintRoutineCoil(Component component, Graphics graphics)
+		public static void paintRoutineCoil(ColumnScreen component, Graphics graphics)
 			{
+				
 				int offset = 1;
+				Routine routine = (component).getRoutine();
 				graphics.drawLine(0, 0, ApplicationConstant.SECTION_WIDTH - offset, 0);
 				graphics.drawLine(0, 0, 0, ApplicationConstant.SECTION_HEIGHT - offset);
 				graphics.drawLine(ApplicationConstant.SECTION_WIDTH - offset, 0, ApplicationConstant.SECTION_WIDTH - offset, ApplicationConstant.SECTION_HEIGHT - offset);
 				graphics.drawLine(0, ApplicationConstant.SECTION_HEIGHT - offset, (ApplicationConstant.SECTION_WIDTH - offset), ApplicationConstant.SECTION_HEIGHT - offset);
+				int counter = 1;
+				int height = 10;
+				
+				for (Map.Entry<Integer, String> input : routine.getInputs().entrySet())
+					{
+						String value = routine.getValues().get(input.getKey());
+						JLabel label = new JLabel("I(" + input.getKey() + ") : " + value);
+						label.setName(value);
+						label.setBounds(5, ((counter % 2 == 0) ? height = height + 20 : height), 100, height);
+						component.add(label);
+						counter = counter + 1;
+					}
+					
 			}
 			
 		private static void paintOutputCoil(Component component, Graphics graphics)

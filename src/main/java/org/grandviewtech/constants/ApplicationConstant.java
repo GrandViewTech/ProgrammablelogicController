@@ -24,8 +24,19 @@ package org.grandviewtech.constants;
 
 public class ApplicationConstant
 	{
-		public static int	MAX_CELL					= 14;
-		public static int	CUSTOM_BORDER_HEIGTH_OFFSET	= 2;
-		public static int	SECTION_WIDTH				= 88;
-		public static int	SECTION_HEIGHT				= 60;
+		/*
+		 * public static int MAX_CELL = 14; public static int
+		 * CUSTOM_BORDER_HEIGTH_OFFSET = 2;
+		 */
+		/*
+		 * public static int SECTION_WIDTH = 88; public static int
+		 * SECTION_HEIGHT = 60;
+		 */
+		
+		public static int			SECTION_WIDTH				= 100;
+		public static int			SECTION_HEIGHT				= 100;
+		public static int			MAX_CELL					= 13;
+		public static int			CUSTOM_BORDER_HEIGTH_OFFSET	= 2;
+		public static Float			releaseNumber				= 10.2f;
+		final public static String	VERSION						= "V " + releaseNumber;
 	}
