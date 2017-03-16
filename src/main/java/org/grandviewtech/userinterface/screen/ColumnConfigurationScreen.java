@@ -1,5 +1,7 @@
 package org.grandviewtech.userinterface.screen;
 
+import java.awt.Component;
+
 /*
  * #%L
  * Programmable Login Controller Inteface
@@ -155,23 +157,26 @@ public class ColumnConfigurationScreen extends JFrame
 				tagValue.setText("");
 			}
 			
+		private ColumnScreen columnScreen = null;
+		
 		public void initiateInstance(ColumnScreen columnScreen)
 			{
 				try
 					{
+						this.columnScreen = columnScreen;
 						setAlwaysOnTop(true);
 						setTitle(" Row : " + columnScreen.getRowNumber() + " | Column : " + columnScreen.getColumnNumber());
 						if (isLoadCoil(columnScreen))
 							{
-								loadCoilConfiguration(columnScreen);
+								loadCoilConfiguration();
 							}
 						else if (columnScreen.getTemp().equals(CoilType.ROUTINE))
 							{
-								routineCoilConfiguration(columnScreen);
+								routineCoilConfiguration();
 							}
 						else if (columnScreen.getTemp().equals(CoilType.OUTPUT))
 							{
-								outputCoilConfiguration(columnScreen);
+								outputCoilConfiguration();
 							}
 					}
 				catch (Exception exception)
@@ -180,7 +185,7 @@ public class ColumnConfigurationScreen extends JFrame
 					}
 			}
 			
-		private void routineCoilConfiguration(ColumnScreen columnScreen)
+		private void routineCoilConfiguration()
 			{
 				routineList(columnScreen);
 				invokeFrame(CustomDimension.ROUTINE_CONFIGURATION_SCREEN);
@@ -271,27 +276,44 @@ public class ColumnConfigurationScreen extends JFrame
 						timer.start();
 						dispose();
 					});
+				JButton cancel = new JButton("Canel");
 				cancel.setBounds(X1 + 350, 410, 150, 25);
+				cancel.addActionListener(event ->
+					{
+						this.dispose();
+					});
 				panel.add(submit);
 				panel.add(cancel);
 			}
 			
+		List<Component> routineComponent = new ArrayList<>();
+		
 		private void selectRoutine(String selectedRoutineName)
 			{
 				try
 					{
+						if (routineComponent.size() > 0)
+							{
+								for (Component component : routineComponent)
+									{
+										panel.remove(component);
+									}
+							}
 						Map<String, JTextField> inputFields = new LinkedHashMap<String, JTextField>();
 						JLabel name = new JLabel();
 						name.setText("Name      : ");
 						name.setBounds(X1 + 170, Y - 5, 150, 25);
+						routineComponent.add(name);
 						panel.add(name);
 						JLabel description = new JLabel();
 						description.setText("Descrption : ");
 						description.setBounds(X1 + 170, (Y - 5) + 25, 150, 25);
+						routineComponent.add(description);
 						panel.add(description);
 						JTextArea descriptionTextArea = new JTextArea(3, 500);
 						descriptionTextArea.setBounds(X1 + 250, (Y - 5) + 25, 600, 60);
 						panel.add(descriptionTextArea);
+						routineComponent.add(descriptionTextArea);
 						name.setText("Name : " + selectedRoutineName);
 						File selectedFile = new File(PropertyReader.getProperties("resourcePath") + File.separator + PropertyReader.getProperties("routinePath") + File.separator + selectedRoutineName + ".xml");
 						XStream stream = new XStream();
@@ -303,13 +325,27 @@ public class ColumnConfigurationScreen extends JFrame
 						descriptionTextArea.setEditable(false);
 						int height = (Y - 5) + 70;
 						int counter = 1;
+						Routine current = columnScreen.getRoutine();
 						for (Map.Entry<Integer, String> input : routine.getInputs().entrySet())
 							{
+								
 								String value = input.getValue();
 								JLabel label = new JLabel("Input(" + input.getKey() + ") :");
 								label.setName(value);
 								JTextField inputTextField = new JTextField();
 								inputTextField.setName("" + input.getKey());
+								if (current != null)
+									{
+										if (current.getValues() != null)
+											{
+												String val = current.getValues().get(input.getKey());
+												if (val == null)
+													{
+														val = "";
+													}
+												inputTextField.setText(val);
+											}
+									}
 								inputFields.put(inputTextField.getName(), inputTextField);
 								label.setBounds(((counter % 2 != 0) ? X1 : X2 + 100) + 170, ((counter % 2 != 0) ? height = height + 25 : height), 150, 25);
 								inputTextField.setBounds(((counter % 2 != 0) ? X1 : X2 + 100) + 250, height, 100, 25);
@@ -318,7 +354,9 @@ public class ColumnConfigurationScreen extends JFrame
 										routine.addValue(new Integer(inputTextField.getName()), inputTextField.getText());
 									});
 								panel.add(label);
+								routineComponent.add(label);
 								panel.add(inputTextField);
+								routineComponent.add(inputTextField);
 								dataset.put(inputTextField.getName(), inputTextField);
 								counter = counter + 1;
 							}
@@ -407,7 +445,7 @@ public class ColumnConfigurationScreen extends JFrame
 				addChangeListernerForRoutine();
 			}
 			
-		private void outputCoilConfiguration(ColumnScreen columnScreen)
+		private void outputCoilConfiguration()
 			{
 				addInputValueToScreen(columnScreen);
 				addInputOptionsToScreen(columnScreen);
@@ -417,7 +455,7 @@ public class ColumnConfigurationScreen extends JFrame
 				invokeFrame(CustomDimension.OUTPUT_CONFIGURATION_SCREEN);
 			}
 			
-		private void loadCoilConfiguration(ColumnScreen columnScreen)
+		private void loadCoilConfiguration()
 			{
 				addInputValueToScreen(columnScreen);
 				addInputOptionsToScreen(columnScreen);

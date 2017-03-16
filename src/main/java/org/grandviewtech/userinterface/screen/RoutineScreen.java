@@ -38,7 +38,7 @@ public class RoutineScreen extends JFrame
 		final private static Logger		LOGGER				= Logger.getLogger(RoutineScreen.class);
 		private static final long		serialVersionUID	= -7808536714907991917L;
 		
-		private static int				maxLength			= 500;
+		private static int				maxLength			= 10000;
 		
 		private static int				maxNameLength		= 80;
 		
@@ -56,7 +56,7 @@ public class RoutineScreen extends JFrame
 		
 		private JButton					cancel				= new JButton("Cancel");
 		
-		private JTextArea				functionTextArea	= new JTextArea(20, 1000);
+		private JTextArea				functionTextArea	= new JTextArea(20, 10000);
 		
 		private JTextArea				descriptionTextArea	= new JTextArea(3, 500);
 		

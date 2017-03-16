@@ -1,7 +1,10 @@
 package org.grandviewtech.entity.bo;
 
+import java.awt.Component;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Routine implements Serializable
@@ -13,6 +16,8 @@ public class Routine implements Serializable
 		private Map<Integer, String>	inputs				= new LinkedHashMap<>();
 		private Map<Integer, String>	values				= new LinkedHashMap<>();
 		private String					result;
+		
+		private List<Component>			components			= new ArrayList<>();
 		
 		public String getDescription()
 			{
@@ -95,6 +100,24 @@ public class Routine implements Serializable
 						this.values = new LinkedHashMap<>();
 					}
 				this.values.put(key, value);
+			}
+			
+		public List<Component> getComponents()
+			{
+				if (this.components == null)
+					{
+						this.components = new ArrayList<>();
+					}
+				return components;
+			}
+			
+		public void setComponent(Component component)
+			{
+				if (this.components == null)
+					{
+						this.components = new ArrayList<>();
+					}
+				this.components.add(component);
 			}
 			
 	}

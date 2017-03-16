@@ -43,7 +43,13 @@ public class SettingsMouseClickListener implements MouseListener
 		@Override
 		public void mouseClicked(MouseEvent mouseEvent)
 			{
-				if (source != null && source.getCoilType() != null && (source.getCoilType().equals(CoilType.LOAD) || source.getCoilType().equals(CoilType.PARALLEL) || source.getCoilType().equals(CoilType.LEFT_LINK) || source.getCoilType().equals(CoilType.RIGHT_LINK) || source.getCoilType().equals(CoilType.OUTPUT)))
+				// if (source != null && source.getCoilType() != null &&
+				// (source.getCoilType().equals(CoilType.LOAD) ||
+				// source.getCoilType().equals(CoilType.PARALLEL) ||
+				// source.getCoilType().equals(CoilType.LEFT_LINK) ||
+				// source.getCoilType().equals(CoilType.RIGHT_LINK) ||
+				// source.getCoilType().equals(CoilType.OUTPUT)))
+				if (source != null && source.getCoilType() != null && !(source.getCoilType().equals(CoilType.LINE) || source.getCoilType().equals(CoilType.END)))
 					{
 						ColumnConfigurationScreen columnConfigurationScreen = new ColumnConfigurationScreen();
 						columnConfigurationScreen.initiateInstance(source);

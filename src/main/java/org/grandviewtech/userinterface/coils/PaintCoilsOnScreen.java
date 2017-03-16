@@ -111,7 +111,6 @@ public class PaintCoilsOnScreen
 			
 		public static void paintRoutineCoil(ColumnScreen component, Graphics graphics)
 			{
-				
 				int offset = 1;
 				Routine routine = (component).getRoutine();
 				graphics.drawLine(0, 0, ApplicationConstant.SECTION_WIDTH - offset, 0);
@@ -120,15 +119,18 @@ public class PaintCoilsOnScreen
 				graphics.drawLine(0, ApplicationConstant.SECTION_HEIGHT - offset, (ApplicationConstant.SECTION_WIDTH - offset), ApplicationConstant.SECTION_HEIGHT - offset);
 				int counter = 1;
 				int height = 10;
-				
-				for (Map.Entry<Integer, String> input : routine.getInputs().entrySet())
+				if (routine.getInputs() != null)
 					{
-						String value = routine.getValues().get(input.getKey());
-						JLabel label = new JLabel("I(" + input.getKey() + ") : " + value);
-						label.setName(value);
-						label.setBounds(5, ((counter % 2 == 0) ? height = height + 20 : height), 100, height);
-						component.add(label);
-						counter = counter + 1;
+						for (Map.Entry<Integer, String> input : routine.getInputs().entrySet())
+							{
+								String value = routine.getValues().get(input.getKey());
+								JLabel label = new JLabel("I(" + input.getKey() + ") : " + value);
+								label.setName(value);
+								label.setBounds(5, ((counter % 2 == 0) ? height = height + 20 : height), 100, 50);
+								component.add(label);
+								routine.setComponent(label);
+								counter = counter + 1;
+							}
 					}
 					
 			}
@@ -202,7 +204,9 @@ public class PaintCoilsOnScreen
 				graphics.fillRect(0, ApplicationConstant.SECTION_HEIGHT / 2, (ApplicationConstant.SECTION_WIDTH / 2) - 20, 1);
 				((Graphics2D) graphics).draw(new QuadCurve2D.Double((ApplicationConstant.SECTION_WIDTH / 2) - 15, (ApplicationConstant.SECTION_HEIGHT / 2) - offsetY, (ApplicationConstant.SECTION_WIDTH / 2) - 25, (ApplicationConstant.SECTION_HEIGHT / 2), (ApplicationConstant.SECTION_WIDTH / 2) - 15, (ApplicationConstant.SECTION_HEIGHT / 2) + offsetY));
 				((Graphics2D) graphics).draw(new QuadCurve2D.Double((ApplicationConstant.SECTION_WIDTH / 2) + 15, (ApplicationConstant.SECTION_HEIGHT / 2) - offsetY, (ApplicationConstant.SECTION_WIDTH / 2) + 25, (ApplicationConstant.SECTION_HEIGHT / 2), (ApplicationConstant.SECTION_WIDTH / 2) + 15, (ApplicationConstant.SECTION_HEIGHT / 2) + offsetY));
-				graphics.fillRect((ApplicationConstant.SECTION_WIDTH / 2) + 20, ApplicationConstant.SECTION_HEIGHT / 2, ApplicationConstant.SECTION_WIDTH, 1);
+				// graphics.fillRect((ApplicationConstant.SECTION_WIDTH / 2) +
+				// 20, ApplicationConstant.SECTION_HEIGHT / 2,
+				// ApplicationConstant.SECTION_WIDTH, 1);
 				if (component instanceof ColumnScreen)
 					{
 						ColumnScreen columnScreen = (ColumnScreen) component;
