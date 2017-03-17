@@ -816,14 +816,12 @@ public class ColumnConfigurationScreen extends JFrame
 										word.setSelected(true);
 										break;
 									}
-								default:
-									{
-										input.setSelected(true);
-										flag.setSelected(false);
-										output.setSelected(false);
-										word.setSelected(false);
-										break;
-									}
+								/*
+								 * default: { input.setSelected(true);
+								 * flag.setSelected(false);
+								 * output.setSelected(false);
+								 * word.setSelected(false); break; }
+								 */
 							}
 					}
 			}
@@ -847,12 +845,10 @@ public class ColumnConfigurationScreen extends JFrame
 										NC.setSelected(false);
 										break;
 									}
-								default:
-									{
-										NO.setSelected(true);
-										NC.setSelected(false);
-										break;
-									}
+								/*
+								 * default: { NO.setSelected(true);
+								 * NC.setSelected(false); break; }
+								 */
 							}
 					}
 			}
@@ -871,12 +867,6 @@ public class ColumnConfigurationScreen extends JFrame
 									break;
 								}
 							case RISING:
-								{
-									risingEdge.setSelected(true);
-									fallingEdge.setSelected(false);
-									break;
-								}
-							default:
 								{
 									risingEdge.setSelected(true);
 									fallingEdge.setSelected(false);
