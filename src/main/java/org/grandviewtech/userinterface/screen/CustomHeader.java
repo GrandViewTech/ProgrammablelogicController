@@ -163,6 +163,11 @@ public class CustomHeader
 				JMenuItem close = new JMenuItem("Close");
 				JMenuItem exit = new JMenuItem("Exit");
 				JMenuItem preference = new JMenuItem("Preference");
+				preference.addActionListener(event ->
+					{
+						PreferenceScreen preferenceScreen = new PreferenceScreen();
+						preferenceScreen.init();
+					});
 				exit.addActionListener(event ->
 					{
 						System.exit(0);
