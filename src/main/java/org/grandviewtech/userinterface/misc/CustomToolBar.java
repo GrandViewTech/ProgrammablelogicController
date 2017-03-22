@@ -101,7 +101,8 @@ public class CustomToolBar extends ApplicationConstant
 				columnsBar.setBackground(Color.WHITE);
 				columnsBar.setRollover(true);
 				JLabel version = new JLabel(VERSION);
-				version.setBounds(1190, 0, 100, 10);
+				int size = 100;
+				version.setBounds(SECTION_WIDTH * MAX_CELL, 0, size, 10);
 				columnsBar.add(version);
 				// columnsBar.setCursor(new Cursor(Cursor.HAND_CURSOR));
 				// Helper.setCursor(toolBar);

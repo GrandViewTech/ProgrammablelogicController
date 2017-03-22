@@ -445,12 +445,12 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 				setLayout(null);
 				setOpaque(true);
 				setBackground(Color.white);
-				valueLabel.setBounds(35, 6, 50, 20);
+				valueLabel.setBounds(30, 20, 100, 20);
 				add(valueLabel);
-				tagLabel.setBounds(10, 40, 50, 20);
+				tagLabel.setBounds(10, 40, 100, 20);
 				add(tagLabel);
 				setPreferredSize(CustomDimension.CELL_SIZE);
-				setting.setBounds(getX() + 68, 0, 50, 20);
+				setting.setBounds(getX() + 99, 0, 50, 20);
 				setting.addMouseListener(new SettingsMouseClickListener(this));
 				// setBorder(new CustomBorder());
 				setTransferHandler(new TransferHandler("icon"));

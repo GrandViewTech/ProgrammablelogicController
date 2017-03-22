@@ -28,6 +28,7 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -41,6 +42,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -56,6 +58,7 @@ import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.NumberFormatter;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -78,70 +81,81 @@ import com.thoughtworks.xstream.XStream;
 
 public class ColumnConfigurationScreen extends JFrame
 	{
-		private static org.apache.log4j.Logger	logger							= org.apache.log4j.Logger.getLogger(ColumnConfigurationScreen.class);
-		private static Activities				activities						= Activities.getInstance();
-		final static Screen						SCREEN							= Screen.getInstance();
-		private static final long				serialVersionUID				= 1L;
+		private static org.apache.log4j.Logger	logger				= org.apache.log4j.Logger.getLogger(ColumnConfigurationScreen.class);
+		private static Activities				activities			= Activities.getInstance();
+		final static Screen						SCREEN				= Screen.getInstance();
+		private static final long				serialVersionUID	= 1L;
+		private static NumberFormatter			numberFormatter		= null;
 		
-		private ButtonGroup						buttonGroup						= new ButtonGroup();
+		static
+			{
+				numberFormatter = new NumberFormatter(NumberFormat.getIntegerInstance());
+				numberFormatter.setValueClass(Integer.class);
+				numberFormatter.setAllowsInvalid(false);
+				numberFormatter.setMinimum(0);
+			}
+			
+		private ButtonGroup				buttonGroup						= new ButtonGroup();
 		
-		private JRadioButton					input							= new JRadioButton("Input");
+		private JRadioButton			input							= new JRadioButton("Input");
 		
-		private JRadioButton					flag							= new JRadioButton("Flag");
+		private JRadioButton			flag							= new JRadioButton("Flag");
 		
-		private JRadioButton					word							= new JRadioButton("Word");
+		private JRadioButton			word							= new JRadioButton("Word");
 		
-		private JRadioButton					output							= new JRadioButton("Output");
+		private JRadioButton			output							= new JRadioButton("Output");
 		
-		private ButtonGroup						edgeButtonGroup					= new ButtonGroup();
+		private ButtonGroup				edgeButtonGroup					= new ButtonGroup();
 		
-		private JRadioButton					risingEdge						= new JRadioButton("Rising");
+		private JRadioButton			risingEdge						= new JRadioButton("Rising");
 		
-		private JRadioButton					fallingEdge						= new JRadioButton("Falling");
+		private JRadioButton			fallingEdge						= new JRadioButton("Falling");
 		
-		private ButtonGroup						nc_noButtonGroup				= new ButtonGroup();
+		private ButtonGroup				nc_noButtonGroup				= new ButtonGroup();
 		
-		private JRadioButton					NC								= new JRadioButton("NC");
+		private JRadioButton			NC								= new JRadioButton("NC");
 		
-		private JRadioButton					NO								= new JRadioButton("NO");
+		private JRadioButton			NO								= new JRadioButton("NO");
 		
-		private JPanel							panel							= new JPanel();
+		private JPanel					panel							= new JPanel();
 		
-		private JLabel							edgeLabel						= new JLabel("Edge");
+		private JLabel					edgeLabel						= new JLabel("Edge");
 		
-		private JLabel							ncnoLabel						= new JLabel("NC/NO");
+		private JLabel					ncnoLabel						= new JLabel("NC/NO");
 		
-		private JLabel							inputValue						= new JLabel("Value");
+		private JLabel					inputValue						= new JLabel("Value");
 		
-		private JTextField						value							= new JTextField();
+		private JFormattedTextField		value							= new JFormattedTextField(numberFormatter);
 		
-		private JLabel							type							= new JLabel("Type");
+		// private JTextField value = new JTextField();
 		
-		private JLabel							tagLabel						= new JLabel("Tag");
+		private JLabel					type							= new JLabel("Type");
 		
-		private JTextField						tagValue						= new JTextField();
+		private JLabel					tagLabel						= new JLabel("Tag");
 		
-		private JButton							submit							= new JButton("Submit");
+		private JTextField				tagValue						= new JTextField();
 		
-		private JButton							cancel							= new JButton("Canel");
+		private JButton					submit							= new JButton("Submit");
 		
-		private JComboBox<String>				category						= new JComboBox<String>();
+		private JButton					cancel							= new JButton("Canel");
 		
-		private JComboBox<String>				routine							= new JComboBox<String>();
+		private JComboBox<String>		category						= new JComboBox<String>();
 		
-		private JScrollPane						scrollableConfigurationScreen	= null;
+		private JComboBox<String>		routine							= new JComboBox<String>();
 		
-		private String							resourcePath					= PropertyReader.getProperties("resourcePath") + File.separator + PropertyReader.getProperties("routinePath");
+		private JScrollPane				scrollableConfigurationScreen	= null;
 		
-		private Map<String, JTextField>			dataset							= new HashMap<String, JTextField>();
-		private String							fileName						= "";
-		private static final int				X1								= 10;
-		private static final int				X2								= 150;
-		private static final int				Y								= 30;
-		private static final int				WIDTH							= 120;
-		private static final int				RADIO_WIDTH						= 80;
-		private static final int				HEIGHT							= 20;
-		private static final int				CATEGORY_WIDTH					= (WIDTH * 2);
+		private String					resourcePath					= PropertyReader.getProperties("resourcePath") + File.separator + PropertyReader.getProperties("routinePath");
+		
+		private Map<String, JTextField>	dataset							= new HashMap<String, JTextField>();
+		private String					fileName						= "";
+		private static final int		X1								= 10;
+		private static final int		X2								= 150;
+		private static final int		Y								= 30;
+		private static final int		WIDTH							= 120;
+		private static final int		RADIO_WIDTH						= 80;
+		private static final int		HEIGHT							= 20;
+		private static final int		CATEGORY_WIDTH					= (WIDTH * 2);
 		
 		public ColumnConfigurationScreen()
 			{
@@ -435,9 +449,7 @@ public class ColumnConfigurationScreen extends JFrame
 				label.setBounds(X1, (Y - 5) * x, WIDTH, HEIGHT);
 				routine.setBounds(X2 - 10, (Y - 5) * x, CATEGORY_WIDTH, HEIGHT);
 				/*
-				 * JLabel selectedSubCategory = new JLabel("");
-				 * selectedSubCategory.setBounds(X1, (Y - 5) * (x + 2), WIDTH *
-				 * 3, HEIGHT);
+				 * JLabel selectedSubCategory = new JLabel(""); selectedSubCategory.setBounds(X1, (Y - 5) * (x + 2), WIDTH * 3, HEIGHT);
 				 */
 				panel.add(label);
 				panel.add(routine);
@@ -473,7 +485,11 @@ public class ColumnConfigurationScreen extends JFrame
 				value.setBounds(X2, Y - 5, WIDTH, HEIGHT);
 				if (columnScreen.getValue() != null && columnScreen.getValue().length() > 0)
 					{
-						value.setText(columnScreen.getValue());
+						String data = columnScreen.getValue();
+						if (data != null && data.trim().length() > 0)
+							{
+								value.setValue(new Integer(data));
+							}
 					}
 				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
 				// separator.setBounds(X1, Y * 1 + (20),
@@ -650,24 +666,37 @@ public class ColumnConfigurationScreen extends JFrame
 						if (input.isSelected() || flag.isSelected() || output.isSelected() || word.isSelected())
 							{
 								
-								boolean isRoutine = false;
-								if (isLoadCoil(columnScreen))
+								InputType inputType = findInputType();
+								Integer dt = (Integer) value.getValue();
+								String min = "min" + inputType.getInputType();
+								String max = "max" + inputType.getInputType();
+								int mixsize = PreferenceScreen.get(min);
+								int maxsize = PreferenceScreen.get(max);
+								if (dt < mixsize || dt > maxsize)
 									{
-										setNoNcValue(columnScreen);
-										setEdgeValue(columnScreen);
+										JOptionPane.showMessageDialog(submit, "Data Must be In Between " + mixsize + " : " + maxsize);
 									}
-								else if (columnScreen.getTemp().equals(CoilType.ROUTINE))
+								else
 									{
-										isRoutine = true;
+										boolean isRoutine = false;
+										if (isLoadCoil(columnScreen))
+											{
+												setNoNcValue(columnScreen);
+												setEdgeValue(columnScreen);
+											}
+										else if (columnScreen.getTemp().equals(CoilType.ROUTINE))
+											{
+												isRoutine = true;
+											}
+										if (!isRoutine)
+											{
+												setInputTagAndValue(columnScreen);
+												SearchEngine.index(columnScreen);
+											}
+										dispose();
+										columnScreen.repaint();
+										columnScreen.apply();
 									}
-								if (!isRoutine)
-									{
-										setInputTagAndValue(columnScreen);
-										SearchEngine.index(columnScreen);
-									}
-								dispose();
-								columnScreen.repaint();
-								columnScreen.apply();
 							}
 						else
 							{//
@@ -734,11 +763,33 @@ public class ColumnConfigurationScreen extends JFrame
 						optionType = " O / ";
 					}
 				columnScreen.setInputType(inputType);
-				columnScreen.setValue(value.getText());
+				columnScreen.setValue(value.getValue().toString());
 				String valueLabel = optionType + columnScreen.getValue();
 				columnScreen.getValueLabel().setText(valueLabel);
 				String tag = (tagValue.getText() == null || tagValue.getText().trim().length() == 0) ? "" : tagValue.getText();
 				columnScreen.setTag(tag);
+			}
+			
+		private InputType findInputType()
+			{
+				if (input.isSelected())
+					{
+						return InputType.INPUT;
+						
+					}
+				else if (flag.isSelected())
+					{
+						return InputType.FLAG;
+					}
+				else if (word.isSelected())
+					{
+						return InputType.WORD;
+					}
+				else if (output.isSelected())
+					{
+						return InputType.OUTPUT;
+					}
+				return null;
 			}
 			
 		private void setNoNcValue(ColumnScreen columnScreen)
@@ -775,12 +826,9 @@ public class ColumnConfigurationScreen extends JFrame
 				if (inputType != null)
 					{
 						/*
-						 * if (i == 1) { input.setSelected(true);
-						 * flag.setSelected(false); } else {
-						 * input.setSelected(false); flag.setSelected(true); }
+						 * if (i == 1) { input.setSelected(true); flag.setSelected(false); } else { input.setSelected(false); flag.setSelected(true); }
 						 * 
-						 * output.setSelected(false); word.setSelected(false); }
-						 * else {
+						 * output.setSelected(false); word.setSelected(false); } else {
 						 */
 						switch (inputType)
 							{
@@ -817,10 +865,7 @@ public class ColumnConfigurationScreen extends JFrame
 										break;
 									}
 								/*
-								 * default: { input.setSelected(true);
-								 * flag.setSelected(false);
-								 * output.setSelected(false);
-								 * word.setSelected(false); break; }
+								 * default: { input.setSelected(true); flag.setSelected(false); output.setSelected(false); word.setSelected(false); break; }
 								 */
 							}
 					}
@@ -846,8 +891,7 @@ public class ColumnConfigurationScreen extends JFrame
 										break;
 									}
 								/*
-								 * default: { NO.setSelected(true);
-								 * NC.setSelected(false); break; }
+								 * default: { NO.setSelected(true); NC.setSelected(false); break; }
 								 */
 							}
 					}

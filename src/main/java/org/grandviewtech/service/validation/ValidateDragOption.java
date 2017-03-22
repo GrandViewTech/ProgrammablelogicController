@@ -27,7 +27,9 @@ import org.grandviewtech.constants.ApplicationConstant;
 import org.grandviewtech.entity.bo.Response;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CoilType;
+import org.grandviewtech.entity.enums.InputType;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
+import org.grandviewtech.userinterface.screen.PreferenceScreen;
 import org.grandviewtech.userinterface.screen.RowScreen;
 
 public class ValidateDragOption
@@ -54,7 +56,8 @@ public class ValidateDragOption
 									}
 								case LOAD:
 									{
-										response = validateLoadtDrag(response, CoilType.LOAD, columnScreen);
+										response = validateLoadDrag(response, CoilType.LOAD, columnScreen);
+										// response = validateData(response, columnScreen);
 										break;
 									}
 								case JUMP:
@@ -95,9 +98,26 @@ public class ValidateDragOption
 				return response;
 			}
 			
-		private static Response validateLoadtDrag(Response response, CoilType dragOption, ColumnScreen columnScreen)
+		private static Response validateLoadDrag(Response response, CoilType dragOption, ColumnScreen columnScreen)
 			{
 				return validateCoil(response, dragOption, columnScreen);
+			}
+			
+		private static Response validateData(Response response, ColumnScreen columnScreen)
+			{
+				InputType inputType = columnScreen.getInputType();
+				String data = columnScreen.getValue();
+				Integer dt = new Integer(data);
+				String min = "min" + inputType.getInputType();
+				String max = "min" + inputType.getInputType();
+				int mixsize = PreferenceScreen.get(min);
+				int maxsize = PreferenceScreen.get(max);
+				if (dt < mixsize || dt > maxsize)
+					{
+						response.setError(true);
+						response.addMessage("Invalid");
+					}
+				return response;
 			}
 			
 		private static Response validateOutputDrag(Response response, CoilType dragOption, ColumnScreen columnScreen)
