@@ -211,7 +211,12 @@ public class ColumnConfigurationScreen extends JFrame
 			{
 				
 				List<String> dataList = new ArrayList<>();
-				for (File file : (new File(resourcePath)).listFiles())
+				File folder=(new File(resourcePath));
+				if(!folder.exists())
+					{
+						folder.mkdirs();
+					}
+				for (File file :folder .listFiles())
 					{
 						if (file.isFile() && FilenameUtils.getExtension(file.getName()).contains("xml"))
 							{

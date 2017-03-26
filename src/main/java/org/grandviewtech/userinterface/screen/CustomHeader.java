@@ -101,6 +101,14 @@ public class CustomHeader
 						routineScreen.init();
 					});
 				tool.add(addRoutine);
+				JMenuItem editRoutine = new JMenuItem("Edit");
+				editRoutine.setToolTipText("Edit");
+				editRoutine.addActionListener(click ->
+					{
+						RoutineScreen routineScreen = new RoutineScreen();
+						routineScreen.init();
+					});
+				tool.add(editRoutine);
 				tool.addSeparator();
 				//
 				
