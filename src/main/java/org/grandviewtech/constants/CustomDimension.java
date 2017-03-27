@@ -35,7 +35,9 @@ public class CustomDimension extends ApplicationConstant
 		public static Dimension	OUTPUT_CONFIGURATION_SCREEN		= new Dimension(350, 250);
 		public static Dimension	ROUTINE_CONFIGURATION_SCREEN	= new Dimension(800, 500);
 		public static Dimension	RUNG_COMMENT_SCREEN				= new Dimension(400, 250);
-		public static Dimension	ROUTINE_COMMENT_SCREEN			= new Dimension(800, 500);
+		public static Dimension	ROUTINE_SCREEN					= new Dimension(800, 500);
+		public static Dimension	ROUTINE_SCREEN_EDIT				= new Dimension(1000, 500);
+		
 		public static Dimension	PREFERENCE_SCREEN				= new Dimension(400, 300);
 		
 		// Dimension CONFIGURATION_SCREEN = new Dimension(500, 200);

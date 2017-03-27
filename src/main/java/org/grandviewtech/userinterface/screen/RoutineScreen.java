@@ -1,28 +1,41 @@
 package org.grandviewtech.userinterface.screen;
 
+import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.text.DefaultStyledDocument;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.grandviewtech.constants.CustomDimension;
 import org.grandviewtech.entity.bo.Routine;
@@ -35,6 +48,10 @@ import com.thoughtworks.xstream.XStream;
 
 public class RoutineScreen extends JFrame
 	{
+		private static final int		X1					= 10;
+		private static final int		X2					= 150;
+		private static final int		Y					= 30;
+		
 		final private static Logger		LOGGER				= Logger.getLogger(RoutineScreen.class);
 		private static final long		serialVersionUID	= -7808536714907991917L;
 		
@@ -68,27 +85,63 @@ public class RoutineScreen extends JFrame
 		
 		private String					result				= null;
 		
-		public void init()
+		private static File				folder				= null;
+		
+		static
 			{
-				setTitle("Add Routine");
-				int x = 20;
-				int y = 20;
-				addName(x, y);
-				addDescription(x, y = y + 50);
-				addFunction(x, y = y + 100);
-				addSubmitToScreen(x + 100, y = y + 250);
-				addCancel(x + 250, y);
-				invokeFrame();
+				folder = new File(PropertyReader.getProperties("resourcePath") + File.separator + PropertyReader.getProperties("routinePath"));
+				if (!folder.exists())
+					{
+						folder.mkdirs();
+					}
 			}
 			
-		private void invokeFrame()
+		public void init(boolean add)
 			{
-				jpanel.setPreferredSize(CustomDimension.ROUTINE_COMMENT_SCREEN);
+				if (add)
+					{
+						setTitle("Add Routine");
+						int x = 20;
+						int y = 20;
+						addName(x, y);
+						addDescription(x, y = y + 50);
+						addFunction(x, y = y + 100);
+						addSubmitToScreen(x + 100, y = y + 250);
+						addCancel(x + 250, y);
+					}
+				else
+					{
+						setTitle("Edit Routine");
+						int x = 200;
+						int y = 20;
+						addName(x, y);
+						addDescription(x, y = y + 50);
+						addFunction(x, y = y + 100);
+						addSubmitToScreen(x + 100, y = y + 250);
+						addCancel(x + 250, y);
+						routineList();
+					}
+				invokeFrame(add);
+			}
+			
+		private void invokeFrame(boolean add)
+			{
+				java.awt.Dimension routineDimension = null;
+				if (add)
+					{
+						routineDimension = CustomDimension.ROUTINE_SCREEN;
+					}
+				else
+					{
+						routineDimension = CustomDimension.ROUTINE_SCREEN_EDIT;
+						
+					}
+				jpanel.setPreferredSize(routineDimension);
 				jpanel.setLayout(null);
 				add(jpanel);
 				Dimension dimension = Application.calculateCenterAlignment(getPreferredSize());
 				setLocation(dimension.getX(), dimension.getY());
-				setPreferredSize(CustomDimension.ROUTINE_COMMENT_SCREEN);
+				setPreferredSize(routineDimension);
 				pack();
 				setVisible(true);
 			}
@@ -193,14 +246,25 @@ public class RoutineScreen extends JFrame
 				JFrame frame = this;
 				submit.addActionListener(event ->
 					{
-						saveRoutine(new Routine(("" + nameTextField.getText()).trim(), descriptionTextArea.getText(), functionTextArea.getText(), inputs, result));
-						JOptionPane optionPane = new JOptionPane("Routine Added Successfully", JOptionPane.INFORMATION_MESSAGE);
-						JDialog dialog = optionPane.createDialog(null, "Add Routine");
+						Routine updated = (new Routine(("" + nameTextField.getText()).trim(), descriptionTextArea.getText(), functionTextArea.getText(), inputs, result));
+						String message1 = "";
+						String message2 = "";
+						if (selectedRoutine != null)
+							{
+								saveRoutine(selectedRoutine.update(updated));
+								message1 = "Routine updated Successfully";
+								message2 = "Add Routine";
+							}
+						else
+							{
+								saveRoutine(updated);
+								message1 = "Routine Added Successfully";
+								message2 = "Edit Routine";
+							}
+						JOptionPane optionPane = new JOptionPane(message1, JOptionPane.INFORMATION_MESSAGE);
+						JDialog dialog = optionPane.createDialog(null, message2);
 						dialog.setModal(false);
 						dialog.setVisible(true);
-						// http://docs.oracle.com/javase/tutorial/uiswing/components/dialog.html#stayup
-						// CustomToolBar.setRungComment(rung.getRowNumber(),
-						// comment);
 						Timer timer = new Timer(600, timerEvent ->
 							{
 								dialog.setVisible(false);
@@ -260,10 +324,94 @@ public class RoutineScreen extends JFrame
 				FileOutputStream fileOutputStream;
 				try
 					{
-						fileOutputStream = new FileOutputStream(new File(PropertyReader.getProperties("resourcePath") + File.separator + PropertyReader.getProperties("routinePath") + File.separator + routine.getName() + ".xml"));
+						fileOutputStream = new FileOutputStream(new File(folder.getAbsolutePath() + File.separator + routine.getName() + ".xml"));
 						stream.toXML(routine, fileOutputStream);
 					}
 				catch (FileNotFoundException exception)
+					{
+						LOGGER.error(exception.getLocalizedMessage(), exception);
+					}
+					
+			}
+			
+		/// EDIT
+		
+		private Routine selectedRoutine = null;
+		
+		private void routineList()
+			{
+				List<String> dataList = new ArrayList<>();
+				for (File file : folder.listFiles())
+					{
+						if (file.isFile() && FilenameUtils.getExtension(file.getName()).contains("xml"))
+							{
+								String routineName = FilenameUtils.getBaseName(file.getName());
+								dataList.add(routineName);
+							}
+					}
+				dataList.sort(new Comparator<String>()
+					{
+						@Override
+						public int compare(String object1, String object2)
+							{
+								return object1.compareTo(object2);
+							}
+					});
+				DefaultListModel<String> defaultListModel = new DefaultListModel<String>();
+				for (String data : dataList)
+					{
+						defaultListModel.addElement(data);
+					}
+				JList<String> routineList = new JList<String>(defaultListModel);
+				if (dataList.size() > 0)
+					{
+						routineList.setSelectedIndex(0);
+						selectRoutine(dataList.get(0));
+					}
+				routineList.addListSelectionListener(new ListSelectionListener()
+					{
+						@Override
+						public void valueChanged(ListSelectionEvent event)
+							{
+								if (!event.getValueIsAdjusting())
+									{
+										if (routineList.getSelectedValuesList().size() > 0)
+											{
+												selectRoutine(routineList.getSelectedValuesList().get(0));
+											}
+									}
+							}
+					});
+				routineList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+				// routineList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+				JScrollPane scrollPane = new JScrollPane(routineList);
+				scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+				scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+				scrollPane.setBounds(X1, Y - 5, 150, 400);
+				jpanel.add(scrollPane);
+				//JButton submit = new JButton("Submit");
+			}
+			
+		private void selectRoutine(String selectedRoutineName)
+			{
+				try
+					{
+						File selectedFile = new File(PropertyReader.getProperties("resourcePath") + File.separator + PropertyReader.getProperties("routinePath") + File.separator + selectedRoutineName + ".xml");
+						XStream stream = new XStream();
+						Object object;
+						object = stream.fromXML(new FileInputStream(selectedFile));
+						Routine routine = (Routine) object;
+						selectedRoutine = routine;
+						nameTextField.setText(routine.getName());
+						descriptionTextArea.setText(routine.getDescription());
+						functionTextArea.setText(routine.getFunctionalBlock());
+						//jpanel.repaint();
+					}
+				catch (FileNotFoundException fileNotFoundException)
+					{
+						LOGGER.error(fileNotFoundException.getLocalizedMessage(), fileNotFoundException);
+					}
+				catch (Exception exception)
 					{
 						LOGGER.error(exception.getLocalizedMessage(), exception);
 					}

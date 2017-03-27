@@ -120,4 +120,14 @@ public class Routine implements Serializable
 				this.components.add(component);
 			}
 			
+		public Routine update(Routine routine)
+			{
+				this.description = routine.getDescription();
+				this.name = routine.getName();
+				this.functionalBlock = routine.getFunctionalBlock();
+				this.inputs = routine.getInputs();
+				this.result = routine.getResult();
+				return this;
+			}
+			
 	}

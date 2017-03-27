@@ -98,7 +98,7 @@ public class CustomHeader
 				addRoutine.addActionListener(click ->
 					{
 						RoutineScreen routineScreen = new RoutineScreen();
-						routineScreen.init();
+						routineScreen.init(true);
 					});
 				tool.add(addRoutine);
 				JMenuItem editRoutine = new JMenuItem("Edit");
@@ -106,7 +106,7 @@ public class CustomHeader
 				editRoutine.addActionListener(click ->
 					{
 						RoutineScreen routineScreen = new RoutineScreen();
-						routineScreen.init();
+						routineScreen.init(false);
 					});
 				tool.add(editRoutine);
 				tool.addSeparator();
