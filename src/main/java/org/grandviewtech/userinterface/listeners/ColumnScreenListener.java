@@ -48,7 +48,6 @@ import org.grandviewtech.userinterface.screen.ColumnScreen;
 
 public class ColumnScreenListener implements MouseListener, FocusListener, KeyListener
 	{
-		private JLabel		 setting;
 		
 		final static Screen	 SCREEN		= Screen.getInstance();
 		
@@ -73,6 +72,7 @@ public class ColumnScreenListener implements MouseListener, FocusListener, KeyLi
 						ColumnScreenGenerator.createColumnNeighbourHood(ClipBoard.SCREEN.getRow(source.getRowNumber()), source);
 						String pointer = "Cell( " + source.getRowNumber() + "," + source.getColumnNumber() + " ) ";
 						CustomToolBar.setPointerValue(pointer);
+						//active.setToolTipText("Row : " + active.getRowNumber() + " |  Column : " + active.getColumnNumber());
 						ClipBoard.setCurrentRowNumber(source.getRowNumber());
 						ClipBoard.setCurrentColumnNumber(source.getColumnNumber());
 						ActionBot.focusGained(source);

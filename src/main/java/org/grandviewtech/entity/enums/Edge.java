@@ -2,7 +2,7 @@ package org.grandviewtech.entity.enums;
 
 public enum Edge
 	{
-	RISING("INPUT"), FALLING("FLAG"), DEFAULT("DEFAULT");
+	RISING("INPUT"), FALLING("FLAG") ,DEFAULT("DEFAULT");
 		
 		private String edge;
 		

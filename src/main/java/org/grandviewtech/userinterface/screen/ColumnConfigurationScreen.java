@@ -24,10 +24,10 @@ import java.awt.Component;
  * #L%
  */
 
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -40,7 +40,6 @@ import java.util.Map.Entry;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
@@ -50,18 +49,15 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.NumberFormatter;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.grandviewtech.constants.CustomDimension;
 import org.grandviewtech.entity.bo.Routine;
 import org.grandviewtech.entity.bo.Screen;
@@ -72,10 +68,8 @@ import org.grandviewtech.entity.enums.NoNc;
 import org.grandviewtech.entity.helper.Dimension;
 import org.grandviewtech.runner.Application;
 import org.grandviewtech.service.runtime.user.useractivity.Activities;
-import org.grandviewtech.service.runtime.user.useractivity.Activity;
 import org.grandviewtech.service.searching.SearchEngine;
 import org.grandviewtech.service.system.PropertyReader;
-import org.grandviewtech.service.system.RoutineFileReader;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -111,23 +105,25 @@ public class ColumnConfigurationScreen extends JFrame
 		
 		private JRadioButton			fallingEdge						= new JRadioButton("Falling");
 		
-		private ButtonGroup				nc_noButtonGroup				= new ButtonGroup();
+		private ButtonGroup				nc_noButtonGroup;
 		
-		private JRadioButton			NC								= new JRadioButton("NC");
+		private JRadioButton			NC;
 		
-		private JRadioButton			NO								= new JRadioButton("NO");
+		private JRadioButton			NO;
+		
+		private JRadioButton			SET;
+		
+		private JRadioButton			RESET;
 		
 		private JPanel					panel							= new JPanel();
 		
 		private JLabel					edgeLabel						= new JLabel("Edge");
 		
-		private JLabel					ncnoLabel						= new JLabel("NC/NO");
+		private JLabel					ncnoLabel;
 		
 		private JLabel					inputValue						= new JLabel("Value");
 		
 		private JFormattedTextField		value							= new JFormattedTextField(numberFormatter);
-		
-		// private JTextField value = new JTextField();
 		
 		private JLabel					type							= new JLabel("Type");
 		
@@ -139,23 +135,17 @@ public class ColumnConfigurationScreen extends JFrame
 		
 		private JButton					cancel							= new JButton("Canel");
 		
-		private JComboBox<String>		category						= new JComboBox<String>();
-		
-		private JComboBox<String>		routine							= new JComboBox<String>();
-		
 		private JScrollPane				scrollableConfigurationScreen	= null;
 		
 		private String					resourcePath					= PropertyReader.getProperties("resourcePath") + File.separator + PropertyReader.getProperties("routinePath");
 		
 		private Map<String, JTextField>	dataset							= new HashMap<String, JTextField>();
-		private String					fileName						= "";
 		private static final int		X1								= 10;
 		private static final int		X2								= 150;
 		private static final int		Y								= 30;
 		private static final int		WIDTH							= 120;
 		private static final int		RADIO_WIDTH						= 80;
 		private static final int		HEIGHT							= 20;
-		private static final int		CATEGORY_WIDTH					= (WIDTH * 2);
 		
 		public ColumnConfigurationScreen()
 			{
@@ -180,7 +170,7 @@ public class ColumnConfigurationScreen extends JFrame
 						this.columnScreen = columnScreen;
 						setAlwaysOnTop(true);
 						setTitle(" Row : " + columnScreen.getRowNumber() + " | Column : " + columnScreen.getColumnNumber());
-						if (isLoadCoil(columnScreen))
+						if (isLoadCoil())
 							{
 								loadCoilConfiguration();
 							}
@@ -201,22 +191,22 @@ public class ColumnConfigurationScreen extends JFrame
 			
 		private void routineCoilConfiguration()
 			{
-				routineList(columnScreen);
+				routineList();
 				invokeFrame(CustomDimension.ROUTINE_CONFIGURATION_SCREEN);
 			}
 			
 		private Routine selectedRoutine = null;
 		
-		private void routineList(ColumnScreen columnScreen)
+		private void routineList()
 			{
 				
 				List<String> dataList = new ArrayList<>();
-				File folder=(new File(resourcePath));
-				if(!folder.exists())
+				File folder = (new File(resourcePath));
+				if (!folder.exists())
 					{
 						folder.mkdirs();
 					}
-				for (File file :folder .listFiles())
+				for (File file : folder.listFiles())
 					{
 						if (file.isFile() && FilenameUtils.getExtension(file.getName()).contains("xml"))
 							{
@@ -368,10 +358,7 @@ public class ColumnConfigurationScreen extends JFrame
 								inputFields.put(inputTextField.getName(), inputTextField);
 								label.setBounds(((counter % 2 != 0) ? X1 : X2 + 100) + 170, ((counter % 2 != 0) ? height = height + 25 : height), 150, 25);
 								inputTextField.setBounds(((counter % 2 != 0) ? X1 : X2 + 100) + 250, height, 100, 25);
-								inputTextField.addActionListener(action ->
-									{
-										routine.addValue(new Integer(inputTextField.getName()), inputTextField.getText());
-									});
+								inputTextField.addActionListener(action -> routine.addValue(new Integer(inputTextField.getName()), inputTextField.getText()));
 								panel.add(label);
 								routineComponent.add(label);
 								panel.add(inputTextField);
@@ -382,10 +369,6 @@ public class ColumnConfigurationScreen extends JFrame
 						selectedRoutine = routine;
 						panel.repaint();
 					}
-				catch (FileNotFoundException fileNotFoundException)
-					{
-						logger.error(fileNotFoundException.getLocalizedMessage(), fileNotFoundException);
-					}
 				catch (Exception exception)
 					{
 						logger.error(exception.getLocalizedMessage(), exception);
@@ -393,98 +376,30 @@ public class ColumnConfigurationScreen extends JFrame
 					
 			}
 			
-		private void addChangeListernerForRoutine()
-			{
-				routine.addActionListener(event ->
-					{
-						Object object = routine.getSelectedItem();
-						String selectedRoutine = (object == null) ? "" : (((String) object).trim().length() == 0) ? "" : ((String) object).trim();
-						activities.addActivity(new Activity("Routine : " + selectedRoutine + " Selected", Activity.Category.USER));
-						routine.setToolTipText(selectedRoutine);
-						if (selectedRoutine.trim().length() > 0)
-							{
-								String filePath = resourcePath + File.separator + (String) category.getSelectedItem() + File.separator + selectedRoutine;
-								Object[] routineContent = RoutineFileReader.getRoutineCode(filePath);
-								int x = 3;
-								for (int i = 1; i <= (Integer) routineContent[1]; i++)
-									{
-										String keyword = "D" + i;
-										JLabel dataLabel = new JLabel("D" + i);
-										JTextField dataField = new JTextField();
-										dataLabel.setBounds(X1, Y * (x + i), WIDTH, HEIGHT);
-										dataField.setBounds(X2, Y * (x + i), WIDTH, HEIGHT);
-										dataset.put(keyword, dataField);
-										panel.add(dataLabel);
-										panel.add(dataField);
-									}
-								revalidate();
-								repaint();
-							}
-					});
-			}
-			
-		private void addChangeListernerForCategory()
-			{
-				category.addActionListener(event ->
-					{
-						routine.removeAllItems();
-						String categoryFileName = (String) category.getSelectedItem();
-						loadSubCategory(categoryFileName);
-					});
-			}
-			
-		private void loadSubCategory(String categoryFileName)
-			{
-				File file = new File(resourcePath + File.separator + categoryFileName);
-				String[] folder = file.list();
-				if (folder != null)
-					{
-						for (String folderName : folder)
-							{
-								String fileName = StringUtils.split(folderName, ".")[0];
-								routine.addItem(fileName);
-							}
-					}
-			}
-			
-		private void loadSubCategory()
-			{
-				int x = 2;
-				JLabel label = new JLabel("Routine : ");
-				label.setBounds(X1, (Y - 5) * x, WIDTH, HEIGHT);
-				routine.setBounds(X2 - 10, (Y - 5) * x, CATEGORY_WIDTH, HEIGHT);
-				/*
-				 * JLabel selectedSubCategory = new JLabel(""); selectedSubCategory.setBounds(X1, (Y - 5) * (x + 2), WIDTH * 3, HEIGHT);
-				 */
-				panel.add(label);
-				panel.add(routine);
-				// panel.add(selectedSubCategory);
-				addChangeListernerForRoutine();
-			}
-			
 		private void outputCoilConfiguration()
 			{
-				addInputValueToScreen(columnScreen);
-				addInputOptionsToScreen(columnScreen);
-				addTagToScreen(4, columnScreen);
-				addSubmitToScreen(5, columnScreen);
-				addCancelToScreen(5, columnScreen);
+				addInputValueToScreen();
+				addInputOptionsToScreen();
+				addNcNoOptionToScreen();
+				addTagToScreen(6);
+				addSubmitToScreen(7);
+				addCancelToScreen(7);
 				invokeFrame(CustomDimension.OUTPUT_CONFIGURATION_SCREEN);
 			}
 			
 		private void loadCoilConfiguration()
 			{
-				addInputValueToScreen(columnScreen);
-				addInputOptionsToScreen(columnScreen);
-				addEdgeOptionToScreen(columnScreen);
-				addNcNoOptionToScreen(columnScreen);
-				addTagToScreen(6, columnScreen);
-				addSubmitToScreen(7, columnScreen);
-				addCancelToScreen(7, columnScreen);
+				addInputValueToScreen();
+				addInputOptionsToScreen();
+				addEdgeOptionToScreen();
+				addNcNoOptionToScreen();
+				addTagToScreen(6);
+				addSubmitToScreen(7);
+				addCancelToScreen(7);
 				invokeFrame(CustomDimension.LOAD_CONFIGURATION_SCREEN);
 			}
 			
-		public void addInputValueToScreen(ColumnScreen columnScreen)
+		public void addInputValueToScreen()
 			{
 				inputValue.setBounds(X1, Y - 5, WIDTH, HEIGHT);
 				value.setBounds(X2, Y - 5, WIDTH, HEIGHT);
@@ -496,7 +411,6 @@ public class ColumnConfigurationScreen extends JFrame
 								value.setValue(new Integer(data));
 							}
 					}
-				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
 				// separator.setBounds(X1, Y * 1 + (20),
 				// CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
 				panel.add(inputValue);
@@ -504,9 +418,29 @@ public class ColumnConfigurationScreen extends JFrame
 				// panel.add(separator);
 			}
 			
-		public void addInputOptionsToScreen(ColumnScreen columnScreen)
+		public void addOutputOption(ColumnScreen columnScreen)
 			{
-				if (isLoadCoil(columnScreen))
+				if (columnScreen.getTemp().equals(CoilType.OUTPUT))
+					{
+						ButtonGroup buttonGroup = new ButtonGroup();
+						JRadioButton no = new JRadioButton("NO");
+						no.setMnemonic(KeyEvent.VK_O);
+						JRadioButton nc = new JRadioButton("NC");
+						nc.setMnemonic(KeyEvent.VK_C);
+						JRadioButton set = new JRadioButton("SET");
+						set.setMnemonic(KeyEvent.VK_S);
+						JRadioButton reset = new JRadioButton("RESET");
+						reset.setMnemonic(KeyEvent.VK_R);
+						buttonGroup.add(no);
+						buttonGroup.add(nc);
+						buttonGroup.add(set);
+						buttonGroup.add(reset);
+					}
+			}
+			
+		public void addInputOptionsToScreen()
+			{
+				if (isLoadCoil())
 					{
 						addRadioButtonsToInputButtonGroup();
 						type.setBounds(X1, Y * 2, RADIO_WIDTH, HEIGHT);
@@ -515,11 +449,7 @@ public class ColumnConfigurationScreen extends JFrame
 						word.setBounds(X2 + (RADIO_WIDTH * 1), Y * 2, RADIO_WIDTH, HEIGHT);
 						flag.setBounds(X2, Y * 3, RADIO_WIDTH, HEIGHT);
 						output.setBounds(X2 + (RADIO_WIDTH * 1), Y * 3, RADIO_WIDTH, HEIGHT);
-						JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
-						// separator.setBounds(X1, Y * 3 + (20),
-						// CustomDimension.CONFIGURATION_SCREEN.width - (X1 *
-						// 4), 10);
-						setDefaultInputOption(1, columnScreen);
+						setDefaultInputOption();
 						panel.add(type);
 						panel.add(input);
 						panel.add(flag);
@@ -534,7 +464,6 @@ public class ColumnConfigurationScreen extends JFrame
 						// flag.setSelected(true);
 						flag.setBounds(X2, Y * 2, RADIO_WIDTH, HEIGHT);
 						output.setBounds(X2 + (RADIO_WIDTH * 1), Y * 2, RADIO_WIDTH, HEIGHT);
-						JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
 						// separator.setBounds(X1, Y * 3 + (20),
 						// CustomDimension.CONFIGURATION_SCREEN.width - (X1 *
 						// 4), 10);
@@ -584,16 +513,15 @@ public class ColumnConfigurationScreen extends JFrame
 				fallingEdge.setMnemonic(KeyEvent.VK_G);
 			}
 			
-		public void addEdgeOptionToScreen(ColumnScreen columnScreen)
+		public void addEdgeOptionToScreen()
 			{
 				addRadioButtonsToEdgeButtonGroup();
 				edgeLabel.setBounds(X1, Y * 4, RADIO_WIDTH, HEIGHT);
 				risingEdge.setBounds(X2, Y * 4, RADIO_WIDTH, HEIGHT);
 				fallingEdge.setBounds(X2 + (RADIO_WIDTH * 1), Y * 4, RADIO_WIDTH, HEIGHT);
-				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
 				// separator.setBounds(X1, Y * 4 + (20),
 				// CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
-				setDefaultEdgeOption(columnScreen);
+				setDefaultEdgeOption();
 				panel.add(edgeLabel);
 				panel.add(risingEdge);
 				panel.add(fallingEdge);
@@ -603,34 +531,76 @@ public class ColumnConfigurationScreen extends JFrame
 		// NC
 		public void addRadioButtonsToNoNcButtonGroup()
 			{
-				nc_noButtonGroup.add(NC);
-				nc_noButtonGroup.add(NO);
+				nc_noButtonGroup = new ButtonGroup();
+				CoilType coilType = columnScreen.getTemp();
+				if (isLoadCoil())
+					{
+						NC = new JRadioButton("NC");
+						NO = new JRadioButton("NO");
+						nc_noButtonGroup.add(NC);
+						nc_noButtonGroup.add(NO);
+					}
+				else if (coilType.equals(CoilType.OUTPUT))
+					{
+						NC = new JRadioButton("NC");
+						NO = new JRadioButton("NO");
+						SET = new JRadioButton("SET");
+						RESET = new JRadioButton("RESET");
+						nc_noButtonGroup.add(NC);
+						nc_noButtonGroup.add(NO);
+						nc_noButtonGroup.add(SET);
+						nc_noButtonGroup.add(RESET);
+					}
 				addMnemonicToNoNcRadioButton();
 			}
 			
 		public void addMnemonicToNoNcRadioButton()
 			{
-				NO.setMnemonic(KeyEvent.VK_N);
-				NC.setMnemonic(KeyEvent.VK_C);
+				CoilType coilType = columnScreen.getTemp();
+				if (isLoadCoil())
+					{
+						NO.setMnemonic(KeyEvent.VK_N);
+						NC.setMnemonic(KeyEvent.VK_C);
+					}
+				else if (coilType.equals(CoilType.OUTPUT))
+					{
+						NO.setMnemonic(KeyEvent.VK_N);
+						NC.setMnemonic(KeyEvent.VK_C);
+						SET.setMnemonic(KeyEvent.VK_S);
+						RESET.setMnemonic(KeyEvent.VK_R);
+					}
 			}
 			
-		public void addNcNoOptionToScreen(ColumnScreen columnScreen)
+		public void addNcNoOptionToScreen()
 			{
 				addRadioButtonsToNoNcButtonGroup();
-				ncnoLabel.setBounds(X1, Y * 5, RADIO_WIDTH, HEIGHT);
-				NC.setBounds(X2, Y * 5, RADIO_WIDTH, HEIGHT);
-				NO.setBounds(X2 + (RADIO_WIDTH * 1), Y * 5, RADIO_WIDTH, HEIGHT);
-				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
-				// separator.setBounds(X1, Y * 5 + (20),
-				// CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
-				setDefaultNoNcOption(columnScreen);
+				
+				if (isLoadCoil())
+					{
+						ncnoLabel = new JLabel("NO/NC");
+						ncnoLabel.setBounds(X1, Y * 5, RADIO_WIDTH, HEIGHT);
+						NC.setBounds(X2, Y * 5, RADIO_WIDTH, HEIGHT);
+						NO.setBounds(X2 + (RADIO_WIDTH * 1), Y * 5, RADIO_WIDTH, HEIGHT);
+					}
+				else if (columnScreen.getTemp().equals(CoilType.OUTPUT))
+					{
+						ncnoLabel = new JLabel("OPTION");
+						ncnoLabel.setBounds(X1, Y * 3, RADIO_WIDTH, HEIGHT);
+						NC.setBounds(X2, Y * 3, RADIO_WIDTH, HEIGHT);
+						NO.setBounds(X2 + (RADIO_WIDTH * 1), Y * 3, RADIO_WIDTH, HEIGHT);
+						SET.setBounds(X2, Y * 4, RADIO_WIDTH, HEIGHT);
+						RESET.setBounds(X2 + (RADIO_WIDTH * 1), Y * 4, RADIO_WIDTH, HEIGHT);
+						panel.add(SET);
+						panel.add(RESET);
+					}
 				panel.add(ncnoLabel);
 				panel.add(NC);
 				panel.add(NO);
-				// panel.add(separator);
+				setDefaultNoNcOption(columnScreen);
+				
 			}
 			
-		public void addTagToScreen(int x, ColumnScreen columnScreen)
+		public void addTagToScreen(int x)
 			{
 				tagLabel.setBounds(X1, Y * x, WIDTH, HEIGHT);
 				tagLabel.setEnabled(true);
@@ -641,7 +611,6 @@ public class ColumnConfigurationScreen extends JFrame
 					{
 						tagValue.setText(tag);
 					}
-				JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
 				// separator.setBounds(X1, Y * 6 + (20),
 				// CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
 				panel.add(tagLabel);
@@ -649,9 +618,9 @@ public class ColumnConfigurationScreen extends JFrame
 				// panel.add(separator);
 			}
 			
-		private void addSubmitToScreen(int x, ColumnScreen columnScreen)
+		private void addSubmitToScreen(int x)
 			{
-				if (isLoadCoil(columnScreen))
+				if (isLoadCoil())
 					{
 						submit.setBounds(X1, Y * x + 20, WIDTH, HEIGHT);
 					}
@@ -665,7 +634,7 @@ public class ColumnConfigurationScreen extends JFrame
 					}
 					
 				panel.add(submit);
-				submit.addActionListener(event ->
+				submit.addActionListener((ActionEvent event) ->
 					{
 						
 						if (input.isSelected() || flag.isSelected() || output.isSelected() || word.isSelected())
@@ -675,23 +644,24 @@ public class ColumnConfigurationScreen extends JFrame
 								Integer dt = (Integer) value.getValue();
 								String min = "min" + inputType.getInputType();
 								String max = "max" + inputType.getInputType();
-								int mixsize = PreferenceScreen.get(min);
+								int minsize = PreferenceScreen.get(min);
 								int maxsize = PreferenceScreen.get(max);
-								if (dt < mixsize || dt > maxsize)
+								if (dt < minsize || dt > maxsize)
 									{
-										JOptionPane.showMessageDialog(submit, "Data Must be In Between " + mixsize + " : " + maxsize);
+										JOptionPane.showMessageDialog(submit, "Data Must be In Between " + minsize + " : " + maxsize);
 									}
 								else
 									{
 										boolean isRoutine = false;
-										if (isLoadCoil(columnScreen))
+										CoilType coilType = columnScreen.getTemp();
+										if (coilType.equals(CoilType.ROUTINE))
+											{
+												isRoutine = true;
+											}
+										else if (isLoadCoil() || coilType.equals(CoilType.OUTPUT))
 											{
 												setNoNcValue(columnScreen);
 												setEdgeValue(columnScreen);
-											}
-										else if (columnScreen.getTemp().equals(CoilType.ROUTINE))
-											{
-												isRoutine = true;
 											}
 										if (!isRoutine)
 											{
@@ -710,9 +680,9 @@ public class ColumnConfigurationScreen extends JFrame
 					});
 			}
 			
-		private void addCancelToScreen(int x, ColumnScreen columnScreen)
+		private void addCancelToScreen(int x)
 			{
-				if (isLoadCoil(columnScreen))
+				if (isLoadCoil())
 					{
 						cancel.setBounds(X2, Y * x + 20, WIDTH, HEIGHT);
 					}
@@ -725,10 +695,7 @@ public class ColumnConfigurationScreen extends JFrame
 						cancel.setBounds(X2, Y * x + 20, WIDTH, HEIGHT);
 					}
 				panel.add(cancel);
-				cancel.addActionListener(event ->
-					{
-						dispose();
-					});
+				cancel.addActionListener(event -> dispose());
 			}
 			
 		private void invokeFrame(java.awt.Dimension screenDimension)
@@ -808,6 +775,14 @@ public class ColumnConfigurationScreen extends JFrame
 					{
 						nonc = NoNc.NC;
 					}
+				else if (SET.isSelected())
+					{
+						nonc = NoNc.SET;
+					}
+				else if (RESET.isSelected())
+					{
+						nonc = NoNc.RESET;
+					}
 				columnScreen.setNonc(nonc);
 			}
 			
@@ -825,16 +800,11 @@ public class ColumnConfigurationScreen extends JFrame
 				columnScreen.setEdge(edge);
 			}
 			
-		private void setDefaultInputOption(int i, ColumnScreen columnScreen)
+		private void setDefaultInputOption()
 			{
 				InputType inputType = columnScreen.getInputType();
 				if (inputType != null)
 					{
-						/*
-						 * if (i == 1) { input.setSelected(true); flag.setSelected(false); } else { input.setSelected(false); flag.setSelected(true); }
-						 * 
-						 * output.setSelected(false); word.setSelected(false); } else {
-						 */
 						switch (inputType)
 							{
 								case FLAG:
@@ -902,30 +872,32 @@ public class ColumnConfigurationScreen extends JFrame
 					}
 			}
 			
-		private void setDefaultEdgeOption(ColumnScreen columnScreen)
+		private void setDefaultEdgeOption()
 			{
 				Edge edge = columnScreen.getEdge();
 				if (edge != null)
-					
-					switch (edge)
-						{
-							case FALLING:
-								{
-									risingEdge.setSelected(false);
-									fallingEdge.setSelected(true);
-									break;
-								}
-							case RISING:
-								{
-									risingEdge.setSelected(true);
-									fallingEdge.setSelected(false);
-									break;
-								}
-						}
+					{
+						switch (edge)
+							{
+								case FALLING:
+									{
+										risingEdge.setSelected(false);
+										fallingEdge.setSelected(true);
+										break;
+									}
+								case RISING:
+									{
+										risingEdge.setSelected(true);
+										fallingEdge.setSelected(false);
+										break;
+									}
+							}
+					}
 			}
 			
-		private boolean isLoadCoil(ColumnScreen columnScreen)
+		private boolean isLoadCoil()
 			{
-				return (columnScreen.getTemp().equals(CoilType.LOAD) || columnScreen.getTemp().equals(CoilType.PARALLEL) || columnScreen.getTemp().equals(CoilType.LEFT_LINK) || columnScreen.getTemp().equals(CoilType.RIGHT_LINK));
+				CoilType coilType = columnScreen.getTemp();
+				return (coilType.equals(CoilType.LOAD) || coilType.equals(CoilType.PARALLEL) || coilType.equals(CoilType.LEFT_LINK) || coilType.equals(CoilType.RIGHT_LINK));
 			}
 	}

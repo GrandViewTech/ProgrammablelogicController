@@ -74,35 +74,35 @@ public class DragLabel extends JLabel implements DragGestureListener, DragSource
 		@Override
 		public void dragEnter(DragSourceDragEvent dragSourceDragEvent)
 			{
-				DragDropCursor.setCursor4DragOption(getValue());
-				Printer.print("DragLabel dragEnter");
+				/*DragDropCursor.setCursor4DragOption(getValue());
+				Printer.print("DragLabel dragEnter");*/
 			}
 			
 		@Override
 		public void dragOver(DragSourceDragEvent dragSourceDragEvent)
 			{
 				
-				Printer.print("DragLabel dragOver");
+				//Printer.print("DragLabel dragOver");
 			}
 			
 		@Override
 		public void dropActionChanged(DragSourceDragEvent dragSourceDragEvent)
 			{
-				Printer.print("DragLabel dropActionChanged");
+				//Printer.print("DragLabel dropActionChanged");
 			}
 			
 		@Override
 		public void dragExit(DragSourceEvent dse)
 			{
-				Printer.print("DragLabel dragExit");
+				//Printer.print("DragLabel dragExit");
 			}
 			
 		@Override
 		public void dragDropEnd(DragSourceDropEvent dragSourceDragEvent)
 			{
 				
-				DragDropCursor.setCursor4DropOption();
-				Printer.print("DragLabel dragDropEnd");
+//				DragDropCursor.setCursor4DropOption();
+//				Printer.print("DragLabel dragDropEnd");
 			}
 			
 		@Override

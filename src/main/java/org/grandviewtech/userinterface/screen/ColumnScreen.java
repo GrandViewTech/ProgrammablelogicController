@@ -187,8 +187,12 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 						this.setTemp(CoilType.DEFAULT);
 						setBlank(true);
 					}
+					
 			}
 			
+		/**
+		 * APPPLY AND PAINT
+		 */
 		public void apply()
 			{
 				// SCREEN.setActiveColumn(this);
@@ -200,6 +204,22 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 				setCoilType(temp);
 				RowValidation.validate(this);
 				repaint();
+			}
+			
+		public void apply(boolean paint)
+			{
+				// SCREEN.setActiveColumn(this);
+				if (!temp.equals(CoilType.LINE) && !temp.equals(CoilType.END))
+					{
+						add(setting);
+					}
+				setBlank(false);
+				setCoilType(temp);
+				RowValidation.validate(this);
+				if (paint)
+					{
+						repaint();
+					}
 			}
 			
 		public JLabel getSetting()
@@ -445,9 +465,10 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 				setLayout(null);
 				setOpaque(true);
 				setBackground(Color.white);
-				valueLabel.setBounds(30, 20, 100, 20);
+				
+				valueLabel.setBounds(40, 20, 100, 20);
 				add(valueLabel);
-				tagLabel.setBounds(10, 40, 100, 20);
+				tagLabel.setBounds(10, 60, 100, 20);
 				add(tagLabel);
 				setPreferredSize(CustomDimension.CELL_SIZE);
 				setting.setBounds(getX() + 99, 0, 50, 20);

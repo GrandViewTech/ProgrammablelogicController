@@ -44,7 +44,6 @@ import org.grandviewtech.entity.enums.NoNc;
 import org.grandviewtech.userinterface.helper.ColumnScreenGenerator;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 import org.grandviewtech.userinterface.screen.RowScreen;
-import org.grandviewtech.userinterface.ui.DragLabel;
 
 public class PaintCoilsOnScreen
 	{
@@ -141,6 +140,7 @@ public class PaintCoilsOnScreen
 				if (component instanceof ColumnScreen)
 					{
 						ColumnScreen columnScreen = (ColumnScreen) component;
+						NoNc nonc = columnScreen.getNonc();
 						InputType inputType = columnScreen.getInputType();
 						String value = columnScreen.getValue();
 						String valueLabel = columnScreen.getValueLabel().getText();
@@ -159,6 +159,7 @@ public class PaintCoilsOnScreen
 													{
 														tempScreen.reset();
 														tempScreen.setCoilType(CoilType.LINE);
+														tempScreen.apply();
 													}
 												else if (i$ == ApplicationConstant.MAX_CELL)
 													{
@@ -166,19 +167,24 @@ public class PaintCoilsOnScreen
 														tempScreen.setCoilType(CoilType.OUTPUT);
 														tempScreen.setInputType(inputType);
 														tempScreen.setValue(value);
+														tempScreen.setNonc(nonc);
 														tempScreen.getValueLabel().setText(valueLabel);
 														tempScreen.setTag(tag);
+														//tempScreen.apply();
 													}
-												tempScreen.repaint();
+												//tempScreen.repaint();
 											}
 									}
 							}
-						/*
-						 * else { paintOutPutCoil(columnScreen, graphics); }
-						 */
+						else if (currentColumnNumber == ApplicationConstant.MAX_CELL)
+							{
+								paintOutPutCoil(columnScreen, graphics);
+								//columnScreen.revalidate();
+								columnScreen.apply();
+							}
+						
 					}
-				paintOutPutCoil(graphics);
-				component.repaint();
+					
 			}
 			
 		private static void paintLineCoil(Graphics graphics)
@@ -207,27 +213,68 @@ public class PaintCoilsOnScreen
 				// graphics.fillRect((ApplicationConstant.SECTION_WIDTH / 2) +
 				// 20, ApplicationConstant.SECTION_HEIGHT / 2,
 				// ApplicationConstant.SECTION_WIDTH, 1);
-				if (component instanceof ColumnScreen)
-					{
-						ColumnScreen columnScreen = (ColumnScreen) component;
-						columnScreen.getValueLabel().setText(name.toUpperCase());
-						columnScreen.getValueLabel().setBounds((ApplicationConstant.SECTION_WIDTH / 2) - 12, (ApplicationConstant.SECTION_HEIGHT / 2) - 5, 60, 10);
-						columnScreen.getValueLabel().setFont(CustomFont.font1);
-					}
-				else if (component instanceof DragLabel)
-					{
-						DragLabel dragLabel = (DragLabel) component;
-						dragLabel.setText(name);
-					}
+				
+				ColumnScreen columnScreen = (ColumnScreen) component;
+				columnScreen.getValueLabel().setText(name.toUpperCase());
+				columnScreen.getValueLabel().setBounds((ApplicationConstant.SECTION_WIDTH / 2) - 12, (ApplicationConstant.SECTION_HEIGHT / 2) - 5, 60, 10);
+				columnScreen.getValueLabel().setFont(CustomFont.font1);
+				
 			}
 			
-		private static void paintOutPutCoil(Graphics graphics)
+		private static void paintOutPutCoil(Component component, Graphics graphics)
 			{
+				//o
 				int offsetY = 8;
+				int offsetX = 10;
 				graphics.setColor(Color.BLACK);
 				graphics.fillRect(0, ApplicationConstant.SECTION_HEIGHT / 2, (ApplicationConstant.SECTION_WIDTH / 2) - 10, 1);
-				((Graphics2D) graphics).draw(new QuadCurve2D.Double((ApplicationConstant.SECTION_WIDTH / 2) - 5, (ApplicationConstant.SECTION_HEIGHT / 2) - offsetY, (ApplicationConstant.SECTION_WIDTH / 2) - 15, (ApplicationConstant.SECTION_HEIGHT / 2), (ApplicationConstant.SECTION_WIDTH / 2) - 5, (ApplicationConstant.SECTION_HEIGHT / 2) + offsetY));
-				((Graphics2D) graphics).draw(new QuadCurve2D.Double((ApplicationConstant.SECTION_WIDTH / 2) + 5, (ApplicationConstant.SECTION_HEIGHT / 2) - offsetY, (ApplicationConstant.SECTION_WIDTH / 2) + 15, (ApplicationConstant.SECTION_HEIGHT / 2), (ApplicationConstant.SECTION_WIDTH / 2) + 5, (ApplicationConstant.SECTION_HEIGHT / 2) + offsetY));
+				((Graphics2D) graphics).draw(new QuadCurve2D.Double((ApplicationConstant.SECTION_WIDTH / 2) - offsetX, (ApplicationConstant.SECTION_HEIGHT / 2) - offsetY, (ApplicationConstant.SECTION_WIDTH / 2) - 15, (ApplicationConstant.SECTION_HEIGHT / 2), (ApplicationConstant.SECTION_WIDTH / 2) - offsetX, (ApplicationConstant.SECTION_HEIGHT / 2) + offsetY));
+				((Graphics2D) graphics).draw(new QuadCurve2D.Double((ApplicationConstant.SECTION_WIDTH / 2) + offsetX, (ApplicationConstant.SECTION_HEIGHT / 2) - offsetY, (ApplicationConstant.SECTION_WIDTH / 2) + 15, (ApplicationConstant.SECTION_HEIGHT / 2), (ApplicationConstant.SECTION_WIDTH / 2) + offsetX, (ApplicationConstant.SECTION_HEIGHT / 2) + offsetY));
+				String name = "";
+				ColumnScreen columnScreen = (ColumnScreen) component;
+				if (columnScreen.getNonc() != null)
+					{
+						boolean addLabel = false;
+						switch (columnScreen.getNonc())
+							{
+								case NC:
+									{
+										addLabel = true;
+										name = "NC";
+										break;
+									}
+								case NO:
+									{
+										name = "";
+										break;
+									}
+								case DEFAULT:
+									{
+										name = "";
+										break;
+									}
+								case SET:
+									{
+										addLabel = true;
+										
+										name = "S";
+										break;
+									}
+								case RESET:
+									{
+										addLabel = true;
+										name = "R";
+										break;
+									}
+							}
+						if (addLabel)
+							{
+								JLabel label = new JLabel(name);
+								label.setFont(CustomFont.font10);
+								label.setBounds((ApplicationConstant.SECTION_WIDTH / 2) - offsetX + 2, (ApplicationConstant.SECTION_HEIGHT / 2) - 5, 60, 10);
+								columnScreen.add(label);
+							}
+					}
 			}
 			
 		private static void paintLoadTypeCoil(boolean isParent, LoadType loadType, ColumnScreen child, Graphics graphics)

@@ -71,7 +71,7 @@ public class BackGroundLayer extends JFrame
 			
 		private Ruler addRulerJScrolBar()
 			{
-				Ruler jScrollPane = new Ruler(screen.getSheet(), ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+				Ruler jScrollPane = new Ruler(screen.getSheet(), ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 				jScrollPane.addKeyListener(new DefaultKeyListener());
 				jScrollPane.initializeScrollPane();
 				JScrollBar verticalScrollBar = jScrollPane.getVerticalScrollBar();
