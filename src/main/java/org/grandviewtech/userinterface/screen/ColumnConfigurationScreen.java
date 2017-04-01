@@ -67,8 +67,6 @@ import org.grandviewtech.entity.enums.InputType;
 import org.grandviewtech.entity.enums.NoNc;
 import org.grandviewtech.entity.helper.Dimension;
 import org.grandviewtech.runner.Application;
-import org.grandviewtech.service.runtime.user.useractivity.Activities;
-import org.grandviewtech.service.searching.SearchEngine;
 import org.grandviewtech.service.system.PropertyReader;
 
 import com.thoughtworks.xstream.XStream;
@@ -76,7 +74,6 @@ import com.thoughtworks.xstream.XStream;
 public class ColumnConfigurationScreen extends JFrame
 	{
 		private static org.apache.log4j.Logger	logger				= org.apache.log4j.Logger.getLogger(ColumnConfigurationScreen.class);
-		private static Activities				activities			= Activities.getInstance();
 		final static Screen						SCREEN				= Screen.getInstance();
 		private static final long				serialVersionUID	= 1L;
 		private static NumberFormatter			numberFormatter		= null;
@@ -214,6 +211,7 @@ public class ColumnConfigurationScreen extends JFrame
 								dataList.add(routineName);
 							}
 					}
+				
 				dataList.sort(new Comparator<String>()
 					{
 						@Override
@@ -256,8 +254,13 @@ public class ColumnConfigurationScreen extends JFrame
 				panel.add(scrollPane);
 				JButton submit = new JButton("Submit");
 				submit.setBounds(X1 + 180, 410, 150, 25);
+				if (dataList == null || dataList.size() == 0)
+					{
+						submit.setEnabled(false);
+					}
 				submit.addActionListener(onSubmit ->
 					{
+						
 						JOptionPane optionPane = null;
 						if (selectedRoutine != null)
 							{
@@ -267,23 +270,24 @@ public class ColumnConfigurationScreen extends JFrame
 									}
 								columnScreen.setRoutine(selectedRoutine);
 								optionPane = new JOptionPane("Routine Selected Successfully", JOptionPane.INFORMATION_MESSAGE);
+								JDialog dialog = optionPane.createDialog(null, "Select Routine");
+								dialog.setModal(false);
+								dialog.setVisible(true);
+								// http://docs.oracle.com/javase/tutorial/uiswing/components/dialog.html#stayup
+								Timer timer = new Timer(600, timerEvent ->
+									{
+										dialog.setVisible(false);
+										dialog.dispose();
+										columnScreen.apply();
+									});
+								timer.start();
+								dispose();
 							}
 						else
 							{
 								optionPane = new JOptionPane("Error While Selecting Routine", JOptionPane.INFORMATION_MESSAGE);
+								dispose();
 							}
-						JDialog dialog = optionPane.createDialog(null, "Select Routine");
-						dialog.setModal(false);
-						dialog.setVisible(true);
-						// http://docs.oracle.com/javase/tutorial/uiswing/components/dialog.html#stayup
-						Timer timer = new Timer(600, timerEvent ->
-							{
-								dialog.setVisible(false);
-								dialog.dispose();
-								columnScreen.apply();
-							});
-						timer.start();
-						dispose();
 					});
 				JButton cancel = new JButton("Canel");
 				cancel.setBounds(X1 + 350, 410, 150, 25);
@@ -464,6 +468,7 @@ public class ColumnConfigurationScreen extends JFrame
 						// flag.setSelected(true);
 						flag.setBounds(X2, Y * 2, RADIO_WIDTH, HEIGHT);
 						output.setBounds(X2 + (RADIO_WIDTH * 1), Y * 2, RADIO_WIDTH, HEIGHT);
+						setDefaultInputOption();
 						// separator.setBounds(X1, Y * 3 + (20),
 						// CustomDimension.CONFIGURATION_SCREEN.width - (X1 *
 						// 4), 10);
@@ -666,7 +671,6 @@ public class ColumnConfigurationScreen extends JFrame
 										if (!isRoutine)
 											{
 												setInputTagAndValue(columnScreen);
-												SearchEngine.index(columnScreen);
 											}
 										dispose();
 										columnScreen.repaint();
@@ -775,11 +779,12 @@ public class ColumnConfigurationScreen extends JFrame
 					{
 						nonc = NoNc.NC;
 					}
-				else if (SET.isSelected())
+					
+				if (SET != null && SET.isSelected())
 					{
 						nonc = NoNc.SET;
 					}
-				else if (RESET.isSelected())
+				else if (RESET != null && RESET.isSelected())
 					{
 						nonc = NoNc.RESET;
 					}
@@ -900,4 +905,5 @@ public class ColumnConfigurationScreen extends JFrame
 				CoilType coilType = columnScreen.getTemp();
 				return (coilType.equals(CoilType.LOAD) || coilType.equals(CoilType.PARALLEL) || coilType.equals(CoilType.LEFT_LINK) || coilType.equals(CoilType.RIGHT_LINK));
 			}
+			
 	}

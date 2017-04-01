@@ -101,7 +101,7 @@ public class RungActionListerner implements ActionListener
 									}
 								break;
 							}
-						
+							
 					}
 					
 			}
@@ -154,18 +154,18 @@ public class RungActionListerner implements ActionListener
 								ColumnScreen copiedColumn = copiedRow.getColumnScreens(columnIndex);
 								if (copiedColumn.isBlank() == false)
 									{
-										pasteColumn.setCoilType(copiedColumn.getCoilType());
-										pasteColumn.setValue(copiedColumn.getValue());
-										pasteColumn.setTag(copiedColumn.getTag());
-										pasteColumn.requestFocus();
-										SearchEngine.index(pasteColumn);
+										pasteColumn.update(copiedColumn);
+									}
+								if (ClipBoard.getClipboardAction() == CLIPBOARD_ACTION.CUT)
+									{
+										copiedColumn.reset();
 									}
 								columnIndex = columnIndex + 1;
 								
 							}
 						i$ = i$ + 1;
 					}
-				if (ClipBoard.getClipboardAction() == CLIPBOARD_ACTION.CUT)
+				/*if (ClipBoard.getClipboardAction() == CLIPBOARD_ACTION.CUT)
 					{
 						Set<Integer> deletedRowNumbers = new LinkedHashSet<Integer>();
 						List<Rung> copiedRungs = ClipBoard.getCopiedRung();
@@ -175,6 +175,6 @@ public class RungActionListerner implements ActionListener
 								deletedRowNumbers.add(rung.getRowNumber());
 							}
 						RowGenerator.deleteRows(deletedRowNumbers);
-					}
+					}*/
 			}
 	}

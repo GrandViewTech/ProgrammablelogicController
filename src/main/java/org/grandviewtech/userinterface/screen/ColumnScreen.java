@@ -31,6 +31,7 @@ import org.grandviewtech.entity.enums.CoilType;
 import org.grandviewtech.entity.enums.Edge;
 import org.grandviewtech.entity.enums.InputType;
 import org.grandviewtech.entity.enums.NoNc;
+import org.grandviewtech.service.searching.SearchEngine;
 import org.grandviewtech.service.validation.RowValidation;
 import org.grandviewtech.service.validation.ValidateDragOption;
 import org.grandviewtech.userinterface.coils.PaintCoilsOnScreen;
@@ -202,7 +203,8 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 					}
 				setBlank(false);
 				setCoilType(temp);
-				RowValidation.validate(this);
+				//RowValidation.validate(this);
+				SearchEngine.index(this);
 				repaint();
 			}
 			
@@ -307,6 +309,10 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public NoNc getNonc()
 			{
+				if (nonc == null)
+					{
+						nonc = NoNc.DEFAULT;
+					}
 				return nonc;
 			}
 			
@@ -321,6 +327,10 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public Edge getEdge()
 			{
+				if (edge == null)
+					{
+						edge = Edge.DEFAULT;
+					}
 				return edge;
 			}
 			
@@ -480,7 +490,7 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 				addMouseListener(columnScreenListener);
 				addKeyListener(columnScreenListener);
 				addFocusListener(columnScreenListener);
-				setToolTipText("Row : " + getRowNumber() + " |  Column : " + getColumnNumber());
+				setToolTipText("Row : " + this.getRowNumber() + " |  Column : " + this.getColumnNumber());
 				repaint();
 				revalidate();
 			}
@@ -659,5 +669,17 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 						return ((row == this.rowNumber) && (this.columnNumber == column));
 					}
 				return false;
+			}
+			
+		public void update(ColumnScreen screen)
+			{
+				setCoilType(screen.getTemp());
+				setCoilType(screen.getCoilType());
+				setValue(screen.getValue());
+				setTag(screen.getTag());
+				setEdge(screen.getEdge());
+				setNonc(screen.getNonc());
+				getValueLabel().setText(screen.getValueLabel().getText());
+				apply();
 			}
 	}
