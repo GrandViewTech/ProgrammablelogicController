@@ -24,7 +24,7 @@ package org.grandviewtech.entity.bo;
 
 import org.apache.lucene.document.Document;
 
-public class SearchResult
+public class SearchResult implements Comparable<SearchResult>
 	{
 		public SearchResult()
 			{
@@ -33,21 +33,13 @@ public class SearchResult
 		public SearchResult(Document document)
 			{
 				this.columnId = document.get("columnId");
-				
 				this.rowNumber = (document.get("rowNumber") == null) ? null : Integer.parseInt(document.get("rowNumber"));
 				this.columnNumber = (document.get("columnNumber") == null) ? null : Integer.parseInt(document.get("columnNumber"));
-				this.value = document.get("value");
-				this.coil = document.get("coil");
-				this.tag = document.get("tag");
-				
 			}
 			
 		private String	columnId;
 		private Integer	rowNumber;
 		private Integer	columnNumber;
-		private String	tag;
-		private String	value;
-		private String	coil;
 		
 		public String getColumnId()
 			{
@@ -79,34 +71,40 @@ public class SearchResult
 				this.columnNumber = columnNumber;
 			}
 			
-		public String getTag()
+		@Override
+		public int compareTo(SearchResult searchResult)
 			{
-				return tag;
+				if (getRowNumber() < searchResult.getRowNumber())
+					{
+						return -1;
+					}
+				else if (getRowNumber() > searchResult.getRowNumber())
+					{
+						return 1;
+					}
+					
+				else if (getRowNumber() == searchResult.getRowNumber())
+					{
+						if (getColumnNumber() < searchResult.getColumnNumber())
+							{
+								return -1;
+							}
+						else if (getColumnNumber() > searchResult.getColumnNumber())
+							{
+								return 1;
+							}
+						else if (getColumnNumber() == searchResult.getColumnNumber())
+							{
+								return 0;
+							}
+					}
+				return 0;
 			}
 			
-		public void setTag(String tag)
+		@Override
+		public String toString()
 			{
-				this.tag = tag;
-			}
-			
-		public String getValue()
-			{
-				return value;
-			}
-			
-		public void setValue(String value)
-			{
-				this.value = value;
-			}
-			
-		public String getCoil()
-			{
-				return coil;
-			}
-			
-		public void setCoil(String coil)
-			{
-				this.coil = coil;
+				return "SearchResult [columnId=" + columnId + ", rowNumber=" + rowNumber + ", columnNumber=" + columnNumber + "]";
 			}
 			
 	}

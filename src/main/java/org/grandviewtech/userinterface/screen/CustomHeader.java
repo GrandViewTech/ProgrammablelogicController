@@ -26,7 +26,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -34,7 +33,6 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 
 import javax.swing.Box;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -52,7 +50,6 @@ import javax.swing.TransferHandler;
 import org.apache.log4j.Logger;
 import org.grandviewtech.entity.bo.Routine;
 import org.grandviewtech.service.system.PropertyReader;
-import org.grandviewtech.userinterface.listeners.AdvancedSearchMouseListener;
 import org.grandviewtech.userinterface.misc.CustomToolBar;
 import org.grandviewtech.userinterface.misc.Helper;
 
@@ -69,15 +66,13 @@ public class CustomHeader
 				menuBar.add(getFileMenu());
 				menuBar.add(getToolMenu());
 				Helper.setCursor(menuBar);
-				JButton advancedSearch = new JButton("Advanced Search");
-				advancedSearch.addMouseListener(new AdvancedSearchMouseListener());
-				advancedSearch.setToolTipText("Advanced Search");
-				menuBar.add(advancedSearch);
+				
 				// PARTITION
 				menuBar.add(Box.createHorizontalGlue());
 				menuBar.add(Search.getSearchLabel());
 				menuBar.add(Search.getSearchTextField());
 				menuBar.add(Search.getGo());
+				menuBar.add(Search.getAdvancedSearch());
 				menuBar.add(Search.getPrevious());
 				JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
 				Dimension dimension = new Dimension(1, 20);

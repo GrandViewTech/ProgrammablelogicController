@@ -25,6 +25,7 @@ package org.grandviewtech.service.searching;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -49,6 +50,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.Lock;
 import org.grandviewtech.entity.bo.SearchResult;
+import org.grandviewtech.entity.enums.Edge;
+import org.grandviewtech.entity.enums.NoNc;
 import org.grandviewtech.service.system.SystemFileLocation;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 
@@ -85,12 +88,20 @@ public class SearchEngine
 										if (columnScreen.isBlank() == false)
 											{
 												Document document = new Document();
-												document.add(new TextField("columnId", "" + columnScreen.getRowNumber() + "." + columnScreen.getColumnNumber(), Field.Store.YES));
+												document.add(new TextField("columnId", "" + columnScreen.getRowNumber() + "." + columnScreen.getColumnNumber(), Field.Store.NO));
 												document.add(new TextField("rowNumber", "" + columnScreen.getRowNumber(), Field.Store.YES));
 												document.add(new TextField("columnNumber", "" + columnScreen.getColumnNumber(), Field.Store.YES));
 												document.add(new TextField("tag", columnScreen.getTag(), Field.Store.NO));
 												document.add(new TextField("value", columnScreen.getValue(), Field.Store.NO));
 												document.add(new TextField("coil", columnScreen.getCoilType().getCoilType(), Field.Store.NO));
+												if (columnScreen.getNonc() != null && !columnScreen.getNonc().equals(NoNc.DEFAULT))
+													{
+														document.add(new TextField("nonc", columnScreen.getNonc().name(), Field.Store.NO));
+													}
+												if (columnScreen.getEdge() != null && !columnScreen.getEdge().equals(Edge.DEFAULT))
+													{
+														document.add(new TextField("edge", columnScreen.getEdge().name(), Field.Store.NO));
+													}
 												indexWriter.addDocument(document);
 												indexWriter.commit();
 											}
@@ -115,8 +126,11 @@ public class SearchEngine
 			
 		public static List<SearchResult> search(String value)
 			{
+				List<SearchResult> result = new ArrayList<SearchResult>();
+				;
 				try
 					{
+						value = value.trim().toLowerCase();
 						BooleanQuery.Builder builder = new BooleanQuery.Builder();
 						builder.add(new TermQuery(new Term("columnId", value)), Occur.SHOULD);
 						builder.add(new TermQuery(new Term("rowNumber", value)), Occur.SHOULD);
@@ -124,7 +138,19 @@ public class SearchEngine
 						builder.add(new TermQuery(new Term("tag", value)), Occur.SHOULD);
 						builder.add(new TermQuery(new Term("value", value)), Occur.SHOULD);
 						builder.add(new TermQuery(new Term("coil", value)), Occur.SHOULD);
-						return search(builder.build());
+						result = search(builder.build());
+						result.sort(new Comparator<SearchResult>()
+							{
+								@Override
+								public int compare(SearchResult object1, SearchResult object2)
+									{
+										return object1.compareTo(object2);
+									}
+							});
+					}
+				catch (org.apache.lucene.index.IndexNotFoundException indexNotFoundException)
+					{
+						logger.error("Index not Found");
 					}
 				catch (IOException ioException)
 					{
@@ -134,7 +160,7 @@ public class SearchEngine
 					{
 						logger.error(exception.getLocalizedMessage(), exception);
 					}
-				return new ArrayList<SearchResult>();
+				return result;
 			}
 			
 		public static List<SearchResult> search(String key, String value)
@@ -180,7 +206,7 @@ public class SearchEngine
 					}
 				catch (org.apache.lucene.index.IndexNotFoundException indexNotFoundException)
 					{
-						logger.error(indexNotFoundException.getLocalizedMessage(), indexNotFoundException);
+						logger.error(indexNotFoundException.getLocalizedMessage());
 					}
 				return results;
 			}

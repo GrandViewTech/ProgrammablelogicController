@@ -27,14 +27,18 @@ import java.awt.Dimension;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 
-public class AdvancedSearchScreen extends JPanel
+import org.grandviewtech.runner.Application;
+
+public class AdvancedSearchScreen extends JFrame
 	{
+		private JPanel				panel				= new JPanel();
 		private JLabel				valueLabel			= new JLabel("1. Value");
 		private JTextField			value				= new JTextField("");
 		private JLabel				tagLabel			= new JLabel("2. Tag");
@@ -47,15 +51,15 @@ public class AdvancedSearchScreen extends JPanel
 		private JButton				go					= new JButton("Go");
 		private JButton				cancel				= new JButton("Cancel");
 		private JLabel				text				= new JLabel("No Text Found");
-		private JButton				next				= new JButton("Submit");
-		private JButton				previous			= new JButton("Cancel");
+		private JButton				next				= new JButton("Next");
+		private JButton				previous			= new JButton("Previous");
 		
 		private static final long	serialVersionUID	= 1L;
 		
 		public AdvancedSearchScreen()
 			{
-				setPreferredSize(new Dimension(400, 130));
-				setLayout(null);
+				panel.setPreferredSize(new Dimension(400, 130));
+				panel.setLayout(null);
 				ButtonGroup buttonGroup = new ButtonGroup();
 				buttonGroup.add(input);
 				buttonGroup.add(flag);
@@ -76,25 +80,52 @@ public class AdvancedSearchScreen extends JPanel
 				text.setBounds(130, 100, 200, 20);
 				next.setBounds(20, 100, radioButtonSize, 20);
 				previous.setBounds(260, 100, radioButtonSize, 20);
-				add(valueLabel);
-				add(value);
-				add(tagLabel);
-				add(tag);
-				add(type);
-				add(input);
-				add(flag);
-				add(word);
-				add(output);
-				add(go);
-				add(cancel);
+				panel.add(valueLabel);
+				panel.add(value);
+				panel.add(tagLabel);
+				panel.add(tag);
+				panel.add(type);
+				panel.add(input);
+				panel.add(flag);
+				panel.add(word);
+				panel.add(output);
+				panel.add(go);
+				panel.add(cancel);
 				JSeparator separator = new JSeparator(JSeparator.HORIZONTAL);
 				separator.setBounds(10, 90, 380, 10);
 				add(separator, BorderLayout.LINE_START);
-				add(text);
-				add(next);
-				add(previous);
+				panel.add(text);
+				panel.add(next);
+				panel.add(previous);
 				setVisible(true);
+				add(panel);
+				//invoke();
+				addListeners();
+			}
+			
+		public void reset()
+			{
 				
+			}
+			
+		public void invoke()
+			{
+				setVisible(true);
+				setAlwaysOnTop(true);
+				org.grandviewtech.entity.helper.Dimension dimension = Application.calculateCenterAlignment(getPreferredSize());
+				setLocation(dimension.getX(), dimension.getY());
+				pack();
+				repaint();
+			}
+			
+		private void addListeners()
+			{
+				addCancelListener();
+			}
+			
+		private void addCancelListener()
+			{
+				cancel.addActionListener(event -> dispose());
 			}
 			
 	}

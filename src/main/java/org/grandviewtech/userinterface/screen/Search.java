@@ -29,18 +29,21 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
+import org.grandviewtech.constants.CustomIcon;
 import org.grandviewtech.entity.bo.SearchResult;
+import org.grandviewtech.userinterface.listeners.AdvancedSearchMouseListener;
 import org.grandviewtech.userinterface.listeners.SearchListener;
 
 final public class Search
 	{
-		private static int				  currentIndex	  = -1;
-		private static List<SearchResult> searchResults	  = new ArrayList<SearchResult>();
-		private static JLabel			  searchLabel	  = new JLabel("Search :");
-		private static JLabel			  previous		  = new JLabel(" < ");
-		private static JLabel			  next			  = new JLabel(" > ");
-		private static JButton			  go			  = new JButton(" Go ");
-		private static JTextField		  searchTextField = new JTextField(10);
+		private static int					currentIndex	= -1;
+		private static List<SearchResult>	searchResults	= new ArrayList<SearchResult>();
+		private static JLabel				searchLabel		= new JLabel("Search :");
+		private static JButton				previous		= new JButton(CustomIcon.LEFT_ICON);
+		private static JButton				next			= new JButton(CustomIcon.RIGHT_ICON);
+		private static JButton				go				= new JButton(CustomIcon.SEARCH_ICON);
+		private static JButton				advancedSearch	= new JButton(CustomIcon.ADVANCED_SEARCH_ICON);
+		private static JTextField			searchTextField	= new JTextField(10);
 		
 		static
 			{
@@ -52,11 +55,14 @@ final public class Search
 				SearchListener searchListener = new SearchListener();
 				previous.addMouseListener(searchListener);
 				next.setToolTipText("-Next-");
+				next.setName(">");
+				previous.setName("<");
 				next.addMouseListener(searchListener);
 				next.setEnabled(false);
 				go.setToolTipText("-Search-");
 				go.addMouseListener(searchListener);
 				searchTextField.addKeyListener(searchListener);
+				advancedSearch.addMouseListener(new AdvancedSearchMouseListener());
 			}
 			
 		public static JLabel getSearchLabel()
@@ -64,12 +70,12 @@ final public class Search
 				return searchLabel;
 			}
 			
-		public static JLabel getPrevious()
+		public static JButton getPrevious()
 			{
 				return previous;
 			}
 			
-		public static JLabel getNext()
+		public static JButton getNext()
 			{
 				return next;
 			}
@@ -102,6 +108,11 @@ final public class Search
 		public static void setCurrentIndex(int currentIndex)
 			{
 				Search.currentIndex = currentIndex;
+			}
+			
+		public static JButton getAdvancedSearch()
+			{
+				return advancedSearch;
 			}
 			
 	}

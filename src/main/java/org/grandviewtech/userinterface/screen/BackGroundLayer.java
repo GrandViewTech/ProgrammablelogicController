@@ -31,6 +31,7 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 
@@ -52,6 +53,8 @@ public class BackGroundLayer extends JFrame
 		
 		private PlcFile				plcFile				= PlcFile.getInstance();
 		
+		private static JScrollPane	scroll				= null;
+		
 		public BackGroundLayer()
 			{
 				addKeyListener(new DefaultKeyListener());
@@ -59,7 +62,8 @@ public class BackGroundLayer extends JFrame
 				setVisible(true);
 				setPositioning();
 				container = getContentPane();
-				container.add(addRulerJScrolBar());
+				scroll = addRulerJScrolBar();
+				container.add(scroll);
 				postConstruct();
 			}
 			
@@ -108,4 +112,10 @@ public class BackGroundLayer extends JFrame
 			{
 				RowGenerator.regenerateRow();
 			}
+			
+		public static JScrollPane getScroll()
+			{
+				return scroll;
+			}
+			
 	}

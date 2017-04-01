@@ -31,10 +31,13 @@ import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 
+import org.grandviewtech.constants.ApplicationConstant;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.bo.SearchResult;
 import org.grandviewtech.service.searching.SearchEngine;
+import org.grandviewtech.userinterface.screen.BackGroundLayer;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 import org.grandviewtech.userinterface.screen.Search;
 
@@ -50,7 +53,8 @@ public class SearchListener implements MouseListener, KeyListener
 						if (label.isEnabled())
 							{
 								List<SearchResult> searchResults = Search.getSearchResults();
-								String text = label.getText();
+								String text = label.getName();
+								text=text.trim();
 								if (text.equalsIgnoreCase("previous") || text.equalsIgnoreCase("<"))
 									{
 										previous(searchResults);
@@ -114,6 +118,8 @@ public class SearchListener implements MouseListener, KeyListener
 							{
 								Search.getNext().setEnabled(false);
 							}
+						JScrollPane scrollPane = BackGroundLayer.getScroll();
+						scrollPane.getVerticalScrollBar().setValue((ApplicationConstant.SECTION_HEIGHT) * ((searchResult.getRowNumber() > 1) ? searchResult.getRowNumber() - 1 : searchResult.getRowNumber()));
 					}
 			}
 			
@@ -140,6 +146,8 @@ public class SearchListener implements MouseListener, KeyListener
 							{
 								Search.getPrevious().setEnabled(false);
 							}
+						JScrollPane scrollPane = BackGroundLayer.getScroll();
+						scrollPane.getVerticalScrollBar().setValue((ApplicationConstant.SECTION_HEIGHT) * ((searchResult.getRowNumber() > 1) ? searchResult.getRowNumber() - 1 : searchResult.getRowNumber()));
 					}
 			}
 			
@@ -166,6 +174,10 @@ public class SearchListener implements MouseListener, KeyListener
 						Search.getNext().setEnabled(true);
 						Search.setCurrentIndex(-1);
 						Search.setSearchResults(searchResults);
+						SearchResult searchResult = searchResults.get(0);
+						JScrollPane scrollPane = BackGroundLayer.getScroll();
+						scrollPane.getVerticalScrollBar().setValue((ApplicationConstant.SECTION_HEIGHT) * ((searchResult.getRowNumber() > 1) ? searchResult.getRowNumber() - 1 : searchResult.getRowNumber()));
+						//scrollPane.getHorizontalScrollBar().setValue(rowScreen.getRung().getX());
 					}
 			}
 			
