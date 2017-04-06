@@ -53,22 +53,22 @@ final public class ClipBoard
 				return ClipBoardInstanceFactory.instance;
 			}
 			
-		private static JLabel			  selection			 = new JLabel("SELECTION : OFF ");
-		private static CLIPBOARD_ACTION	  clipboardAction	 = CLIPBOARD_ACTION.DEFUALT;
-		public static JLabel			  cutLabel;
-		public static JLabel			  copyLabel;
-		public static JLabel			  pasteLabel;
+		private static JLabel				selection			= new JLabel("SELECTION : OFF ");
+		private static CLIPBOARD_ACTION		clipboardAction		= CLIPBOARD_ACTION.DEFUALT;
+		public static JLabel				cutLabel;
+		public static JLabel				copyLabel;
+		public static JLabel				pasteLabel;
 		
-		private static boolean			  isControlKeyActive = false;
+		private static boolean				isControlKeyActive	= false;
 		
-		private static String			  clipBoardType;
-		private static List<Rung>		  copiedTempRung	 = new ArrayList<Rung>();
-		private static List<Rung>		  copiedRung		 = new ArrayList<Rung>();
-		private static List<ColumnScreen> tempData			 = new ArrayList<ColumnScreen>();
-		private static List<ColumnScreen> copiedCell		 = new ArrayList<ColumnScreen>();
+		private static String				clipBoardType;
+		private static List<Rung>			copiedTempRung		= new ArrayList<Rung>();
+		private static List<Rung>			copiedRung			= new ArrayList<Rung>();
+		private static List<ColumnScreen>	tempData			= new ArrayList<ColumnScreen>();
+		private static List<ColumnScreen>	copiedCell			= new ArrayList<ColumnScreen>();
 		
-		private static int				  currentRowNumber;
-		private static int				  currentColumnNumber;
+		private static int					currentRowNumber;
+		private static int					currentColumnNumber;
 		
 		public static String getClipBoardType()
 			{
@@ -116,21 +116,24 @@ final public class ClipBoard
 			{
 				for (Rung rung : copiedTempRung)
 					{
-						int rowNumber = rung.getRowNumber();
-						RowScreen rowScreen = SCREEN.getRow(rowNumber);
-						if (clipboardAction == CLIPBOARD_ACTION.COPY)
+						if (copiedRung.contains(rung) == false)
 							{
-								rowScreen.setBackground(java.awt.Color.GREEN);
+								int rowNumber = rung.getRowNumber();
+								RowScreen rowScreen = SCREEN.getRow(rowNumber);
+								if (clipboardAction == CLIPBOARD_ACTION.COPY)
+									{
+										rowScreen.setBackground(java.awt.Color.GREEN);
+									}
+								else if (clipboardAction == CLIPBOARD_ACTION.CUT)
+									{
+										rowScreen.setBackground(java.awt.Color.RED);
+									}
+								else
+									{
+										rowScreen.setBackground(java.awt.Color.RED);
+									}
+								copiedRung.add(rung);
 							}
-						else if (clipboardAction == CLIPBOARD_ACTION.CUT)
-							{
-								rowScreen.setBackground(java.awt.Color.RED);
-							}
-						else
-							{
-								rowScreen.setBackground(java.awt.Color.RED);
-							}
-						copiedRung.add(rung);
 					}
 			}
 			
