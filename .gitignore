@@ -11,3 +11,4 @@ output/system/system.properties
 *.prefs
 
 *.prefs
+*.out
