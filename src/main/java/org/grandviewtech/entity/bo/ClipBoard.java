@@ -24,10 +24,12 @@ package org.grandviewtech.entity.bo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 
 import javax.swing.JLabel;
 import javax.swing.border.Border;
 
+import org.apache.log4j.Logger;
 import org.grandviewtech.constants.CustomBorderList;
 import org.grandviewtech.entity.enums.CLIPBOARD_ACTION;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
@@ -36,6 +38,8 @@ import org.grandviewtech.userinterface.screen.Rung;
 
 final public class ClipBoard
 	{
+		
+		private static Logger logger = Logger.getLogger(ClipBoard.class);
 		
 		private ClipBoard()
 			{
@@ -87,6 +91,16 @@ final public class ClipBoard
 			
 		public static List<Rung> getCopiedRung()
 			{
+				if (copiedRung != null)
+					{
+						StringJoiner joiner = new StringJoiner(" ");
+						for (Rung rung : copiedRung)
+							{
+								joiner.add("R." + rung.getRowNumber());
+							}
+						logger.warn("Size : " + copiedRung.size() + " | Name : " + joiner.toString());
+					}
+					
 				return copiedRung;
 			}
 			
@@ -101,6 +115,7 @@ final public class ClipBoard
 					{
 						if (ClipBoard.isControlKeyActive)
 							{
+								// copiedTempRung.clear();
 								copiedTempRung.add(rung);
 							}
 						else
@@ -108,12 +123,24 @@ final public class ClipBoard
 								copiedTempRung.clear();
 								copiedTempRung.add(rung);
 							}
+						StringJoiner joiner = new StringJoiner(" ");
+						if (copiedTempRung != null)
+							{
+								
+								for (Rung r1 : copiedTempRung)
+									{
+										joiner.add("R." + r1.getRowNumber());
+									}
+							}
+						logger.warn("ctrl : " + ClipBoard.isControlKeyActive + " R." + rung.getRowNumber());
+						logger.warn("Total Temp : " + joiner.toString());
 						rung.setBackground(java.awt.Color.LIGHT_GRAY);
 					}
 			}
 			
 		public static void addCopiedRung()
 			{
+				copiedRung.clear();
 				for (Rung rung : copiedTempRung)
 					{
 						if (copiedRung.contains(rung) == false)

@@ -35,5 +35,5 @@ public class ApplicationConstant
 		public static int			SECTION_HEIGHT				= 100;
 		public static int			MAX_CELL					= 10;
 		public static int			CUSTOM_BORDER_HEIGTH_OFFSET	= 2;
-		final public static String	VERSION						= "V 10.8";
+		final public static String	VERSION						= "V 10.8.1";
 	}

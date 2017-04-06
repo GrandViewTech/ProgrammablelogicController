@@ -53,21 +53,23 @@ public class RungListener implements MouseListener, KeyListener
 		public void mouseClicked(MouseEvent mouseEvent)
 			{
 				CustomToolBar.setRungComment(rung.getRowNumber(), rung.getComment());
-				if (SwingUtilities.isRightMouseButton(mouseEvent))
+				boolean isRightClick = SwingUtilities.isRightMouseButton(mouseEvent);
+				if (isRightClick)
 					{
 						editMenu.removeAll();
 						open();
 						editMenu.show(rung, rung.getX() + 22, rung.getY());
 						//
 					}
-					
 				if (ClipBoard.isControlKeyActive() == false)
 					{
+						if (!isRightClick)
+							{
+								ClipBoard.addTempRung(rung);
+							}
 						rung.setBackground(Color.GREEN);
 					}
 					
-				ClipBoard.addTempRung(rung);
-				
 			}
 			
 		@Override
@@ -160,9 +162,10 @@ public class RungListener implements MouseListener, KeyListener
 		private void copyMenu(boolean addSeparator)
 			{
 				int currentRowIndex = rung.getRowNumber();
+				
 				JMenuItem menuItem = new JMenuItem("Copy");
 				menuItem.setIcon(CustomIcon.COPY);
-				menuItem.addActionListener(new RungActionListerner(RungActionListerner.RungAction.COPY, currentRowIndex));
+				menuItem.addActionListener(new RungActionListerner(rung, RungActionListerner.RungAction.COPY, currentRowIndex));
 				editMenu.add(menuItem);
 				if (addSeparator)
 					{

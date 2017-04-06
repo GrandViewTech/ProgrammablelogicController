@@ -25,16 +25,14 @@ package org.grandviewtech.userinterface.listeners;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.grandviewtech.entity.bo.ClipBoard;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CLIPBOARD_ACTION;
-import org.grandviewtech.service.searching.SearchEngine;
 import org.grandviewtech.userinterface.helper.RowGenerator;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 import org.grandviewtech.userinterface.screen.RowScreen;
@@ -43,9 +41,12 @@ import org.grandviewtech.userinterface.screen.RungComment;
 
 public class RungActionListerner implements ActionListener
 	{
+		private static Logger	logger	= Logger.getLogger(RungActionListerner.class);
+		
 		private static Screen	screen	= Screen.getInstance();
 		private RungAction		rungAction;
 		private int				currentRungNumber;
+		private Rung			rung;
 		
 		public static enum RungAction
 			{
@@ -55,6 +56,15 @@ public class RungActionListerner implements ActionListener
 		public RungActionListerner(RungAction rungAction, int currentRungNumber)
 			{
 				super();
+				
+				this.rungAction = rungAction;
+				this.currentRungNumber = currentRungNumber;
+			}
+			
+		public RungActionListerner(Rung rung, RungAction rungAction, int currentRungNumber)
+			{
+				super();
+				this.rung = rung;
 				this.rungAction = rungAction;
 				this.currentRungNumber = currentRungNumber;
 			}
@@ -66,6 +76,7 @@ public class RungActionListerner implements ActionListener
 					{
 						case COPY:
 							{
+								ClipBoard.addTempRung(rung);
 								copy();
 								ClipBoard.setClipboardAction(CLIPBOARD_ACTION.COPY);
 								break;
@@ -148,6 +159,7 @@ public class RungActionListerner implements ActionListener
 					{
 						RowScreen copiedRow = screen.getRow(ClipBoard.getCopiedRung().get(i$).getRowNumber());
 						RowScreen pasteRow = screen.getRow(rowNumber);
+						logger.warn("Pasting Row:" + rowNumber);
 						int columnIndex = 1;
 						for (ColumnScreen pasteColumn : pasteRow.getAllColumnScreens())
 							{
@@ -165,16 +177,8 @@ public class RungActionListerner implements ActionListener
 							}
 						i$ = i$ + 1;
 					}
-				/*if (ClipBoard.getClipboardAction() == CLIPBOARD_ACTION.CUT)
-					{
-						Set<Integer> deletedRowNumbers = new LinkedHashSet<Integer>();
-						List<Rung> copiedRungs = ClipBoard.getCopiedRung();
-						Collections.sort(copiedRungs);
-						for (Rung rung : copiedRungs)
-							{
-								deletedRowNumbers.add(rung.getRowNumber());
-							}
-						RowGenerator.deleteRows(deletedRowNumbers);
-					}*/
+				/*
+				 * if (ClipBoard.getClipboardAction() == CLIPBOARD_ACTION.CUT) { Set<Integer> deletedRowNumbers = new LinkedHashSet<Integer>(); List<Rung> copiedRungs = ClipBoard.getCopiedRung(); Collections.sort(copiedRungs); for (Rung rung : copiedRungs) { deletedRowNumbers.add(rung.getRowNumber()); } RowGenerator.deleteRows(deletedRowNumbers); }
+				 */
 			}
 	}
