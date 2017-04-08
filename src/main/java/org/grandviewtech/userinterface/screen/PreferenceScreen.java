@@ -129,7 +129,7 @@ public class PreferenceScreen extends JFrame
 		public void init()
 			{
 				LOGGER.info("INITIALIZING FRAME");
-				setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+				//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				setTitle("Preference");
 				panel.setPreferredSize(new java.awt.Dimension(400, 200));
 				panel.setLayout(null);
@@ -275,6 +275,7 @@ public class PreferenceScreen extends JFrame
 			{
 				// add(panel);
 				setLayout(null);
+				toFront();
 				Dimension dimension = Application.calculateCenterAlignment(getPreferredSize());
 				setLocation(dimension.getX(), dimension.getY());
 				setPreferredSize(CustomDimension.PREFERENCE_SCREEN);

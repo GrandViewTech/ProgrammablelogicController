@@ -83,7 +83,7 @@ public class SettingsMouseClickListener implements MouseListener
 		 * 
 		 * private void edit() { JMenuItem menuItem = new JMenuItem("Edit");
 		 * menuItem.setIcon(EDIT); menuItem.addActionListener(event -> {
-		 * ColumnConfigurationScreen columnConfigurationScreen =
+		 * ColumnConfigurationScreen columnConfiguration b nScreen =
 		 * ColumnConfigurationScreen.getInstance();
 		 * columnConfigurationScreen.requestFocusInWindow();
 		 * columnConfigurationScreen.initiateInstance(columnScreen); });

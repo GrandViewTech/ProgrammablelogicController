@@ -69,7 +69,7 @@ public class RoutineScreen extends JFrame
 		
 		private JTextArea				nameTextField		= new JTextArea(2, 100);
 		
-		private JButton					submit				= new JButton("Add");
+		private JButton					submit;
 		
 		private JButton					cancel				= new JButton("Cancel");
 		
@@ -100,6 +100,7 @@ public class RoutineScreen extends JFrame
 			{
 				if (add)
 					{
+						submit = new JButton("Add");
 						setTitle("Add Routine");
 						int x = 20;
 						int y = 20;
@@ -111,6 +112,7 @@ public class RoutineScreen extends JFrame
 					}
 				else
 					{
+						submit = new JButton("Edit");
 						setTitle("Edit Routine");
 						int x = 200;
 						int y = 20;

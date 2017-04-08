@@ -5,9 +5,7 @@
 CLR      A
 MOVX   @DPTR,A
 INC         DPTR
-MOVX    @DPTR,A
-
-</functionalBlock>
+MOVX    @DPTR,A</functionalBlock>
   <inputs class="linked-hash-map"/>
   <values class="linked-hash-map"/>
   <components/>
