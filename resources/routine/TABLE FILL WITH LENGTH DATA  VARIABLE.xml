@@ -1,0 +1,36 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>TABLE FILL WITH LENGTH DATA  VARIABLE</name>
+  <functionalBlock>CLR       BYTE_CNT
+MOV     A,#0E8H    ;LENGTH DATA CANNOT BE MORE THAN 255
+MOV     R2,A
+MOV     DPTR,#D2025H ;SOURCE DATA 
+MOVX   A,@DPTR
+MOV     R5,A
+INC        DPTR
+MOVX   A,@DPTR
+MOV     R4,A
+
+TABLE_FILL_NOT_COMPLETE  :
+
+MOV     DPTR,#D2030H    ;DESTINATION START ADDRESS
+MOV    A,BYTE_CNT
+CLR      C
+ADD    A,DPL
+MOV   DPL,A
+CLR     C
+MOV    A,DPH
+ADDC    A,#0
+MOV    DPH,A
+MOV     A,R5
+MOVX   @DPTR,A
+INC      DPTR
+MOV     A,R4
+MOVX   @DPTR,A
+
+DJNZ    R2,TABLE_FILL_NOT_COMPLETE  
+</functionalBlock>
+  <inputs class="linked-hash-map"/>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

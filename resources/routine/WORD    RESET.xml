@@ -1,0 +1,14 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>WORD    RESET</name>
+  <functionalBlock>MOV    DPTR,#D2000H
+CLR      A
+MOVX   @DPTR,A
+INC         DPTR
+MOVX    @DPTR,A
+
+</functionalBlock>
+  <inputs class="linked-hash-map"/>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

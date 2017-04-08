@@ -1,0 +1,27 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>WITH BOTH DATA VARIABLE</name>
+  <functionalBlock>MOV    DPTR,#D2035L   ;DATA  A
+MOVX  A,@DPTR
+MOV    R2,A
+MOV    DPTR,#D2035H
+MOVX  A,@DPTR
+MOV     R3,A
+
+MOV   DPTR,#D2039L  ;DATA B
+MOVX  A,@DPTR
+MOV    R0,A
+MOV  DPTR,#D2039H
+MOVX  A,@DPTR
+MOV   R1,A
+   LCALL   MULTIPLICATION
+MOV  DPTR,#D2040L    ;RESULT
+MOV  A,R6
+  MOVX  @DPTR,A
+MOV   DPTR,#D2040H
+MOV   A,R7
+MOVX    A,@DPTR</functionalBlock>
+  <inputs class="linked-hash-map"/>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

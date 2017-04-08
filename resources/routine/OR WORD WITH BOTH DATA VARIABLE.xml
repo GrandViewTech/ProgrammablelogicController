@@ -1,0 +1,25 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>OR WORD WITH BOTH DATA VARIABLE</name>
+  <functionalBlock>MOV      DPTR,#D2008L
+MOV       A,@DPTR
+MOV      TEMP,A
+MOV      DPTR,#D2009L
+MOVX    A,@DPTR
+ORL      A,TEMP
+
+MOV     DPTR,#D2010L
+MOVX   @DPTR,A
+
+MOV    DPTR,#D2008H
+MOVX  A,@DPTR
+MOV    TEMP11,A
+MOV    DPTR,#D2009H
+MOVX  A,@DPTR
+ORL    A,TEMP11
+MOV    DPTR,#D2010H
+MOVX  @DPTR,A</functionalBlock>
+  <inputs class="linked-hash-map"/>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

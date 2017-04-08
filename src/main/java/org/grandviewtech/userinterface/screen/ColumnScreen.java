@@ -454,8 +454,10 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			{
 			}
 			
-		public ColumnScreen()
+		public ColumnScreen(int row, int column)
 			{
+				this.rowNumber = row;
+				this.columnNumber = column;
 				init();
 			}
 			

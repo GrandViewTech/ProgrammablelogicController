@@ -1,0 +1,7 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description>TESTING FOR TIMER</description>
+  <name>TIMER 2</name>
+  <functionalBlock>ADD</functionalBlock>
+  <inputs class="linked-hash-map"/>
+  <values class="linked-hash-map"/>
+</org.grandviewtech.entity.bo.Routine>

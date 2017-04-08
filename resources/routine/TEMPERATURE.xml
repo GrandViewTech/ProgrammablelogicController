@@ -1,0 +1,7 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description>TESTING FOR TEMPERATURE</description>
+  <name>TEMPERATURE</name>
+  <functionalBlock>OUTPUT(1 0N) OUTPUT(2 ON)</functionalBlock>
+  <inputs class="linked-hash-map"/>
+  <values class="linked-hash-map"/>
+</org.grandviewtech.entity.bo.Routine>

@@ -127,9 +127,7 @@ public class RowScreen extends JPanel implements Comparable<RowScreen>
 				while (columnNumber <= ApplicationConstant.MAX_CELL)
 					{
 						gridBagConstraints.gridx = columnNumber + 1;
-						ColumnScreen columnScreen = new ColumnScreen();
-						columnScreen.setColumnNumber(columnNumber);
-						columnScreen.setRowNumber(rowNumber);
+						ColumnScreen columnScreen = new ColumnScreen(rowNumber, columnNumber);
 						columnScreen.revalidate();
 						columnScreen.repaint();
 						addColumnScreen(columnNumber, columnScreen);
