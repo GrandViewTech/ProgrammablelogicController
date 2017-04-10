@@ -33,6 +33,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 
 import javax.swing.Box;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -64,7 +65,8 @@ public class CustomHeader
 			{
 				JMenuBar menuBar = new JMenuBar();
 				menuBar.add(getFileMenu());
-				menuBar.add(getToolMenu());
+				menuBar.add(getRoutineMenu());
+				menuBar.add(new JButton("Compile"));	
 				Helper.setCursor(menuBar);
 				
 				// PARTITION
@@ -84,7 +86,7 @@ public class CustomHeader
 				return menuBar;
 			}
 			
-		public static JMenu getToolMenu()
+		public static JMenu getRoutineMenu()
 			{
 				JMenu tool = new JMenu("Routine");
 				//
