@@ -1,0 +1,22 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>VARIABLE SOURCE DETA</name>
+  <functionalBlock>MOV     DPTR,#D2000L     ;SOURCE
+
+MOVX   A,@DPTR
+
+MOV     DPTR,#D2007L    ;RESULT
+
+MOVX  @DPTR,A
+
+MOV     DPTR,#D2000H
+
+MOVX  A,@DPTR
+
+MOV    DPTR,#2007H
+
+MOVX  @DPTR,A</functionalBlock>
+  <inputs class="linked-hash-map"/>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

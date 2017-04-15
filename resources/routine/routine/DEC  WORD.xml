@@ -1,0 +1,26 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>DEC  WORD</name>
+  <functionalBlock>MOV    DPTR,#D${INPUT 1}L
+MOVX    A,@DPTR
+CLR    C
+SUBB    A,#01
+MOVX   @DPTR,A
+MOV     DPTR,#D${INPUT 2}H
+MOVX    A,@DPTR
+SUBB    A,#00
+MOVX    @DPTR,A
+</functionalBlock>
+  <inputs class="linked-hash-map">
+    <entry>
+      <int>1</int>
+      <string>${INPUT1}</string>
+    </entry>
+    <entry>
+      <int>2</int>
+      <string>${INPUT2}</string>
+    </entry>
+  </inputs>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

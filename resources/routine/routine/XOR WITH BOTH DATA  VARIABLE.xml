@@ -1,0 +1,26 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>XOR WITH BOTH DATA  VARIABLE</name>
+  <functionalBlock>MOV    DPTR,#D2008L    ; D2008 IS THE SOURCE1  LOCATION
+MOVX   A,@DPTR
+MOV    TEMP11,A
+MOV    DPTR,#D2009L    ; D2009 IS THE SOURCE2  LOCATION
+MOVX   A,@DPTR
+XRL     A,TEMP
+
+MOV    DPTR,#D2010L   ;D2010 IS THE RESULT LOCATION
+MOVX   @DPTR,A
+
+MOV    DPTR,#D2008H
+MOVX   A,@DPTR
+MOV    TEMP,A
+MOV    DPTR,#D2009H
+MOVX   A,@DPTR
+XRL    A,TEMP
+MOV    DPTR,#D2010H
+MOVX   @DPTR,A
+</functionalBlock>
+  <inputs class="linked-hash-map"/>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

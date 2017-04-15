@@ -1,0 +1,29 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>SUBSTRACTION   WITH BOTH  DATA   VARIABLE</name>
+  <functionalBlock>MOV     DPTR,#D${INPUT 1}L   ;DATA B
+MOVX   A,@DPTR
+MOV    TEMP,A
+MOV      DPTR,#D${INPUT 2}L  ;DATA A
+MOVX     A,@DPTR
+CLR      C
+SUBB     A, TEMP
+MOV     DPTR,#${INPUT 3}L     ;RESULT
+MOVX    @DPTR,A
+MOV     DPTR,#D${INPUT 4}H
+MOVX   A,@DPTR
+MOV     TEMP,,A
+MOV    DPTR,#D${INPUT 5}H
+MOVX   A,@DPTR
+SUBB     A,TEMP
+MOV     DPTR,#D${INPUT 6}H     ;RESULT
+MOVX    @DPTR,A
+MOV     DPTR,#RLY512_519+
+MOVX   A,@DPTR
+MOV    RLY517,C    ;CARRY BIT
+MOVX   @DPTR,A
+</functionalBlock>
+  <inputs class="linked-hash-map"/>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

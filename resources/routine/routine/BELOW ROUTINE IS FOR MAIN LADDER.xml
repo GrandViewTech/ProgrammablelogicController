@@ -1,0 +1,55 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>BELOW ROUTINE IS FOR MAIN LADDER</name>
+  <functionalBlock>             MOV    DPTR,#D${INPUT 1}H    ;DIVIDENT
+            MOVX   A,@DPTR
+           MOV     RSLT_1,A
+           INC     DPTR
+            MOVX   A,@DPTR
+           MOV    RSLT_0,A
+            
+           MOV    DPTR,#D${INPUT 2}H    ;DIVISOR
+            MOVX   A,@DPTR
+           MOV     R3,A
+           INC     DPTR
+            MOVX   A,@DPTR
+           MOV    R2,A
+
+          LCALL      DIV_16BIT
+
+
+MOV    DPTR,#D${INPUT 3}H    ;QUOTIENT
+MOV    RSLT_1,A
+MOVX   @DPTR,A
+INC     DPTR
+MOV    RSLT_0,A
+MOVX   @DPTR,A
+
+INC     DPTR,#D${INPUT 4}     ;REMAINDER  IS AT D2011
+MOV   A,TEMP_1
+MOVX   @DPTR,A
+INC      DPTR
+MOV   A,TEMP_0
+MOVX   @DPTR,A
+</functionalBlock>
+  <inputs class="linked-hash-map">
+    <entry>
+      <int>1</int>
+      <string>${INPUT1}</string>
+    </entry>
+    <entry>
+      <int>2</int>
+      <string>${INPUT2}</string>
+    </entry>
+    <entry>
+      <int>3</int>
+      <string>${INPUT3}</string>
+    </entry>
+    <entry>
+      <int>4</int>
+      <string>${INPUT4}</string>
+    </entry>
+  </inputs>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

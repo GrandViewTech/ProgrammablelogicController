@@ -1,0 +1,19 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>WITH VARIBLE LENGTH</name>
+  <functionalBlock>MOV     DPTR,#D2020L  ;D2020 IS THE LENGTH OF TABLE READ
+MOVX   A,@DPTR
+MOV    DPTR,#D2050H  ;D2050 IS THE START OF TABLE
+
+LCALL   READ_TABLE
+
+MOV     DPTR,#D2010L
+MOVX   @DPTR,A
+MOV       A,B
+MOV     DPTR,#D2010H
+MOVX   @DPTR,A
+</functionalBlock>
+  <inputs class="linked-hash-map"/>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

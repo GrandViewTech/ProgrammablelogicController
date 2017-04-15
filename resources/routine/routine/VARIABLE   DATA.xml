@@ -1,0 +1,24 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>VARIABLE   DATA</name>
+  <functionalBlock>MOV    DPTR,#D2008L   ;D2008 IS SOURCE1 ADDRESS
+MOVX   A,@DPTR
+MOV    TEMP,A
+MOV    DPTR,#D2009L    ;D2009 IS SOURCE2  ADDRESS
+MOVX   A,@DPTR
+ANL     A,TEMP
+MOV    DPTR,#D2010L   ;D2010 IS THE DESTINATION ADDRESS
+MOVX   @DPTR,A
+MOV    DPTR,#D2008H
+MOVX   A,@DPTR
+MOV    TEMP,A
+MOV    DPTR,#D2009H
+MOVX   A,@DPTR
+ANL     A,TEMP
+MOV    DPTR,#D2010H
+MOVX   @DPTR,A
+</functionalBlock>
+  <inputs class="linked-hash-map"/>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

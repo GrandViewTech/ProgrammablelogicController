@@ -1,0 +1,27 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>MOVE VARIABLE DATA</name>
+  <functionalBlock>MOV     A,#03H  ;LSD OF CONSTANT SOURCE DATA
+
+MOV     DPTR,#D2007L  ;RESULT
+
+MOVX  @DPTR,A
+
+MOV      A,${INPUT1}H
+
+MOV      DPTR,#D${INPUT2}H
+
+MOVX    @DPTR,A</functionalBlock>
+  <inputs class="linked-hash-map">
+    <entry>
+      <int>1</int>
+      <string>${INPUT1}</string>
+    </entry>
+    <entry>
+      <int>2</int>
+      <string>${INPUT2}</string>
+    </entry>
+  </inputs>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

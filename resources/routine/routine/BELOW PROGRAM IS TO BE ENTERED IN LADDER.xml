@@ -1,0 +1,27 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>BELOW PROGRAM IS TO BE ENTERED IN LADDER</name>
+  <functionalBlock>             MOV      R3,A
+                INC        DPTR
+               MOVX    A,@DPTR
+                MOV      R2,A
+                LCALL    DIV_32BIT
+               MOV      DPTR,#D${INPUT}H      ;D2060H IS THE QUOTIENT  
+                MOV     A,RSLT_3
+                MOVX   @DPTR,A
+                INC         DPTR
+                MOV     A,RSLT_2
+                MOVX   @DPTR,A
+                INC         DPTR
+                MOV     A,RSLT_1
+                MOVX   @DPTR,A
+</functionalBlock>
+  <inputs class="linked-hash-map">
+    <entry>
+      <int>1</int>
+      <string>${INPUT1}</string>
+    </entry>
+  </inputs>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

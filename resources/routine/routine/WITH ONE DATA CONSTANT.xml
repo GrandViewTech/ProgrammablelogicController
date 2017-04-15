@@ -1,0 +1,28 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>WITH ONE DATA CONSTANT</name>
+  <functionalBlock>           MOV    A,#03H     ;CONSTANT  MSD DATA
+            MOV	R2,A
+          
+MOV    A,#0E8H           ;CONSTANT LSD DATA
+      MOV	R3,A
+	
+MOV      DPTR,#D2039L    ;DATA B
+              MOVX    A,@DPTR
+           MOV       R0,A
+          MOV      DPTR,#D2039H
+              MOVX    A,@DPTR
+           MOV       R1,A
+	LCALL	MULTIPLICATION
+           MOV   DPTR,#D2040L           ;RESULT           
+	MOV   A,R6
+	MOVX	@DPTR,A           
+	MOV   DPTR,#D2040H
+	MOV    A,R7
+            MOVX	A,@DPTR 
+
+</functionalBlock>
+  <inputs class="linked-hash-map"/>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

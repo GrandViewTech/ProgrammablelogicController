@@ -1,0 +1,22 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>CPL   WORD</name>
+  <functionalBlock>MOV     DPTR,#D${INPUT 1}H
+MOVX   A,@DPTR
+CPL         A
+MOVX    @DPTR,A
+INC         DPTR
+MOVX    A,@DPTR
+CPL        A
+MOVX   @DPTR,A
+
+</functionalBlock>
+  <inputs class="linked-hash-map">
+    <entry>
+      <int>1</int>
+      <string>${INPUT1}</string>
+    </entry>
+  </inputs>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

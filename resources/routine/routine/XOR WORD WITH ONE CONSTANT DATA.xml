@@ -1,0 +1,49 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>XOR WORD WITH ONE CONSTANT DATA</name>
+  <functionalBlock>MOV    A,#0E8H    ;LSD OF CONSTANT DATA
+MOV    TEMP,A
+MOV    DPTR,#D${INPUT 1}L
+MOVX   A,@DPTR
+XRL     A,TEMP
+
+MOV    DPTR,#D${INPUT 2}L
+MOVX   @DPTR,A
+
+MOV     A,#03H    ; MSD OF CONSTANT DATA
+MOV    TEMP,A
+MOV    DPTR,#D${INPUT 3}H
+MOVX   A,@DPTR
+XRL     A,TEMP
+MOV    DPTR,#D${INPUT 4}H
+MOVX   @DPTR,A
+</functionalBlock>
+  <inputs class="linked-hash-map">
+    <entry>
+      <int>1</int>
+      <string>${INPUT1}</string>
+    </entry>
+    <entry>
+      <int>2</int>
+      <string>${INPUT2}</string>
+    </entry>
+    <entry>
+      <int>3</int>
+      <string>${INPUT3}</string>
+    </entry>
+    <entry>
+      <int>4</int>
+      <string>${INPUT4}</string>
+    </entry>
+    <entry>
+      <int>5</int>
+      <string>${INPUT5}</string>
+    </entry>
+    <entry>
+      <int>6</int>
+      <string>${INPUT6}</string>
+    </entry>
+  </inputs>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

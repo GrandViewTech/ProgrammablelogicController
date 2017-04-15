@@ -1,0 +1,31 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>BELOW ROUTINE SHOLD BE PUT IN MAIN LADDER</name>
+  <functionalBlock>MOV     A,#03        ;CONSTANT 3 IS LENGTH OF TABLE READ
+MOV    DPTR,# D${INPUT 1}H    ;D2050 IS THE START OF TABLE
+
+LCALL   READ_TABLE
+
+MOV     DPTR,#D${INPUT 2}L
+MOVX   @DPTR,A
+MOV       A,B
+MOV     DPTR,#D${INPUT 3}H
+MOVX   @DPTR,A
+</functionalBlock>
+  <inputs class="linked-hash-map">
+    <entry>
+      <int>1</int>
+      <string>${INPUT1}</string>
+    </entry>
+    <entry>
+      <int>2</int>
+      <string>${INPUT2}</string>
+    </entry>
+    <entry>
+      <int>3</int>
+      <string>${INPUT3}</string>
+    </entry>
+  </inputs>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

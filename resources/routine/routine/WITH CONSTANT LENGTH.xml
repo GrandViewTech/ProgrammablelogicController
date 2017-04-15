@@ -1,0 +1,23 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>WITH CONSTANT LENGTH</name>
+  <functionalBlock>;READ TABLE WILL BE PUT IN SUBROUTINE
+
+READ_TABLE:
+
+RLC        A
+CLR        C
+ADD       A,DPL
+MOV      DPL,A
+ADDC     A,DPH
+MOV     DPH,A
+MOVX   A,@DPTR
+MOV      B,A
+INC         DPTR
+MOVX    A,@DPTR
+RET
+</functionalBlock>
+  <inputs class="linked-hash-map"/>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

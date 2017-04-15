@@ -1,0 +1,55 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>COMPARE WITH BOTH   DATA  VARIABLE</name>
+  <functionalBlock>MOV    DPTR,#D${INPUT 1}H      ;DATA A
+MOVX   A,@DPTR
+MOV    R3,A
+INC    DPTR
+MOVX  A,@DPTR
+MOV   R2,A
+MOV   DPTR,#D${INPUT 2}H   ;DATA B
+MOVX  A,@DPTR
+MOV   R5,A
+INC    DPTR
+MOVX  A,@DPTR
+MOV   R4,A
+
+LCALL  COMPARE
+
+;IF DATA A IS LESS THAN DATA B
+
+MOV      C,RLY33
+MOV      DPTR,#RLY512_519
+MOVX    A,@DPTR
+MOV      RLY514,C;
+MOVX   @DPTR,A
+
+ ;IF DATA B IS EQUAL TO DATA A
+
+ MOV      C,RLY34
+MOV       DPTR,#RLY512_519+
+MOVX     A,@DPTR
+MOV       RLY567,C;
+ MOVX    @DPTR,A
+ 
+  ;IF DATA B IS LESS THAN  DATA A
+ 
+MOV      C,RLY35
+MOV      DPTR,#RLY512_519+
+MOVX    A,@DPTR	
+MOV      RLY598,C;
+ MOVX   @DPTR,A
+</functionalBlock>
+  <inputs class="linked-hash-map">
+    <entry>
+      <int>1</int>
+      <string>${INPUT1}</string>
+    </entry>
+    <entry>
+      <int>2</int>
+      <string>${INPUT2}</string>
+    </entry>
+  </inputs>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

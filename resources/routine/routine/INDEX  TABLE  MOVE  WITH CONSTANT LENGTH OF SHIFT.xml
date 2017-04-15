@@ -1,0 +1,39 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>INDEX  TABLE  MOVE  WITH CONSTANT LENGTH OF SHIFT</name>
+  <functionalBlock>MOV    A,#03    ;     ;LENGTH OF  SHIFT  ;R2 IS THE LENGTH OF SHIFT
+RLC      A
+MOV    R2,A
+CLR       BYTE_CNT
+
+
+NEXT_LOCN_1:
+
+MOV    DPTR,#2009H
+MOV    A,DPL
+CLR       C
+ADD      A,BYTE_CNT
+MOV     DPL,A
+MOV     A,DPH
+ADDC    A,#0
+MOV     DPH,A
+MOVX   A,@DPTR
+MOV     R3,A
+
+MOV    DPTR,#2050H
+MOV    A,DPL
+CLR       C
+ADD      A,BYTE_CNT
+MOV     DPL,A
+MOV     A,DPH
+ADDC    A,#0
+MOV     DPH,A
+MOV     A,R3
+MOVX   @DPTR,A
+INC       BYTE_CNT
+DJNZ    R2,NEXT_LOCN_1
+</functionalBlock>
+  <inputs class="linked-hash-map"/>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

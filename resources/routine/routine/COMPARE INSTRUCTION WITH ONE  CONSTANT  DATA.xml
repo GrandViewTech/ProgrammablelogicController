@@ -1,0 +1,44 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>COMPARE INSTRUCTION WITH ONE  CONSTANT  DATA</name>
+  <functionalBlock>MOV     A,#03H     ;MSD DATA
+MOV    R3,A
+MOV     A,#0E8H
+MOV   R2,A
+MOV   DPTR,#D${INPUT 1]H   ;DATA B
+MOVX  A,@DPTR
+MOV   R5,A
+INC    DPTR
+MOVX  A,@DPTR
+MOV   R4,A
+
+LCALL  COMPARE
+
+;IF DATA A IS LESS THAN DATA B
+
+MOV      C,RLY33
+MOV      DPTR,#RLY512_519
+MOVX    A,@DPTR
+MOV      RLY514,C;
+MOVX   @DPTR,A
+
+ ;IF DATA B IS EQUAL TO DATA A
+
+ MOV      C,RLY34
+MOV       DPTR,#RLY512_519+
+MOVX     A,@DPTR
+MOV       RLY567,C;
+ MOVX    @DPTR,A
+ 
+  ;IF DATA B IS LESS THAN  DATA A
+ 
+MOV      C,RLY35
+MOV      DPTR,#RLY512_519
+MOVX    A,@DPTR
+MOV      RLY598,C;
+ MOVX   @DPTR,A
+</functionalBlock>
+  <inputs class="linked-hash-map"/>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

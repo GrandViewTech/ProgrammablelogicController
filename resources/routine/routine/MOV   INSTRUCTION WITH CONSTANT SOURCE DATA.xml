@@ -1,0 +1,14 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>MOV   INSTRUCTION WITH CONSTANT SOURCE DATA</name>
+  <functionalBlock>MOV    A,#03H    ;LSD OF CONSTANT SOURCE DATA
+MOV     DPTR,#D${OUTPUT 1}L    ;RESULT
+MOVX   @DPTR,A
+MOV   A,#0E8H
+MOV   DPTR,#D${OUTPUT 2}H
+MOVX   @DPTR,A
+</functionalBlock>
+  <inputs class="linked-hash-map"/>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

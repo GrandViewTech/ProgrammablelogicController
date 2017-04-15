@@ -1,0 +1,17 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>INC  WORD</name>
+  <functionalBlock>MOV    DPTR,#D${INPUT 1}L
+MOVX    A,@DPTR
+CLR    C
+ADD    A,#01
+MOVX   @DPTR,A
+MOV     DPTR,#D$INPUT 2}H
+MOVX    A,@DPTR
+ADDC     A,#0
+MOVX    @DPTR,A
+</functionalBlock>
+  <inputs class="linked-hash-map"/>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

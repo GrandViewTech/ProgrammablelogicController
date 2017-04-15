@@ -1,0 +1,17 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>MOV   INSTRUCTION WITH VARIABLE SOURCE DATA</name>
+  <functionalBlock>MOV    DPTR,#D${INPUT 1}L    ;SOURCE
+MOVX   A,@DPTR
+MOV     DPTR,#D$INPUT 2}L    ;RESULT
+MOVX   @DPTR,A
+MOV     DPTR,#D${INPUT 3}H
+MOVX   A,@DPTR
+MOV   DPTR,#D${INPUT 4}H
+MOVX   @DPTR,A
+
+</functionalBlock>
+  <inputs class="linked-hash-map"/>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

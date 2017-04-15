@@ -1,0 +1,14 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description></description>
+  <name>COMPLEMENT  BIT</name>
+  <functionalBlock>MOV     DPTR,#RLY512_519+
+MOVX   A,@DPTR
+MOV     C,RLY567
+CPL       C
+MOV     RLY567,C
+MOVX   @DPTR,A
+</functionalBlock>
+  <inputs class="linked-hash-map"/>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>
