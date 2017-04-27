@@ -50,6 +50,7 @@ import javax.swing.TransferHandler;
 
 import org.apache.log4j.Logger;
 import org.grandviewtech.entity.bo.Routine;
+import org.grandviewtech.service.execution.CompileService;
 import org.grandviewtech.service.system.PropertyReader;
 import org.grandviewtech.userinterface.misc.CustomToolBar;
 import org.grandviewtech.userinterface.misc.Helper;
@@ -66,7 +67,9 @@ public class CustomHeader
 				JMenuBar menuBar = new JMenuBar();
 				menuBar.add(getFileMenu());
 				menuBar.add(getRoutineMenu());
-				menuBar.add(new JButton("Compile"));	
+				JButton compile = new JButton("Compile");
+				compile.addActionListener(action -> CompileService.generateAsmFile());
+				menuBar.add(compile);
 				Helper.setCursor(menuBar);
 				
 				// PARTITION
