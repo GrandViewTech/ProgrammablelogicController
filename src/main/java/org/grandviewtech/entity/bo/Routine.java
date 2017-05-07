@@ -89,6 +89,10 @@ public class Routine implements Serializable
 			
 		public Map<Integer, String> getValues()
 			{
+				if(values==null)
+					{
+						values=new LinkedHashMap<>();
+					}
 				return values;
 			}
 			

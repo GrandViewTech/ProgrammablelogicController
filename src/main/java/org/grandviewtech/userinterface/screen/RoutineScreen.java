@@ -215,24 +215,7 @@ public class RoutineScreen extends JFrame
 						@Override
 						public void keyReleased(KeyEvent e)
 							{
-								Pattern pattern = Pattern.compile("\\$\\{([^}]*)\\}");
-								Matcher matcher = pattern.matcher(functionTextArea.getText());
-								int from = 0;
-								int count = 0;
-								while (matcher.find(from))
-									{
-										count++;
-										from = matcher.start() + 1;
-										String find = matcher.group(0);
-										if (find.contains("INPUT"))
-											{
-												inputs.put(new Integer(count), "${INPUT" + count + "}");
-											}
-										else if (find.contains("RESULT"))
-											{
-												result = "${RESULT}";
-											}
-									}
+								
 							}
 							
 						@Override
@@ -322,6 +305,7 @@ public class RoutineScreen extends JFrame
 			
 		private void saveRoutine(Routine routine)
 			{
+				findInputParam();
 				XStream stream = new XStream();
 				FileOutputStream fileOutputStream;
 				try
@@ -418,5 +402,30 @@ public class RoutineScreen extends JFrame
 						LOGGER.error(exception.getLocalizedMessage(), exception);
 					}
 					
+			}
+			
+		private void findInputParam()
+			{
+				Pattern pattern = Pattern.compile("\\$\\{([^}]*)\\}");
+				Matcher matcher = pattern.matcher(functionTextArea.getText());
+				int from = 0;
+				int count = 0;
+				while (matcher.find(from))
+					{
+						from = matcher.start() + 1;
+						String find = matcher.group(0);
+						if (find.contains("INPUT"))
+							{
+								if (!inputs.values().contains(find))
+									{
+										count++;
+										inputs.put(new Integer(count), "${INPUT" + count + "}");
+									}
+							}
+						else if (find.contains("RESULT"))
+							{
+								result = "${RESULT}";
+							}
+					}
 			}
 	}

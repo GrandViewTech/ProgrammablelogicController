@@ -1,16 +1,16 @@
 <org.grandviewtech.entity.bo.Routine>
   <description></description>
   <name>SUBSTARCTION  WITH BOTH DATA VARIABLE</name>
-  <functionalBlock>MOV     DPTR,#D2005L   ;DATA B
+  <functionalBlock>MOV     DPTR,#D${INPUT1}L   ;DATA B
 MOVX   A,@DPTR
 MOV    TEMP,A
-MOV      DPTR,#D2006L  ;DATA A
+MOV      DPTR,#D${INPUT2}L  ;DATA A
 MOVX     A,@DPTR
 CLR      C
 SUBB     A, TEMP
-MOV     DPTR,#D2008L     ;RESULT
+MOV     DPTR,#D${INPUT1}L     ;RESULT
 MOVX    @DPTR,A
-MOV     DPTR,#D2005H
+MOV     DPTR,#D${INPUT2}H
 MOVX   A,@DPTR
 MOV     TEMP,,A
 MOV    DPTR,#D2006H
@@ -23,7 +23,16 @@ MOVX   A,@DPTR
 MOV    RLY517,C    ;CARRY BIT
 MOVX   @DPTR,A
 </functionalBlock>
-  <inputs class="linked-hash-map"/>
+  <inputs class="linked-hash-map">
+    <entry>
+      <int>1</int>
+      <string>${INPUT1}</string>
+    </entry>
+    <entry>
+      <int>2</int>
+      <string>${INPUT2}</string>
+    </entry>
+  </inputs>
   <values class="linked-hash-map"/>
   <components/>
 </org.grandviewtech.entity.bo.Routine>

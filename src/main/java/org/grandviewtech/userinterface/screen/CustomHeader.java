@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 
 import javax.swing.Box;
@@ -68,7 +69,17 @@ public class CustomHeader
 				menuBar.add(getFileMenu());
 				menuBar.add(getRoutineMenu());
 				JButton compile = new JButton("Compile");
-				compile.addActionListener(action -> CompileService.generateAsmFile());
+				compile.addActionListener(action ->
+					{
+						try
+							{
+								CompileService.generateAsmFile();
+							}
+						catch (Exception exception)
+							{
+								LOGGER.error(exception.getLocalizedMessage(), exception);
+							}
+					});
 				menuBar.add(compile);
 				Helper.setCursor(menuBar);
 				
