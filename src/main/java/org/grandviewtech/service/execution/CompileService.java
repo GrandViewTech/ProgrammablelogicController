@@ -10,6 +10,8 @@ import org.grandviewtech.entity.bo.Routine;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CoilType;
 import org.grandviewtech.entity.enums.InputType;
+import org.grandviewtech.entity.enums.NoNc;
+import org.grandviewtech.runner.Run;
 import org.grandviewtech.userinterface.helper.ColumnScreenGenerator;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 import org.grandviewtech.userinterface.screen.PreferenceScreen;
@@ -51,6 +53,7 @@ public abstract class CompileService
 													}
 												else
 													{
+														String label = createLabel(column.getRowNumber(), column.getColumnNumber());
 														if (coilType.equals(CoilType.LOAD))
 															{
 																int input = new Integer(column.getValue());
@@ -69,7 +72,8 @@ public abstract class CompileService
 																			}
 																		case OUTPUT:
 																			{
-																				output(joiner, input);
+																				OUTPUT_TYPE outputType = findOutputType(column.getNonc());
+																				output(joiner, input, outputType, label);
 																				break;
 																			}
 																		case WORD:
@@ -85,19 +89,20 @@ public abstract class CompileService
 														else if (coilType.equals(CoilType.OUTPUT))
 															{
 																int value = new Integer(column.getValue());
-																output(joiner, value);
+																OUTPUT_TYPE outputType = findOutputType(column.getNonc());
+																output(joiner, value, outputType, label);
 															}
 														else if (coilType.equals(CoilType.ROUTINE))
 															{
 																boolean isJumpRequired = isJumpRequired(column);
 																if (isJumpRequired)
 																	{
-																		joiner.add("JNC LABEL_" + column.getRowNumber() + "_" + column.getColumnNumber());
+																		joiner.add("JNC " + label);
 																	}
 																routine(joiner, column.getRoutine());
 																if (isJumpRequired)
 																	{
-																		joiner.add("LABEL_" + column.getRowNumber() + "_" + column.getColumnNumber() + " :");
+																		joiner.add(label + " :");
 																	}
 															}
 													}
@@ -161,25 +166,51 @@ public abstract class CompileService
 				seriesParallel(joiner, PARALLEL_SERIES, params[1]);
 			}
 			
-		private static void output(StringJoiner joiner, int input)
+		private static void output(StringJoiner joiner, int input, OUTPUT_TYPE outputType, String label)
 			{
 				String[] params = findParam(input);
-				joiner.add("MOV  DTPR , #OUTPUT0_7+" + params[0]);
-				joiner.add("MOV X A,@DPTR");
-				joiner.add("MOV ACC." + params[1] + " , C");
-				joiner.add("MOVX @DPTR,A");
+				switch (outputType)
+					{
+						
+						case RESET:
+							{
+								joiner.add("JNC "+label);
+								joiner.add("MOV  DTPR , #OUTPUT0_7+" + params[0]);
+								joiner.add("MOV X A,@DPTR");
+								joiner.add("MOV ACC." + params[1] + " , C");
+								joiner.add("MOVX @DPTR,A");
+								joiner.add(label+" :");
+								break;
+							}
+						case SET:
+							{
+								joiner.add("JNC "+label);
+								joiner.add("MOV  DTPR , #OUTPUT0_7+" + params[0]);
+								joiner.add("MOV X A,@DPTR");
+								joiner.add("MOV ACC." + params[1] + " , C");
+								joiner.add("MOVX @DPTR,A");
+								joiner.add("SETB "); // NO UNDERSTANDING OF RLY
+								joiner.add(label+" :");
+								break;
+							}
+						case NONE:
+						default:
+							{
+								joiner.add("MOV  DTPR , #OUTPUT0_7+" + params[0]);
+								joiner.add("MOV X A,@DPTR");
+								joiner.add("MOV ACC." + params[1] + " , C");
+								joiner.add("MOVX @DPTR,A");
+								break;
+							}
+					}
+					
 			}
 			
-		/*
-		 * private static void and(StringJoiner joiner, int value) { int input = 512 - value; if (input < 0) { input = input * -1; } String param1 = intTohex(input / 8); String param2 = intTohex(input % 8); joiner.add("MOV  DTPR , #RLY512_519+" +
-		 * param1); joiner.add("MOV X A,@DPTR"); joiner.add("MOV C, C." + param2); }
-		 */
-		
-		/*
-		 * private static void output(StringJoiner joiner, int value) { int input = value; String param1 = intTohex(input / 8); String param2 = intTohex(input % 7); joiner.add("MOV  DTPR , #OUTPUT0_7+" + param1); joiner.add("MOV X A,@DPTR");
-		 * joiner.add("MOV C, C." + param2); joiner.add("MOVX  @DPTR,A"); }
-		 */
-		
+		public static void setReset()
+			{
+				
+			}
+			
 		public static String[] findParam(Integer input)
 			{
 				if (input < 0)
@@ -208,23 +239,28 @@ public abstract class CompileService
 				 */
 			}
 			
+		private static void nonc(StringJoiner joiner, NoNc noNc, String remainder)
+			{
+				
+			}
+			
 		private static void seriesParallel(StringJoiner joiner, PARALLEL_SERIES PARALLEL_SERIES, String remainder)
 			{
 				switch (PARALLEL_SERIES)
 					{
 						case NONE:
 							{
-								joiner.add("MOV ACC." + remainder + " , C");
+								joiner.add("MOV C, ACC." + remainder);
 								break;
 							}
 						case PARALLEL:
 							{
-								joiner.add("ORL ACC." + remainder + " , C");
+								joiner.add("ORL C, ACC." + remainder);
 								break;
 							}
 						case SERIES:
 							{
-								joiner.add("ANL ACC." + remainder + " , C");
+								joiner.add("ANL C, ACC." + remainder);
 								break;
 							}
 							
@@ -233,7 +269,7 @@ public abstract class CompileService
 			
 		private static boolean isJumpRequired(ColumnScreen column)
 			{
-				// NEED TO CHECK IF PREVIOUS IS AND
+				// TO CHECK IF PREVIOUS IS AND
 				// CHECK IF JUMP IS REQUIED
 				ColumnScreen previous = column.getPrevious(false);
 				if (previous != null && previous.getCoilType().equals(CoilType.LOAD))
@@ -254,6 +290,41 @@ public abstract class CompileService
 							}
 					}
 				return PARALLEL_SERIES.NONE;
+			}
+			
+		private static String createLabel(int rowNumber, int columnNumber)
+			{
+				return "JNC LABEL_" + rowNumber + "_" + columnNumber;
+			}
+			
+		public static OUTPUT_TYPE findOutputType(NoNc nonc)
+			{
+				if (nonc != null)
+					{
+						switch (nonc)
+							{
+								
+								case RESET:
+									{
+										return OUTPUT_TYPE.RESET;
+									}
+								case SET:
+									{
+										return OUTPUT_TYPE.SET;
+									}
+								case DEFAULT:
+								case NC:
+								case NO:
+								default:
+									return OUTPUT_TYPE.NONE;
+							}
+					}
+				return OUTPUT_TYPE.NONE;
+			}
+			
+		public enum OUTPUT_TYPE
+			{
+			SET, RESET, NONE;
 			}
 			
 		public enum PARALLEL_SERIES
