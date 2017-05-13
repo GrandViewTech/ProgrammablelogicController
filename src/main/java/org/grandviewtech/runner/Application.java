@@ -16,11 +16,11 @@ import org.grandviewtech.service.system.Printer;
 import org.grandviewtech.service.system.SystemFileLocation;
 import org.grandviewtech.userinterface.screen.BackGroundLayer;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@SpringBootApplication
+@SpringBootConfiguration
 public class Application implements CommandLineRunner
 	{
 		

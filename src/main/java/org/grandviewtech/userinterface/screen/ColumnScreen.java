@@ -203,7 +203,7 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 					}
 				setBlank(false);
 				setCoilType(temp);
-				//RowValidation.validate(this);
+				// RowValidation.validate(this);
 				SearchEngine.index(this);
 				repaint();
 			}
@@ -652,12 +652,6 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 					{
 						super.setBorder(CustomBorderList.ERROR_BORDER);
 					}
-			}
-			
-		@Override
-		public String toString()
-			{
-				return "ColumnScreen [previous=" + previous + ", next=" + next + ", above=" + above + ", below=" + below + ", rowNumber=" + rowNumber + ", columnNumber=" + columnNumber + ", isBlank=" + isBlank + ", tag=" + tag + ", value=" + value + ", coilType=" + coilType + ", comment=" + comment + ", inputType=" + inputType + ", nonc=" + nonc + ", edge=" + edge + "]";
 			}
 			
 		@Override
