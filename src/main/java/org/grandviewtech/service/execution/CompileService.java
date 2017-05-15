@@ -11,7 +11,6 @@ import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CoilType;
 import org.grandviewtech.entity.enums.InputType;
 import org.grandviewtech.entity.enums.NoNc;
-import org.grandviewtech.runner.Run;
 import org.grandviewtech.userinterface.helper.ColumnScreenGenerator;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 import org.grandviewtech.userinterface.screen.PreferenceScreen;
@@ -58,6 +57,7 @@ public abstract class CompileService
 															{
 																int input = new Integer(column.getValue());
 																PARALLEL_SERIES PARALLEL_SERIES = findParallelSeries(column);
+																
 																switch (column.getInputType())
 																	{
 																		case FLAG:
@@ -146,6 +146,7 @@ public abstract class CompileService
 				joiner.add("MOV X A,@DPTR");
 				joiner.add("MOV C, ACC." + params[1]);
 				seriesParallel(joiner, PARALLEL_SERIES, params[1]);
+				
 			}
 			
 		private static void word(StringJoiner joiner, int input, PARALLEL_SERIES PARALLEL_SERIES)

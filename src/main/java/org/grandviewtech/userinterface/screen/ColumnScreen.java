@@ -31,6 +31,7 @@ import org.grandviewtech.entity.enums.CoilType;
 import org.grandviewtech.entity.enums.Edge;
 import org.grandviewtech.entity.enums.InputType;
 import org.grandviewtech.entity.enums.NoNc;
+import org.grandviewtech.entity.enums.Signal;
 import org.grandviewtech.service.searching.SearchEngine;
 import org.grandviewtech.service.validation.RowValidation;
 import org.grandviewtech.service.validation.ValidateDragOption;
@@ -59,8 +60,9 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 		private CoilType			childType;
 		private String				comment;
 		private InputType			inputType;
-		private NoNc				nonc;
-		private Edge				edge;
+		/*private NoNc				nonc;
+		private Edge				edge;*/
+		private Signal				signal;
 		private boolean				parent;
 		private boolean				error;
 		private Routine				routine;
@@ -307,40 +309,14 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 				this.inputType = inputType;
 			}
 			
-		public NoNc getNonc()
+		public Signal getSignal()
 			{
-				if (nonc == null)
-					{
-						nonc = NoNc.DEFAULT;
-					}
-				return nonc;
+				return signal;
 			}
 			
-		public void setNonc(NoNc nonc)
+		public void setSignal(Signal signal)
 			{
-				if (nonc == null)
-					{
-						nonc = NoNc.DEFAULT;
-					}
-				this.nonc = nonc;
-			}
-			
-		public Edge getEdge()
-			{
-				if (edge == null)
-					{
-						edge = Edge.DEFAULT;
-					}
-				return edge;
-			}
-			
-		public void setEdge(Edge edge)
-			{
-				if (edge == null)
-					{
-						edge = Edge.DEFAULT;
-					}
-				this.edge = edge;
+				this.signal = signal;
 			}
 			
 		@Override
@@ -673,8 +649,7 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 				setCoilType(screen.getCoilType());
 				setValue(screen.getValue());
 				setTag(screen.getTag());
-				setEdge(screen.getEdge());
-				setNonc(screen.getNonc());
+				setSignal(screen.getSignal());
 				getValueLabel().setText(screen.getValueLabel().getText());
 				apply();
 			}
