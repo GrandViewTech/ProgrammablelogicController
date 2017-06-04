@@ -94,14 +94,14 @@ public class SearchEngine
 												document.add(new TextField("tag", columnScreen.getTag(), Field.Store.NO));
 												document.add(new TextField("value", columnScreen.getValue(), Field.Store.NO));
 												document.add(new TextField("coil", columnScreen.getCoilType().getCoilType(), Field.Store.NO));
-												if (columnScreen.getNonc() != null && !columnScreen.getNonc().equals(NoNc.DEFAULT))
-													{
+												/*if (columnScreen.getNonc() != null && !columnScreen.getNonc().equals(NoNc.DEFAULT))
+													{	
 														document.add(new TextField("nonc", columnScreen.getNonc().name(), Field.Store.NO));
 													}
 												if (columnScreen.getEdge() != null && !columnScreen.getEdge().equals(Edge.DEFAULT))
 													{
 														document.add(new TextField("edge", columnScreen.getEdge().name(), Field.Store.NO));
-													}
+													}*/
 												indexWriter.addDocument(document);
 												indexWriter.commit();
 											}

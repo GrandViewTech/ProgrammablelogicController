@@ -28,14 +28,11 @@ import org.grandviewtech.entity.bo.Response;
 import org.grandviewtech.entity.bo.Routine;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CoilType;
-import org.grandviewtech.entity.enums.Edge;
 import org.grandviewtech.entity.enums.InputType;
-import org.grandviewtech.entity.enums.NoNc;
 import org.grandviewtech.entity.enums.Signal;
 import org.grandviewtech.service.searching.SearchEngine;
 import org.grandviewtech.service.validation.RowValidation;
 import org.grandviewtech.service.validation.ValidateDragOption;
-import org.grandviewtech.userinterface.coils.PaintCoilsOnScreen;
 import org.grandviewtech.userinterface.helper.ColumnScreenGenerator;
 import org.grandviewtech.userinterface.listeners.ColumnScreenListener;
 import org.grandviewtech.userinterface.listeners.SettingsMouseClickListener;
@@ -338,7 +335,7 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 					}
 				else
 					{
-						PaintCoilsOnScreen.paintDragOption(this, graphics);
+						//PaintCoilsOnScreen.paintDragOption(this, graphics);
 					}
 			}
 			

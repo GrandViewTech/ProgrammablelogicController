@@ -2,5 +2,5 @@ package org.grandviewtech.entity.enums;
 
 public enum Signal
 	{
-	RISING, FAILING, NO, NC , NONE
+	RISING, FALLING, NO, NC, NONE
 	}

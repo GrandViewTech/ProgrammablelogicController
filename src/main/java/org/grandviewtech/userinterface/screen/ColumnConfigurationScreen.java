@@ -65,6 +65,7 @@ import org.grandviewtech.entity.enums.CoilType;
 import org.grandviewtech.entity.enums.Edge;
 import org.grandviewtech.entity.enums.InputType;
 import org.grandviewtech.entity.enums.NoNc;
+import org.grandviewtech.entity.enums.Signal;
 import org.grandviewtech.entity.helper.Dimension;
 import org.grandviewtech.runner.Application;
 import org.grandviewtech.service.system.PropertyReader;
@@ -102,7 +103,7 @@ public class ColumnConfigurationScreen extends JFrame
 		
 		private JRadioButton			fallingEdge						= new JRadioButton("Falling");
 		
-		private ButtonGroup				nc_noButtonGroup;
+		private ButtonGroup				signalTypeButton;
 		
 		private JRadioButton			NC;
 		
@@ -211,7 +212,7 @@ public class ColumnConfigurationScreen extends JFrame
 								dataList.add(routineName);
 							}
 					}
-				
+					
 				dataList.sort(new Comparator<String>()
 					{
 						@Override
@@ -536,25 +537,33 @@ public class ColumnConfigurationScreen extends JFrame
 		// NC
 		public void addRadioButtonsToNoNcButtonGroup()
 			{
-				nc_noButtonGroup = new ButtonGroup();
+				signalTypeButton = new ButtonGroup();
 				CoilType coilType = columnScreen.getTemp();
 				if (isLoadCoil())
 					{
 						NC = new JRadioButton("NC");
 						NO = new JRadioButton("NO");
-						nc_noButtonGroup.add(NC);
-						nc_noButtonGroup.add(NO);
+						risingEdge = new JRadioButton("RISING");
+						fallingEdge = new JRadioButton("FALLING");
+						signalTypeButton.add(risingEdge);
+						signalTypeButton.add(fallingEdge);
+						signalTypeButton.add(NC);
+						signalTypeButton.add(NO);
 					}
 				else if (coilType.equals(CoilType.OUTPUT))
 					{
 						NC = new JRadioButton("NC");
 						NO = new JRadioButton("NO");
+						risingEdge = new JRadioButton("RISING");
+						fallingEdge = new JRadioButton("FALLING");
 						SET = new JRadioButton("SET");
 						RESET = new JRadioButton("RESET");
-						nc_noButtonGroup.add(NC);
-						nc_noButtonGroup.add(NO);
-						nc_noButtonGroup.add(SET);
-						nc_noButtonGroup.add(RESET);
+						signalTypeButton.add(risingEdge);
+						signalTypeButton.add(fallingEdge);
+						signalTypeButton.add(NC);
+						signalTypeButton.add(NO);
+						signalTypeButton.add(SET);
+						signalTypeButton.add(RESET);
 					}
 				addMnemonicToNoNcRadioButton();
 			}
@@ -665,8 +674,9 @@ public class ColumnConfigurationScreen extends JFrame
 											}
 										else if (isLoadCoil() || coilType.equals(CoilType.OUTPUT))
 											{
-												setNoNcValue(columnScreen);
-												setEdgeValue(columnScreen);
+												// TODO
+												//setNoNcValue(columnScreen);
+												//setEdgeValue(columnScreen);
 											}
 										if (!isRoutine)
 											{
@@ -768,41 +778,27 @@ public class ColumnConfigurationScreen extends JFrame
 				return null;
 			}
 			
-		private void setNoNcValue(ColumnScreen columnScreen)
+		private void setCoilSignalType(ColumnScreen columnScreen)
 			{
-				NoNc nonc = null;
+				Signal signal = null;
 				if (NO.isSelected())
 					{
-						nonc = NoNc.NO;
+						signal = Signal.NO;
 					}
 				else if (NC.isSelected())
 					{
-						nonc = NoNc.NC;
+						signal = Signal.NC;
 					}
 					
 				if (SET != null && SET.isSelected())
 					{
-						nonc = NoNc.SET;
+						//	signal = Signal.SET;
 					}
 				else if (RESET != null && RESET.isSelected())
 					{
-						nonc = NoNc.RESET;
+						//	signal = Signal.RESET;
 					}
-				columnScreen.setNonc(nonc);
-			}
-			
-		private void setEdgeValue(ColumnScreen columnScreen)
-			{
-				Edge edge = null;
-				if (risingEdge.isSelected())
-					{
-						edge = Edge.RISING;
-					}
-				else if (fallingEdge.isSelected())
-					{
-						edge = Edge.FALLING;
-					}
-				columnScreen.setEdge(edge);
+				columnScreen.setSignal(signal);
 			}
 			
 		private void setDefaultInputOption()
@@ -853,7 +849,8 @@ public class ColumnConfigurationScreen extends JFrame
 			
 		private void setDefaultNoNcOption(ColumnScreen columnScreen)
 			{
-				NoNc nonc = columnScreen.getNonc();
+				/*
+				NoNc nonc = columnScreen.getSignal();
 				if (nonc != null)
 					{
 						switch (nonc)
@@ -870,34 +867,34 @@ public class ColumnConfigurationScreen extends JFrame
 										NC.setSelected(false);
 										break;
 									}
-								/*
+								
 								 * default: { NO.setSelected(true); NC.setSelected(false); break; }
-								 */
+								 
 							}
 					}
-			}
-			
+				*/}
+				
 		private void setDefaultEdgeOption()
 			{
-				Edge edge = columnScreen.getEdge();
-				if (edge != null)
-					{
-						switch (edge)
-							{
-								case FALLING:
+				/*				Edge edge = columnScreen.getEdge();
+								if (edge != null)
 									{
-										risingEdge.setSelected(false);
-										fallingEdge.setSelected(true);
-										break;
-									}
-								case RISING:
-									{
-										risingEdge.setSelected(true);
-										fallingEdge.setSelected(false);
-										break;
-									}
-							}
-					}
+										switch (edge)
+											{
+												case FALLING:
+													{
+														risingEdge.setSelected(false);
+														fallingEdge.setSelected(true);
+														break;
+													}
+												case RISING:
+													{
+														risingEdge.setSelected(true);
+														fallingEdge.setSelected(false);
+														break;
+													}
+											}
+									}*/
 			}
 			
 		private boolean isLoadCoil()

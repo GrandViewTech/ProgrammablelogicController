@@ -72,7 +72,7 @@ public abstract class CompileService
 																			}
 																		case OUTPUT:
 																			{
-																				OUTPUT_TYPE outputType = findOutputType(column.getNonc());
+																				OUTPUT_TYPE outputType = null;//findOutputType(column.getNonc());
 																				output(joiner, input, outputType, label);
 																				break;
 																			}
@@ -89,7 +89,7 @@ public abstract class CompileService
 														else if (coilType.equals(CoilType.OUTPUT))
 															{
 																int value = new Integer(column.getValue());
-																OUTPUT_TYPE outputType = findOutputType(column.getNonc());
+																OUTPUT_TYPE outputType = null;//findOutputType(column.getNonc());
 																output(joiner, value, outputType, label);
 															}
 														else if (coilType.equals(CoilType.ROUTINE))
