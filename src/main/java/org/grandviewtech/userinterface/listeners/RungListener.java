@@ -61,15 +61,11 @@ public class RungListener implements MouseListener, KeyListener
 						editMenu.show(rung, rung.getX() + 22, rung.getY());
 						//
 					}
-				if (ClipBoard.isControlKeyActive() == false)
+				ClipBoard.addTempRung(rung);
+				if (!isRightClick)
 					{
-						if (!isRightClick)
-							{
-								ClipBoard.addTempRung(rung);
-							}
-						rung.setBackground(Color.GREEN);
 					}
-					
+				rung.setBackground(Color.GREEN);
 			}
 			
 		@Override

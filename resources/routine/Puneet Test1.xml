@@ -1,6 +1,40 @@
 <org.grandviewtech.entity.bo.Routine>
   <description>Testing</description>
   <name>Puneet Test1</name>
-  <functionalBlock>${INPUT1} + ${INPUT2}</functionalBlock>
-  <inputs class="linked-hash-map"/>
+  <functionalBlock>MOV     DPTR,#D${INPUT1}L   ;DATA A
+MOVX   A,@DPTR
+MOV    TEMP,A
+MOV      DPTR,#D${INPUT2}L  ;DATA B
+MOVX     A,@DPTR
+CLR      C
+SUBB     A, TEMP
+MOV     DPTR,#D${INPUT1}L     ;RESULT
+MOVX    @DPTR,A
+MOV     DPTR,#D${INPUT2}H
+MOVX   A,@DPTR
+MOV     TEMP,,A
+MOV    DPTR,#D2006H
+MOVX   A,@DPTR
+SUBB     A,TEMP
+MOV     DPTR,#D2008H     ;RESULT
+MOVX    @DPTR,A
+MOV     DPTR,#RLY512_519+
+MOVX   A,@DPTR
+MOV    RLY517,C    ;CARRY BIT
+MOVX   @DPTR,A
+</functionalBlock>
+  <routineInputs>
+    <org.grandviewtech.entity.bo.RoutineInput>
+      <sequence>1</sequence>
+      <type>INPUT</type>
+      <label>${INPUT1}</label>
+      <name>DATA A</name>
+    </org.grandviewtech.entity.bo.RoutineInput>
+    <org.grandviewtech.entity.bo.RoutineInput>
+      <sequence>2</sequence>
+      <type>INPUT</type>
+      <label>${INPUT2}</label>
+      <name>DATA B</name>
+    </org.grandviewtech.entity.bo.RoutineInput>
+  </routineInputs>
 </org.grandviewtech.entity.bo.Routine>

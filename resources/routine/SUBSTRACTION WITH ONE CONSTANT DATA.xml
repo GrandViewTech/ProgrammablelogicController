@@ -3,7 +3,7 @@
   <name>SUBSTRACTION WITH ONE CONSTANT DATA</name>
   <functionalBlock>MOV     A,#0E8H    ; LSD OF CONSTANT DATA
 MOV    TEMP,A
-MOV      DPTR,#D2006L  ;DATA A
+MOV      DPTR,#D${INPUT1}L  ;DATA A
 MOVX     A,@DPTR
 CLR      C
 SUBB     A, TEMP
@@ -21,7 +21,12 @@ MOVX   A,@DPTR
 MOV    RLY517,C    ;CARRY BIT
 MOVX   @DPTR,A
 </functionalBlock>
-  <inputs class="linked-hash-map"/>
+  <inputs class="linked-hash-map">
+    <entry>
+      <int>1</int>
+      <string>${INPUT1}</string>
+    </entry>
+  </inputs>
   <values class="linked-hash-map"/>
   <components/>
 </org.grandviewtech.entity.bo.Routine>

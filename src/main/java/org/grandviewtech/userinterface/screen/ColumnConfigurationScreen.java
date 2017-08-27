@@ -1,5 +1,6 @@
 package org.grandviewtech.userinterface.screen;
 
+import java.awt.Color;
 import java.awt.Component;
 
 /*
@@ -30,6 +31,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -60,11 +62,10 @@ import javax.swing.text.NumberFormatter;
 import org.apache.commons.io.FilenameUtils;
 import org.grandviewtech.constants.CustomDimension;
 import org.grandviewtech.entity.bo.Routine;
+import org.grandviewtech.entity.bo.RoutineInput;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CoilType;
-import org.grandviewtech.entity.enums.Edge;
 import org.grandviewtech.entity.enums.InputType;
-import org.grandviewtech.entity.enums.NoNc;
 import org.grandviewtech.entity.enums.Signal;
 import org.grandviewtech.entity.helper.Dimension;
 import org.grandviewtech.runner.Application;
@@ -151,6 +152,8 @@ public class ColumnConfigurationScreen extends JFrame
 				scrollableConfigurationScreen = new JScrollPane(panel);
 				scrollableConfigurationScreen.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 				scrollableConfigurationScreen.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+				setBackground(Color.WHITE);
+				panel.setBackground(Color.WHITE);
 			}
 			
 		private void reset()
@@ -180,6 +183,11 @@ public class ColumnConfigurationScreen extends JFrame
 							{
 								outputCoilConfiguration();
 							}
+						else if (columnScreen.getTemp().equals(CoilType.EDGE))
+							{
+								addEdgeCoilConfiguration();
+							}
+							
 					}
 				catch (Exception exception)
 					{
@@ -267,7 +275,16 @@ public class ColumnConfigurationScreen extends JFrame
 							{
 								for (Entry<String, JTextField> data : dataset.entrySet())
 									{
-										selectedRoutine.addValue(new Integer(data.getKey()), data.getValue().getText());
+										String sourceName = data.getKey();
+										JTextField source = data.getValue();
+										for (RoutineInput routineInput : selectedRoutine.getRoutineInputs())
+											{
+												if (routineInput.getName().equals(sourceName))
+													{
+														routineInput.setValue(source.getText());
+													}
+											}
+										//selectedRoutine.addValue(new Integer(data.getKey()), data.getValue().getText());
 									}
 								columnScreen.setRoutine(selectedRoutine);
 								optionPane = new JOptionPane("Routine Selected Successfully", JOptionPane.INFORMATION_MESSAGE);
@@ -279,10 +296,11 @@ public class ColumnConfigurationScreen extends JFrame
 									{
 										dialog.setVisible(false);
 										dialog.dispose();
-										columnScreen.apply();
+										//columnScreen.apply();
 									});
 								timer.start();
 								dispose();
+								columnScreen.apply();
 							}
 						else
 							{
@@ -340,30 +358,32 @@ public class ColumnConfigurationScreen extends JFrame
 						int height = (Y - 5) + 70;
 						int counter = 1;
 						Routine current = columnScreen.getRoutine();
-						for (Map.Entry<Integer, String> input : routine.getInputs().entrySet())
+						List<RoutineInput> routineInputs = (current == null) ? routine.getRoutineInputs() : current.getRoutineInputs();
+						Collections.sort(routineInputs, Comparator.comparing(RoutineInput::getSequence));
+						for (RoutineInput input : routineInputs)
 							{
-								
 								String value = input.getValue();
-								JLabel label = new JLabel("Input(" + input.getKey() + ") :");
+								String fieldName = input.getName();
+								JLabel label = new JLabel(fieldName + " :");
 								label.setName(value);
 								JTextField inputTextField = new JTextField();
-								inputTextField.setName("" + input.getKey());
-								if (current != null)
-									{
-										if (current.getValues() != null)
-											{
-												String val = current.getValues().get(input.getKey());
-												if (val == null)
-													{
-														val = "";
-													}
-												inputTextField.setText(val);
-											}
-									}
+								inputTextField.setName("" + fieldName);
+								inputTextField.setText(input.getValue());
 								inputFields.put(inputTextField.getName(), inputTextField);
 								label.setBounds(((counter % 2 != 0) ? X1 : X2 + 100) + 170, ((counter % 2 != 0) ? height = height + 25 : height), 150, 25);
 								inputTextField.setBounds(((counter % 2 != 0) ? X1 : X2 + 100) + 250, height, 100, 25);
-								inputTextField.addActionListener(action -> routine.addValue(new Integer(inputTextField.getName()), inputTextField.getText()));
+								inputTextField.addActionListener(action ->
+									{
+										JTextField source = (JTextField) action.getSource();
+										String sourceName = source.getName();
+										for (RoutineInput routineInput : routine.getRoutineInputs())
+											{
+												if (routineInput.getName().equals(sourceName))
+													{
+														routineInput.setValue(source.getText());
+													}
+											}
+									});
 								panel.add(label);
 								routineComponent.add(label);
 								panel.add(inputTextField);
@@ -381,6 +401,34 @@ public class ColumnConfigurationScreen extends JFrame
 					
 			}
 			
+		private void addEdgeCoilConfiguration()
+			{
+				addEdgeOptionToScreen();
+				addTagToScreen(2);
+				addSubmitToScreen(3);
+				addCancelToScreen(3);
+				if (columnScreen.getSignal() != null)
+					{
+						switch (columnScreen.getSignal())
+							{
+								
+								case FALLING:
+									{
+										fallingEdge.setSelected(true);
+										break;
+									}
+								case RISING:
+									{
+										risingEdge.setSelected(true);
+										break;
+										
+									}
+							}
+							
+					}
+				invokeFrame(CustomDimension.EDGE_CONFIGURATION_SCREEN);
+			}
+			
 		private void outputCoilConfiguration()
 			{
 				addInputValueToScreen();
@@ -396,7 +444,7 @@ public class ColumnConfigurationScreen extends JFrame
 			{
 				addInputValueToScreen();
 				addInputOptionsToScreen();
-				addEdgeOptionToScreen();
+				//addEdgeOptionToScreen();
 				addNcNoOptionToScreen();
 				addTagToScreen(6);
 				addSubmitToScreen(7);
@@ -522,9 +570,9 @@ public class ColumnConfigurationScreen extends JFrame
 		public void addEdgeOptionToScreen()
 			{
 				addRadioButtonsToEdgeButtonGroup();
-				edgeLabel.setBounds(X1, Y * 4, RADIO_WIDTH, HEIGHT);
-				risingEdge.setBounds(X2, Y * 4, RADIO_WIDTH, HEIGHT);
-				fallingEdge.setBounds(X2 + (RADIO_WIDTH * 1), Y * 4, RADIO_WIDTH, HEIGHT);
+				edgeLabel.setBounds(X1, Y * 1, RADIO_WIDTH, HEIGHT);
+				risingEdge.setBounds(X2, Y * 1, RADIO_WIDTH, HEIGHT);
+				fallingEdge.setBounds(X2 + (RADIO_WIDTH * 1), Y * 1, RADIO_WIDTH, HEIGHT);
 				// separator.setBounds(X1, Y * 4 + (20),
 				// CustomDimension.CONFIGURATION_SCREEN.width - (X1 * 4), 10);
 				setDefaultEdgeOption();
@@ -607,11 +655,29 @@ public class ColumnConfigurationScreen extends JFrame
 						panel.add(SET);
 						panel.add(RESET);
 					}
+				if (columnScreen.getSignal() != null)
+					{
+						switch (columnScreen.getSignal())
+							{
+								
+								case NC:
+									{
+										NC.setSelected(true);
+										break;
+									}
+								case NO:
+									{
+										NO.setSelected(true);
+										break;
+										
+									}
+							}
+							
+					}
 				panel.add(ncnoLabel);
 				panel.add(NC);
 				panel.add(NO);
 				setDefaultNoNcOption(columnScreen);
-				
 			}
 			
 		public void addTagToScreen(int x)
@@ -638,7 +704,7 @@ public class ColumnConfigurationScreen extends JFrame
 					{
 						submit.setBounds(X1, Y * x + 20, WIDTH, HEIGHT);
 					}
-				else if (columnScreen.getTemp().equals(CoilType.OUTPUT) || columnScreen.getTemp().equals(CoilType.ROUTINE))
+				else if (columnScreen.getTemp().equals(CoilType.OUTPUT) || columnScreen.getTemp().equals(CoilType.ROUTINE) || columnScreen.getTemp().equals(CoilType.EDGE))
 					{
 						submit.setBounds(X1, Y * x + 20, WIDTH, HEIGHT);
 					}
@@ -650,10 +716,8 @@ public class ColumnConfigurationScreen extends JFrame
 				panel.add(submit);
 				submit.addActionListener((ActionEvent event) ->
 					{
-						
 						if (input.isSelected() || flag.isSelected() || output.isSelected() || word.isSelected())
 							{
-								
 								InputType inputType = findInputType();
 								Integer dt = (Integer) value.getValue();
 								String min = "min" + inputType.getInputType();
@@ -671,25 +735,53 @@ public class ColumnConfigurationScreen extends JFrame
 										if (coilType.equals(CoilType.ROUTINE))
 											{
 												isRoutine = true;
+												dispose();
+												columnScreen.apply(false);
 											}
 										else if (isLoadCoil() || coilType.equals(CoilType.OUTPUT))
 											{
 												// TODO
-												//setNoNcValue(columnScreen);
-												//setEdgeValue(columnScreen);
+												if (NC.isSelected())
+													{
+														columnScreen.setSignal(Signal.NC);
+													}
+												if (NO.isSelected())
+													{
+														columnScreen.setSignal(Signal.NO);
+													}
+												dispose();
+												columnScreen.apply();
 											}
 										if (!isRoutine)
 											{
 												setInputTagAndValue(columnScreen);
+												dispose();
+												columnScreen.apply();
 											}
-										dispose();
-										columnScreen.repaint();
-										columnScreen.apply();
+											
 									}
 							}
 						else
 							{//
-								JOptionPane.showMessageDialog(submit, "Please Select Coil Type");
+								CoilType coilType = columnScreen.getTemp();
+								if (coilType.equals(CoilType.EDGE))
+									{
+										
+										if (risingEdge.isSelected())
+											{
+												columnScreen.setSignal(Signal.RISING);
+											}
+										else
+											{
+												columnScreen.setSignal(Signal.FALLING);
+											}
+										dispose();
+										columnScreen.apply();
+									}
+								else
+									{
+										JOptionPane.showMessageDialog(submit, "Please Select Coil Type");
+									}
 							}
 					});
 			}
@@ -705,6 +797,10 @@ public class ColumnConfigurationScreen extends JFrame
 						cancel.setBounds(X2, Y * x + 20, WIDTH, HEIGHT);
 					}
 				else if (columnScreen.getTemp().equals(CoilType.ROUTINE))
+					{
+						cancel.setBounds(X2, Y * x + 20, WIDTH, HEIGHT);
+					}
+				else if (columnScreen.getTemp().equals(CoilType.EDGE))
 					{
 						cancel.setBounds(X2, Y * x + 20, WIDTH, HEIGHT);
 					}

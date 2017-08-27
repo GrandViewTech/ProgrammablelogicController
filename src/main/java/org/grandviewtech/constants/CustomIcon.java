@@ -31,6 +31,8 @@ public class CustomIcon
 		final public static ImageIcon	COIL_JUMP				= new ImageIcon(COIL_PATH + File.separator + "jump.png");
 		final public static ImageIcon	COIL_END				= new ImageIcon(COIL_PATH + File.separator + "end.png");
 		final public static ImageIcon	COIL_ROUTINE			= new ImageIcon(COIL_PATH + File.separator + "routine.png");
+		final public static ImageIcon	EDGE_ROUTINE			= new ImageIcon(COIL_PATH + File.separator + "edge.png");
+		
 		final public static ImageIcon	COIL_DELETE				= new ImageIcon(COIL_PATH + File.separator + "delete.png");
 		final public static ImageIcon	COIL_LABEL				= new ImageIcon(COIL_PATH + File.separator + "label.png");
 		final public static ImageIcon	ADVANCED_SEARCH_ICON	= new ImageIcon(MISC_PATH + File.separator + "advancedsearch.png");

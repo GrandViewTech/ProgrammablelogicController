@@ -1,6 +1,5 @@
 package org.grandviewtech.userinterface.screen;
 
-import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
@@ -9,10 +8,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,7 +26,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
@@ -39,6 +38,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.grandviewtech.constants.CustomDimension;
 import org.grandviewtech.entity.bo.Routine;
+import org.grandviewtech.entity.bo.RoutineInput;
 import org.grandviewtech.entity.helper.Dimension;
 import org.grandviewtech.runner.Application;
 import org.grandviewtech.service.system.PropertyReader;
@@ -53,6 +53,7 @@ public class RoutineScreen extends JFrame
 		private static final int		Y					= 30;
 		
 		final private static Logger		LOGGER				= Logger.getLogger(RoutineScreen.class);
+		
 		private static final long		serialVersionUID	= -7808536714907991917L;
 		
 		private static int				maxLength			= 10000;
@@ -231,7 +232,9 @@ public class RoutineScreen extends JFrame
 				JFrame frame = this;
 				submit.addActionListener(event ->
 					{
-						Routine updated = (new Routine(("" + nameTextField.getText()).trim(), descriptionTextArea.getText(), functionTextArea.getText(), inputs, result));
+						List<RoutineInput> routineInputs = findInputParam();
+						findLabel(routineInputs);
+						Routine updated = (new Routine(("" + nameTextField.getText()).trim(), descriptionTextArea.getText(), functionTextArea.getText(), routineInputs, result));
 						String message1 = "";
 						String message2 = "";
 						if (selectedRoutine != null)
@@ -305,7 +308,7 @@ public class RoutineScreen extends JFrame
 			
 		private void saveRoutine(Routine routine)
 			{
-				findInputParam();
+				//findInputParam();
 				XStream stream = new XStream();
 				FileOutputStream fileOutputStream;
 				try
@@ -404,27 +407,82 @@ public class RoutineScreen extends JFrame
 					
 			}
 			
-		private void findInputParam()
+		private List<RoutineInput> findInputParam()
 			{
+				List<RoutineInput> routineInputs = new ArrayList<>();
 				Pattern pattern = Pattern.compile("\\$\\{([^}]*)\\}");
 				Matcher matcher = pattern.matcher(functionTextArea.getText());
 				int from = 0;
 				int count = 0;
+				Set<String> variables = new HashSet<>();
 				while (matcher.find(from))
 					{
+						
+						RoutineInput routineInput = new RoutineInput();
 						from = matcher.start() + 1;
 						String find = matcher.group(0);
+						LOGGER.info(find);
+						routineInput.setLabel(find);
 						if (find.contains("INPUT"))
 							{
-								if (!inputs.values().contains(find))
-									{
-										count++;
-										inputs.put(new Integer(count), "${INPUT" + count + "}");
-									}
+								routineInput.setType("INPUT");
+							}
+						else if (find.contains("OUTPUT"))
+							{
+								routineInput.setType("OUTPUT");
+							}
+						else if (find.contains("WORD"))
+							{
+								routineInput.setType("WORD");
+							}
+						else if (find.contains("FLAG"))
+							{
+								routineInput.setType("FLAG");
 							}
 						else if (find.contains("RESULT"))
 							{
-								result = "${RESULT}";
+								routineInput.setType("RESULT");
+							}
+						if (!variables.contains(routineInput.getLabel()))
+							{
+								count = count + 1;
+								routineInput.setSequence(count);
+								variables.add(routineInput.getLabel());
+								routineInputs.add(routineInput);
+							}
+					}
+				return routineInputs;
+			}
+			
+		private void findLabel(List<RoutineInput> routineInputs)
+			{
+				if (routineInputs.size() > 0)
+					{
+						String lines[] = functionTextArea.getText().split("\\r?\\n");
+						Set<String> variables = new HashSet<>();
+						for (String line : lines)
+							{
+								for (RoutineInput routineInput : routineInputs)
+									{
+										String label = routineInput.getLabel();
+										if (!variables.contains(label))
+											{
+												if (line.contains(label))
+													{
+														String[] split = line.split(";");
+														if (split.length > 0)
+															{
+																routineInput.setName(split[split.length - 1]);
+															}
+														else
+															{
+																routineInput.setName("");
+															}
+														variables.add(label);
+													}
+											}
+											
+									}
 							}
 					}
 			}

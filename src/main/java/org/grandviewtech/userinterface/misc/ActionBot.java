@@ -77,8 +77,7 @@ public final class ActionBot extends BaseBot
 						while (i$.hasNext())
 							{
 								ColumnScreen columnScreen = i$.next();
-								columnScreen.reset();
-								columnScreen.repaint();
+								columnScreen.reset(true);
 							}
 					}
 					

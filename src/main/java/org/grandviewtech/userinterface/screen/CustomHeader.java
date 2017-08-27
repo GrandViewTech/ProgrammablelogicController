@@ -30,8 +30,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.FileWriter;
 import java.io.OutputStreamWriter;
+import java.util.StringJoiner;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -50,7 +51,9 @@ import javax.swing.Timer;
 import javax.swing.TransferHandler;
 
 import org.apache.log4j.Logger;
+import org.grandviewtech.constants.ApplicationConstant;
 import org.grandviewtech.entity.bo.Routine;
+import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.service.execution.CompileService;
 import org.grandviewtech.service.system.PropertyReader;
 import org.grandviewtech.userinterface.misc.CustomToolBar;
@@ -61,7 +64,9 @@ import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
 
 public class CustomHeader
 	{
-		final private static Logger LOGGER = Logger.getLogger(CustomHeader.class);
+		final private static Logger	LOGGER	= Logger.getLogger(CustomHeader.class);
+		
+		private static Screen		screen	= Screen.getInstance();
 		
 		public static JMenuBar getJMenuBar()
 			{
@@ -167,7 +172,6 @@ public class CustomHeader
 				JMenuItem exportRoutine = new JMenuItem("Export");
 				exportRoutine.setToolTipText("Export");
 				tool.add(exportRoutine);
-				
 				return tool;
 			}
 			
@@ -177,7 +181,15 @@ public class CustomHeader
 				JMenuItem _new = new JMenuItem("New");
 				JMenuItem _newTab = new JMenuItem("New Tab");
 				JMenuItem save = new JMenuItem("Save");
+				save.addActionListener(action ->
+					{
+						save();
+					});
 				JMenuItem saveAs = new JMenuItem("Save As");
+				saveAs.addActionListener(acton ->
+					{
+						save();
+					});
 				JMenuItem open = new JMenuItem("Open");
 				JMenuItem close = new JMenuItem("Close");
 				JMenuItem exit = new JMenuItem("Exit");
@@ -227,4 +239,49 @@ public class CustomHeader
 					}
 			}
 			
+		private static void save()
+			{
+				try
+					{
+						File file = new File("Test.txt");
+						if (!file.exists())
+							{
+								file.createNewFile();
+							}
+						FileWriter fileWriter = new FileWriter(file);
+						fileWriter.write(generateFile());
+						fileWriter.flush();
+						fileWriter.close();
+					}
+				catch (Exception e)
+					{
+						e.printStackTrace();
+					}
+			}
+			
+		private static String generateFile()
+			{
+				StringJoiner stringJoiner = new StringJoiner("\n");
+				for (RowScreen row : screen.getRows())
+					{
+						int counter = 0;
+						StringJoiner joiner = new StringJoiner(",");
+						String start = "R:" + row.getRowNumber();
+						joiner.add(start);
+						for (ColumnScreen screen : row.getAllColumnScreens())
+							{
+								if (!screen.isBlank())
+									{
+										String column = "C=" + screen.getColumnNumber() + ",I=" + screen.getCoilType();
+										joiner.add(column);
+									}
+								counter = counter + 1;
+							}
+						if (counter == ApplicationConstant.MAX_CELL)
+							{
+								stringJoiner.add(joiner.toString());
+							}
+					}
+				return stringJoiner.toString();
+			}
 	}

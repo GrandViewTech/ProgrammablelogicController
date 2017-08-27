@@ -141,6 +141,8 @@ public class CustomToolBar extends ApplicationConstant
 			{
 				DragLabel load = new DragLabel(CustomIcon.COIL_LOAD, CoilType.LOAD.getCoilType());
 				DragLabel line = new DragLabel(CustomIcon.COIL_LINE, CoilType.LINE.getCoilType());
+				
+				DragLabel edge = new DragLabel(CustomIcon.EDGE_ROUTINE, CoilType.EDGE.getCoilType());
 				//
 				DragLabel parellel = new DragLabel(CustomIcon.COIL_PARALLEL, CoilType.PARALLEL.getCoilType());
 				DragLabel leftLink = new DragLabel(CustomIcon.COIL_LEFT_LINK, CoilType.LEFT_LINK.getCoilType());
@@ -171,19 +173,19 @@ public class CustomToolBar extends ApplicationConstant
 							{
 								if (!activeColumn.isBlank())
 									{
-										activeColumn.reset();
+										activeColumn.reset(true);
 										activities.addActivity(new Activity("Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " ) " + activeColumn.getRowNumber() + " is deleted", Activity.Category.USER));
 										message = "Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " ) Successfully Deleted.";
 										RowValidation.validateNeighBourHood(activeColumn);
 									}
 								else
 									{
-										activeColumn.reset();
+										activeColumn.reset(true);
 										activities.addActivity(new Activity("Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " ) " + activeColumn.getRowNumber() + " is attempted to delete but cell was empty", Activity.Category.USER));
 										message = "Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " is Empty";
 										RowValidation.validateNeighBourHood(activeColumn);
 									}
-								activeColumn.reset();
+								activeColumn.reset(true);
 								activities.addActivity(new Activity("Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " ) " + activeColumn.getRowNumber() + " is deleted", Activity.Category.USER));
 								message = "Cell( " + activeColumn.getRowNumber() + " , " + activeColumn.getColumnNumber() + " ) Successfully Deleted.";
 								RowValidation.validateNeighBourHood(activeColumn);
@@ -207,6 +209,8 @@ public class CustomToolBar extends ApplicationConstant
 					});
 				toolBar.add(load);
 				toolBar.add(line);
+				toolBar.add(edge);
+				
 				// toolBar.add(compile);
 				toolBar.add(output);
 				toolBar.add(parellel);

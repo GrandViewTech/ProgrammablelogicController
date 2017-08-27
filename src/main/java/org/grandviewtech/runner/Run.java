@@ -15,8 +15,6 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.grandviewtech.service.system.PropertyReader;
 import org.grandviewtech.service.system.SystemFileLocation;
-import org.springframework.boot.Banner;
-import org.springframework.boot.SpringApplication;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
@@ -95,10 +93,11 @@ public class Run
 		public static void main(String[] args)
 			{
 				initiateLogo();
-				SpringApplication springApplication = new SpringApplication(Application.class);
+				Application.run();
+				/*SpringApplication springApplication = new SpringApplication(Application.class);
 				springApplication.setHeadless(false);
 				springApplication.setBannerMode(Banner.Mode.OFF);
 				springApplication.setWebEnvironment(false);
-				springApplication.run(args);
+				springApplication.run(args);*/
 			}
 	}

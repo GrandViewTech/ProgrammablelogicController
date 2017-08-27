@@ -1,9 +1,6 @@
 package org.grandviewtech.service.execution;
 
 import java.io.IOException;
-import java.io.StringReader;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.StringJoiner;
 
 import org.grandviewtech.entity.bo.Routine;
@@ -15,10 +12,8 @@ import org.grandviewtech.userinterface.helper.ColumnScreenGenerator;
 import org.grandviewtech.userinterface.screen.ColumnScreen;
 import org.grandviewtech.userinterface.screen.PreferenceScreen;
 import org.grandviewtech.userinterface.screen.RowScreen;
-import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
 import freemarker.template.Configuration;
-import freemarker.template.Template;
 import freemarker.template.Version;
 
 public abstract class CompileService
@@ -123,6 +118,7 @@ public abstract class CompileService
 			{
 				try
 					{
+						/*
 						Map<String, String> dataset = new LinkedHashMap<>();
 						for (Map.Entry<Integer, String> value : routine.getValues().entrySet())
 							{
@@ -132,7 +128,7 @@ public abstract class CompileService
 						configuration.setNumberFormat("0.######");
 						Template template = new Template("templateBody", new StringReader(routine.getFunctionalBlock()), configuration);
 						joiner.add(FreeMarkerTemplateUtils.processTemplateIntoString(template, dataset));
-					}
+						*/}
 				catch (Exception exception)
 					{
 					}
@@ -175,23 +171,23 @@ public abstract class CompileService
 						
 						case RESET:
 							{
-								joiner.add("JNC "+label);
+								joiner.add("JNC " + label);
 								joiner.add("MOV  DTPR , #OUTPUT0_7+" + params[0]);
 								joiner.add("MOV X A,@DPTR");
 								joiner.add("MOV ACC." + params[1] + " , C");
 								joiner.add("MOVX @DPTR,A");
-								joiner.add(label+" :");
+								joiner.add(label + " :");
 								break;
 							}
 						case SET:
 							{
-								joiner.add("JNC "+label);
+								joiner.add("JNC " + label);
 								joiner.add("MOV  DTPR , #OUTPUT0_7+" + params[0]);
 								joiner.add("MOV X A,@DPTR");
 								joiner.add("MOV ACC." + params[1] + " , C");
 								joiner.add("MOVX @DPTR,A");
 								joiner.add("SETB "); // NO UNDERSTANDING OF RLY
-								joiner.add(label+" :");
+								joiner.add(label + " :");
 								break;
 							}
 						case NONE:
@@ -218,8 +214,7 @@ public abstract class CompileService
 					{
 						input = input * -1;
 					}
-				return new String[]
-					{ intTohex(input / 8), intTohex(input % 8) };
+				return new String[] { intTohex(input / 8), intTohex(input % 8) };
 			}
 			
 		private static String intTohex(int integer)

@@ -1,14 +1,8 @@
 package org.grandviewtech.service.system;
 
-import java.util.Date;
-import java.util.Properties;
-
-import org.springframework.mail.MailSender;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
-
 public class FeedBack
 	{
+		/*
 		public static void sendFeedBack(SimpleMailMessage simpleMailMessage)
 			{
 				MailSender mailSender = getMailSender();
@@ -41,4 +35,4 @@ public class FeedBack
 				simpleMailMessage.setSentDate(new Date());
 				sendFeedBack(simpleMailMessage);
 			}
-	}
+		*/}

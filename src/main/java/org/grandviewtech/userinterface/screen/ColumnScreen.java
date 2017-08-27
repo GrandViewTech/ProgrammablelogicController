@@ -20,6 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.TransferHandler;
 import javax.swing.border.Border;
 
+import org.apache.log4j.Logger;
 import org.grandviewtech.constants.CustomBorderList;
 import org.grandviewtech.constants.CustomDimension;
 import org.grandviewtech.constants.CustomIcon;
@@ -28,17 +29,21 @@ import org.grandviewtech.entity.bo.Response;
 import org.grandviewtech.entity.bo.Routine;
 import org.grandviewtech.entity.bo.Screen;
 import org.grandviewtech.entity.enums.CoilType;
+import org.grandviewtech.entity.enums.Edge;
 import org.grandviewtech.entity.enums.InputType;
+import org.grandviewtech.entity.enums.NoNc;
 import org.grandviewtech.entity.enums.Signal;
 import org.grandviewtech.service.searching.SearchEngine;
 import org.grandviewtech.service.validation.RowValidation;
 import org.grandviewtech.service.validation.ValidateDragOption;
+import org.grandviewtech.userinterface.coils.PaintCoilsOnScreen;
 import org.grandviewtech.userinterface.helper.ColumnScreenGenerator;
 import org.grandviewtech.userinterface.listeners.ColumnScreenListener;
 import org.grandviewtech.userinterface.listeners.SettingsMouseClickListener;
 
 public class ColumnScreen extends JPanel implements DropTargetListener, Comparable<ColumnScreen>
 	{
+		private static final Logger	LOGGER				= Logger.getLogger(ColumnScreen.class);
 		private static final long	serialVersionUID	= -4357735797077739462L;
 		private ColumnScreen		previous;
 		private ColumnScreen		next;
@@ -57,13 +62,14 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 		private CoilType			childType;
 		private String				comment;
 		private InputType			inputType;
-		/*private NoNc				nonc;
-		private Edge				edge;*/
+		private NoNc				nonc;
+		private Edge				edge;
 		private Signal				signal;
 		private boolean				parent;
 		private boolean				error;
 		private Routine				routine;
 		private boolean				isBlank;
+		private boolean				paintComponent		= true;
 		
 		public Routine getRoutine()
 			{
@@ -151,6 +157,16 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 		public void setBelow(ColumnScreen below)
 			{
 				this.below = below;
+			}
+			
+		public boolean isPaintComponent()
+			{
+				return paintComponent;
+			}
+			
+		public void setPaintComponent(boolean paintComponent)
+			{
+				this.paintComponent = paintComponent;
 			}
 			
 		public int getRowNumber()
@@ -258,7 +274,7 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 				this.isBlank = isBlank;
 			}
 			
-		public void reset()
+		public void reset(boolean paint)
 			{
 				
 				if (routine != null && routine.getComponents() != null)
@@ -270,7 +286,7 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 						setRoutine(null);
 					}
 				removeAll();
-				init();
+				init(paint);
 			}
 			
 		public String getTag()
@@ -327,15 +343,12 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 		@Override
 		protected void paintComponent(java.awt.Graphics graphics)
 			{
+				LOGGER.info("SOME ONE CALLED PAINT FOR  row : " + getRowNumber() + " | col : " + getColumnNumber());
 				super.paintComponent(graphics);
 				this.valueLabel.setText(this.valueLabel.getText());
-				if (isBlank)
+				if (!isBlank && paintComponent)
 					{
-						// PaintCoilsOnScreen.paintDefault(this, graphics);
-					}
-				else
-					{
-						//PaintCoilsOnScreen.paintDragOption(this, graphics);
+						PaintCoilsOnScreen.paintDragOption(this, graphics);
 					}
 			}
 			
@@ -431,10 +444,10 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			{
 				this.rowNumber = row;
 				this.columnNumber = column;
-				init();
+				init(true);
 			}
 			
-		private void init()
+		private void init(boolean paint)
 			{
 				setting = new JLabel(CustomIcon.SETTING);
 				valueLabel = new JLabel("");
@@ -466,8 +479,11 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 				addKeyListener(columnScreenListener);
 				addFocusListener(columnScreenListener);
 				setToolTipText("Row : " + this.getRowNumber() + " |  Column : " + this.getColumnNumber());
-				repaint();
-				revalidate();
+				if (paint)
+					{
+						repaint();
+						revalidate();
+					}
 			}
 			
 		private void selectTheRigthCoilUsingDragOption(CoilType coilType)
@@ -505,6 +521,11 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 								initColumnConfigurationScreen();
 								break;
 							}
+						case EDGE:
+							{
+								initColumnConfigurationScreen();
+								break;
+							}
 						case JUMP:
 							{
 								apply();
@@ -519,11 +540,12 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 							}
 						case ROUTINE:
 							{
-								ColumnConfigurationScreen columnConfigurationScreen = new ColumnConfigurationScreen();
+								/*ColumnConfigurationScreen columnConfigurationScreen = new ColumnConfigurationScreen();
 								columnConfigurationScreen.initiateInstance(this);
 								columnConfigurationScreen.requestFocusInWindow();
 								ClipBoard.setCurrentRowNumber(rowNumber);
-								ClipBoard.setCurrentColumnNumber(columnNumber);
+								ClipBoard.setCurrentColumnNumber(columnNumber);*/
+								initColumnConfigurationScreen();
 								break;
 							}
 						case DEFAULT:
@@ -595,6 +617,26 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 				// apply();
 			}
 			
+		public NoNc getNonc()
+			{
+				return nonc;
+			}
+			
+		public void setNonc(NoNc nonc)
+			{
+				this.nonc = nonc;
+			}
+			
+		public Edge getEdge()
+			{
+				return edge;
+			}
+			
+		public void setEdge(Edge edge)
+			{
+				this.edge = edge;
+			}
+			
 		public boolean isError()
 			{
 				return error;
@@ -642,6 +684,8 @@ public class ColumnScreen extends JPanel implements DropTargetListener, Comparab
 			
 		public void update(ColumnScreen screen)
 			{
+				setNonc(screen.getNonc());
+				setInputType(screen.getInputType());
 				setCoilType(screen.getTemp());
 				setCoilType(screen.getCoilType());
 				setValue(screen.getValue());

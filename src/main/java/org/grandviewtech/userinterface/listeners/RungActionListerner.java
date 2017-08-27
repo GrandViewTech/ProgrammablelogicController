@@ -25,6 +25,7 @@ package org.grandviewtech.userinterface.listeners;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -112,9 +113,7 @@ public class RungActionListerner implements ActionListener
 									}
 								break;
 							}
-							
 					}
-					
 			}
 			
 		private void delete()
@@ -155,30 +154,32 @@ public class RungActionListerner implements ActionListener
 		private void paste()
 			{
 				int i$ = 0;
-				for (int rowNumber = currentRungNumber; rowNumber < currentRungNumber + ClipBoard.getCopiedRung().size(); rowNumber++)
+				List<Rung> copied = ClipBoard.getCopiedRung();
+				if (copied.size() > 0)
 					{
-						RowScreen copiedRow = screen.getRow(ClipBoard.getCopiedRung().get(i$).getRowNumber());
-						RowScreen pasteRow = screen.getRow(rowNumber);
-						logger.warn("Pasting Row:" + rowNumber);
-						int columnIndex = 1;
-						for (ColumnScreen pasteColumn : pasteRow.getAllColumnScreens())
+						Collections.sort(copied);
+						for (int rowNumber = currentRungNumber; rowNumber < currentRungNumber + copied.size(); rowNumber++)
 							{
-								ColumnScreen copiedColumn = copiedRow.getColumnScreens(columnIndex);
-								if (copiedColumn.isBlank() == false)
+								RowScreen copiedRow = screen.getRow(copied.get(i$).getRowNumber());
+								RowScreen pasteRow = screen.getRow(rowNumber);
+								logger.warn("Pasting Row:" + rowNumber);
+								int columnIndex = 1;
+								for (ColumnScreen pasteColumn : pasteRow.getAllColumnScreens())
 									{
-										pasteColumn.update(copiedColumn);
+										ColumnScreen copiedColumn = copiedRow.getColumnScreens(columnIndex);
+										if (copiedColumn.isBlank() == false)
+											{
+												pasteColumn.update(copiedColumn);
+											}
+										if (ClipBoard.getClipboardAction() == CLIPBOARD_ACTION.CUT)
+											{
+												copiedColumn.reset(true);
+											}
+										columnIndex = columnIndex + 1;
+										
 									}
-								if (ClipBoard.getClipboardAction() == CLIPBOARD_ACTION.CUT)
-									{
-										copiedColumn.reset();
-									}
-								columnIndex = columnIndex + 1;
-								
+								i$ = i$ + 1;
 							}
-						i$ = i$ + 1;
 					}
-				/*
-				 * if (ClipBoard.getClipboardAction() == CLIPBOARD_ACTION.CUT) { Set<Integer> deletedRowNumbers = new LinkedHashSet<Integer>(); List<Rung> copiedRungs = ClipBoard.getCopiedRung(); Collections.sort(copiedRungs); for (Rung rung : copiedRungs) { deletedRowNumbers.add(rung.getRowNumber()); } RowGenerator.deleteRows(deletedRowNumbers); }
-				 */
 			}
 	}

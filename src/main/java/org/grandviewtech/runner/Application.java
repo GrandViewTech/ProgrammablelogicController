@@ -15,13 +15,8 @@ import org.grandviewtech.entity.bo.SystemPreference.CleanUpActivity;
 import org.grandviewtech.service.system.Printer;
 import org.grandviewtech.service.system.SystemFileLocation;
 import org.grandviewtech.userinterface.screen.BackGroundLayer;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
-@SpringBootConfiguration
-public class Application implements CommandLineRunner
+public class Application
 	{
 		
 		private static org.apache.log4j.Logger	logger				= org.apache.log4j.Logger.getLogger(Application.class);
@@ -124,8 +119,7 @@ public class Application implements CommandLineRunner
 				return dm;
 			}
 			
-		@Override
-		public void run(String... arg0) throws Exception
+		public static void run()
 			{
 				try
 					{

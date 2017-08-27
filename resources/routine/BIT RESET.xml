@@ -7,7 +7,6 @@ CLR          RLY567
 MOVX     @DPTR,A
 
 </functionalBlock>
-  <inputs class="linked-hash-map"/>
-  <values class="linked-hash-map"/>
+  <routineInputs/>
   <components/>
 </org.grandviewtech.entity.bo.Routine>
