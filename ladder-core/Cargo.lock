@@ -122,8 +122,8 @@ version = "0.1.0"
 dependencies = [
  "ladder-model",
  "rusqlite",
- "serde",
  "serde_json",
+ "thiserror",
 ]
 
 [[package]]

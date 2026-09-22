@@ -4,7 +4,7 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-serde.workspace = true
 serde_json.workspace = true
 ladder-model = { path = "../ladder-model" }
 rusqlite = { version = "0.31", features = ["bundled"] }
+thiserror = "1"
