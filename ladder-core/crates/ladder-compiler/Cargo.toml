@@ -6,3 +6,4 @@ edition.workspace = true
 [dependencies]
 serde.workspace = true
 ladder-model = { path = "../ladder-model" }
+thiserror = "1"
