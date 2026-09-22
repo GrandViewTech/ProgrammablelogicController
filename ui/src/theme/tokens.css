@@ -1,0 +1,24 @@
+:root {
+  --color-page-bg: #F4F3F8;
+  --color-card-bg: #FFFFFF;
+  --color-accent: #FF6B4A;
+  --color-lock: #0F9B8E;
+  --color-text: #1A1A1A;
+  --color-text-muted: #6B6B76;
+  --radius-card: 18px;
+  --radius-pill: 999px;
+  --font-ui: 'Manrope', -apple-system, sans-serif;
+  --font-code: 'JetBrains Mono', 'SFMono-Regular', monospace;
+  --shadow-card: 0 2px 12px rgba(20, 20, 30, 0.06);
+}
+
+body {
+  background: var(--color-page-bg);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  margin: 0;
+}
+
+code, pre, .mono {
+  font-family: var(--font-code);
+}
