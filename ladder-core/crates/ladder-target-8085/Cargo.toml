@@ -1,0 +1,9 @@
+[package]
+name = "ladder-target-8085"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+serde.workspace = true
+ladder-model = { path = "../ladder-model" }
+ladder-compiler = { path = "../ladder-compiler" }

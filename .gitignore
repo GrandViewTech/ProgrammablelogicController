@@ -14,3 +14,7 @@ output/system/system.properties
 
 *.prefs
 *.out
+ladder-core/target/
+src-tauri/target/
+ui/node_modules/
+ui/dist/
