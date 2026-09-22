@@ -1,0 +1,32 @@
+[package]
+name = "app"
+version = "0.1.0"
+description = "A Tauri App"
+authors = ["you"]
+license = ""
+repository = ""
+edition = "2021"
+rust-version = "1.77.2"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+tauri-build = { version = "2.6.3" }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "2.11.6" }
+
+ladder-model = { path = "../ladder-core/crates/ladder-model" }
+ladder-compiler = { path = "../ladder-core/crates/ladder-compiler" }
+ladder-target-8085 = { path = "../ladder-core/crates/ladder-target-8085" }
+ladder-routines = { path = "../ladder-core/crates/ladder-routines" }
+ladder-storage = { path = "../ladder-core/crates/ladder-storage" }
+
+# Directly used by state.rs (AppState holds a rusqlite::Connection).
+rusqlite = { version = "0.31", features = ["bundled"] }
+
+# Ruling 2 fallback: resolves a persistent, writable, app-local directory for
+# ladder-studio.sqlite without needing an AppHandle (see main.rs comment).
+dirs = "5"
