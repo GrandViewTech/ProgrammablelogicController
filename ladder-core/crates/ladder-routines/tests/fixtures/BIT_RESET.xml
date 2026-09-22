@@ -1,0 +1,12 @@
+<org.grandviewtech.entity.bo.Routine>
+  <description>Resets the target bit</description>
+  <name>BIT RESET</name>
+  <functionalBlock>MOV DPTR,#RLY512_${INPUT1}+
+MOVX A,@DPTR
+CLR RLY${INPUT2}
+MOVX @DPTR,A
+</functionalBlock>
+  <inputs class="linked-hash-map"/>
+  <values class="linked-hash-map"/>
+  <components/>
+</org.grandviewtech.entity.bo.Routine>

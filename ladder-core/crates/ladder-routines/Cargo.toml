@@ -8,3 +8,5 @@ serde.workspace = true
 serde_json.workspace = true
 ladder-model = { path = "../ladder-model" }
 regex = "1"
+quick-xml = { version = "0.31", features = ["serialize"] }
+thiserror = "1"
