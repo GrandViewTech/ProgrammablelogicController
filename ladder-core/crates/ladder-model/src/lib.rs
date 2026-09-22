@@ -1,14 +1,7 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+mod coil_type;
+mod input_type;
+mod no_nc;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+pub use coil_type::CoilType;
+pub use input_type::InputType;
+pub use no_nc::NoNc;
