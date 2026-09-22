@@ -25,6 +25,7 @@ pub enum EditMode {
 /// Stamped onto any column(s) produced by injecting a library routine
 /// (requirements §4). `None` on hand-built columns.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RoutineOrigin {
     pub routine_name: String,
     pub description: String,
@@ -36,6 +37,7 @@ pub struct RoutineOrigin {
 /// org.grandviewtech.userinterface.screen.ColumnScreen, data fields only
 /// (no Swing/paint/drag-and-drop state — that's a UI concern in `ui/`).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ColumnScreen {
     pub row_number: u32,
     pub column_number: u32,
@@ -70,6 +72,7 @@ impl ColumnScreen {
 /// One rung. Variable-width (requirements §4) — a `Vec`, not the original's
 /// fixed-size array, so rungs grow to fit whatever blocks are placed.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RowScreen {
     pub row_number: u32,
     pub columns: Vec<ColumnScreen>,
@@ -86,6 +89,7 @@ impl RowScreen {
 
 /// The whole diagram. Ported from org.grandviewtech.entity.bo.Screen.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct Screen {
     pub rows: Vec<RowScreen>,
     pub end_row_number: Option<u32>,
