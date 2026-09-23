@@ -61,13 +61,16 @@ pub struct ColumnScreen {
     /// AND/OR/XOR, not a 4th `Combinator` value) — "is this value flipped"
     /// is a separate question from "how does this combine with what came
     /// before".
+    #[serde(default)]
     pub inverted: bool,
     /// A nested boolean sub-expression: when present, this column represents
     /// the AND/OR/XOR-combined group of its child columns rather than a
     /// single leaf condition.
+    #[serde(default)]
     pub group: Option<Vec<ColumnScreen>>,
     /// Name of another row this column references (cross-row reference),
     /// used together with `CoilType::RowRef`.
+    #[serde(default)]
     pub row_ref_name: Option<String>,
 }
 
@@ -92,6 +95,7 @@ pub struct RowScreen {
     /// Name this row can be referenced by from other rows via
     /// `CoilType::RowRef` + `ColumnScreen.row_ref_name`. `None` if the row
     /// has not been given a name.
+    #[serde(default)]
     pub output_name: Option<String>,
 }
 

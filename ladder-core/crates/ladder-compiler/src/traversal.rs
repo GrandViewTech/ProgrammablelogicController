@@ -26,10 +26,15 @@ fn resolve_combinator(
     match column.combinator {
         Some(Combinator::And) => Ok(LoadCombinator::Series),
         Some(Combinator::Or) => Ok(LoadCombinator::Parallel),
-        // XOR combining and nested-group evaluation are added by the
-        // recursive-evaluation rewrite of this function (implementation
-        // plan Task 3); this whole function is superseded there.
-        Some(Combinator::Xor) => todo!("XOR combinator support added in Task 3"),
+        // TODO(Task 3): XOR combining and nested-group evaluation are added by
+        // the recursive-evaluation rewrite of this function (implementation
+        // plan Task 3); this whole function is superseded there. Until then,
+        // treat XOR the same as OR (LoadCombinator has no XOR variant yet) so
+        // that a screen with an XOR-combined column compiles instead of
+        // panicking a Tauri command on frontend-supplied JSON. This is a
+        // temporary placeholder, not a design decision — Task 3 must replace
+        // this with real XOR codegen.
+        Some(Combinator::Xor) => Ok(LoadCombinator::Parallel),
         None => Err(CompileError::MissingCombinator {
             row: row.row_number,
             column: column.column_number,
@@ -236,6 +241,29 @@ mod tests {
         second.input_type = Some(InputType::Input);
         second.value = "2".into();
         second.combinator = Some(Combinator::Or);
+        let screen = Screen {
+            rows: vec![RowScreen { row_number: 1, columns: vec![first, second], output_name: None }],
+            end_row_number: None,
+            end_column_number: None,
+        };
+        let target = RecordingTarget::new();
+        let out = generate(&screen, &target).unwrap();
+        assert_eq!(out, "LOAD Input 1 None\nLOAD Input 2 Parallel");
+    }
+
+    #[test]
+    fn xor_combinator_compiles_without_panicking_as_temporary_or_fallback() {
+        // TODO(Task 3): once real XOR codegen exists, this should assert on
+        // XOR-specific output, not "Parallel". For now this only proves the
+        // `todo!()` panic reachable via frontend-supplied JSON is gone.
+        let mut first = column(CoilType::Load);
+        first.input_type = Some(InputType::Input);
+        first.value = "1".into();
+        let mut second = column(CoilType::Load);
+        second.column_number = 2;
+        second.input_type = Some(InputType::Input);
+        second.value = "2".into();
+        second.combinator = Some(Combinator::Xor);
         let screen = Screen {
             rows: vec![RowScreen { row_number: 1, columns: vec![first, second], output_name: None }],
             end_row_number: None,
