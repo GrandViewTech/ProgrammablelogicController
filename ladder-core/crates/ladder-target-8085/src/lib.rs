@@ -18,7 +18,10 @@ impl Target for Target8085 {
     fn emit_load(&self, buf: &mut Vec<String>, kind: LoadKind, input: i32, combinator: LoadCombinator) {
         let (byte, bit) = find_param(input);
         let base = match kind {
-            LoadKind::Flag => "RLY512_",
+            // The original's `CompileService.flag()` emits
+            // `"MOV  DTPR , #RLY512_+" + params[0]` — the `+` is part of the
+            // literal, exactly as in the INPUT and WORD helpers.
+            LoadKind::Flag => "RLY512_+",
             LoadKind::Input => "INPUT0_7+",
             LoadKind::Word => "WORD0_7+",
         };
@@ -95,6 +98,28 @@ mod tests {
     }
 
     #[test]
+    fn emit_load_flag_keeps_the_literal_plus_from_the_original_flag_helper() {
+        // CompileService.flag() emits `"MOV  DTPR , #RLY512_+" + params[0]`;
+        // dropping the `+` produced `#RLY512_2` instead of `#RLY512_+2`.
+        let mut buf = Vec::new();
+        Target8085.emit_load(&mut buf, LoadKind::Flag, 19, LoadCombinator::None);
+        assert_eq!(
+            buf,
+            vec!["MOV  DTPR , #RLY512_+2", "MOV X A,@DPTR", "MOV C, ACC.3"]
+        );
+    }
+
+    #[test]
+    fn emit_load_flag_with_parallel_combinator_uses_orl() {
+        let mut buf = Vec::new();
+        Target8085.emit_load(&mut buf, LoadKind::Flag, 8, LoadCombinator::Parallel);
+        assert_eq!(
+            buf,
+            vec!["MOV  DTPR , #RLY512_+1", "MOV X A,@DPTR", "ORL C, ACC.0"]
+        );
+    }
+
+    #[test]
     fn emit_load_word_with_series_combinator_uses_anl() {
         let mut buf = Vec::new();
         Target8085.emit_load(&mut buf, LoadKind::Word, 8, LoadCombinator::Series);
@@ -117,6 +142,41 @@ mod tests {
                 "MOV ACC.3 , C",
                 "MOVX @DPTR,A",
                 "LABEL_1_1 :",
+            ]
+        );
+    }
+
+    #[test]
+    fn emit_output_set_adds_the_original_setb_line_inside_the_jnc_wrap() {
+        let mut buf = Vec::new();
+        Target8085.emit_output(&mut buf, 3, OutputType::Set, "LABEL_1_1");
+        assert_eq!(
+            buf,
+            vec![
+                "JNC LABEL_1_1",
+                "MOV  DTPR , #OUTPUT0_7+0",
+                "MOV X A,@DPTR",
+                "MOV ACC.3 , C",
+                "MOVX @DPTR,A",
+                "SETB ",
+                "LABEL_1_1 :",
+            ]
+        );
+    }
+
+    #[test]
+    fn emit_output_none_emits_the_bare_store_without_jnc_or_label() {
+        // The traversal's `find_output_type()` always resolves to `None`
+        // (see the documented NoNc gap), so this is the arm real screens hit.
+        let mut buf = Vec::new();
+        Target8085.emit_output(&mut buf, 19, OutputType::None, "LABEL_2_4");
+        assert_eq!(
+            buf,
+            vec![
+                "MOV  DTPR , #OUTPUT0_7+2",
+                "MOV X A,@DPTR",
+                "MOV ACC.3 , C",
+                "MOVX @DPTR,A",
             ]
         );
     }

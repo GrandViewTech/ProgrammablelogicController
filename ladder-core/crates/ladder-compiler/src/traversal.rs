@@ -9,14 +9,27 @@ fn create_label(row_number: u32, column_number: u32) -> String {
 
 /// Reads the combinator directly off the block (requirements §7.3) instead
 /// of inferring it. The first column on a row has no combinator.
-fn resolve_combinator(row: &RowScreen, column_index: usize, column: &ColumnScreen) -> LoadCombinator {
+///
+/// A *later* column with no combinator is malformed input, not a defaultable
+/// case: falling back to `LoadCombinator::None` would emit a plain
+/// `MOV C, ACC.n`, silently overwriting the accumulated carry and producing
+/// wrong logic on real hardware. Requirements §7.3 makes the combinator
+/// mandatory for every block after the first, so this is rejected instead.
+fn resolve_combinator(
+    row: &RowScreen,
+    column_index: usize,
+    column: &ColumnScreen,
+) -> Result<LoadCombinator, CompileError> {
     if row.previous(column_index).is_none() {
-        return LoadCombinator::None;
+        return Ok(LoadCombinator::None);
     }
     match column.combinator {
-        Some(Combinator::And) => LoadCombinator::Series,
-        Some(Combinator::Or) => LoadCombinator::Parallel,
-        None => LoadCombinator::None,
+        Some(Combinator::And) => Ok(LoadCombinator::Series),
+        Some(Combinator::Or) => Ok(LoadCombinator::Parallel),
+        None => Err(CompileError::MissingCombinator {
+            row: row.row_number,
+            column: column.column_number,
+        }),
     }
 }
 
@@ -61,15 +74,15 @@ pub fn generate(screen: &Screen, target: &dyn Target) -> Result<String, CompileE
                             // GAP (spec §3): PreferenceScreen-backed min-value bounds for
                             // FLAG inputs aren't ported (no settings store exists yet) —
                             // the original's `min - input` offset is not applied.
-                            let combinator = resolve_combinator(row, column_index, column);
+                            let combinator = resolve_combinator(row, column_index, column)?;
                             target.emit_load(&mut buf, LoadKind::Flag, input, combinator);
                         }
                         Some(InputType::Input) => {
-                            let combinator = resolve_combinator(row, column_index, column);
+                            let combinator = resolve_combinator(row, column_index, column)?;
                             target.emit_load(&mut buf, LoadKind::Input, input, combinator);
                         }
                         Some(InputType::Word) => {
-                            let combinator = resolve_combinator(row, column_index, column);
+                            let combinator = resolve_combinator(row, column_index, column)?;
                             target.emit_load(&mut buf, LoadKind::Word, input, combinator);
                         }
                         Some(InputType::Output) => {
@@ -223,6 +236,29 @@ mod tests {
         let target = RecordingTarget::new();
         let out = generate(&screen, &target).unwrap();
         assert_eq!(out, "LOAD Input 1 None\nLOAD Input 2 Parallel");
+    }
+
+    #[test]
+    fn second_block_without_combinator_is_a_compile_error() {
+        // Requirements §7.3: every block after the first carries an explicit
+        // combinator. Defaulting to `None` here would emit `MOV C, ACC.n`,
+        // clobbering the accumulated carry instead of AND/OR-ing into it.
+        let mut first = column(CoilType::Load);
+        first.input_type = Some(InputType::Input);
+        first.value = "1".into();
+        let mut second = column(CoilType::Load);
+        second.column_number = 2;
+        second.input_type = Some(InputType::Input);
+        second.value = "2".into();
+        second.combinator = None;
+        let screen = Screen {
+            rows: vec![RowScreen { row_number: 1, columns: vec![first, second] }],
+            end_row_number: None,
+            end_column_number: None,
+        };
+        let target = RecordingTarget::new();
+        let err = generate(&screen, &target).unwrap_err();
+        assert_eq!(err, CompileError::MissingCombinator { row: 1, column: 2 });
     }
 
     #[test]

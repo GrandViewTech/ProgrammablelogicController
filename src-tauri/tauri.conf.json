@@ -2,10 +2,12 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Ladder Studio",
   "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "com.grandviewtech.ladderstudio",
   "build": {
     "frontendDist": "../ui/dist",
-    "devUrl": "http://localhost:5173"
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "npm --prefix ../ui run dev",
+    "beforeBuildCommand": "npm --prefix ../ui run build"
   },
   "app": {
     "windows": [
@@ -18,7 +20,7 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self' ipc: http://ipc.localhost; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' ipc: http://ipc.localhost"
     }
   },
   "bundle": {
@@ -31,6 +33,9 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "resources": {
+      "../resources/routine/*": "resources/routine"
+    },
     "android": {
       "debugApplicationIdSuffix": ".debug"
     }

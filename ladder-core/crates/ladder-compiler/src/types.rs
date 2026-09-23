@@ -33,6 +33,8 @@ pub enum CompileError {
     InvalidValue { row: u32, column: u32, value: String },
     #[error("row {row}, column {column}: ROUTINE block has no rendered_asm (not injected via ladder-routines)")]
     MissingRenderedAsm { row: u32, column: u32 },
+    #[error("row {row}, column {column}: every block after the first on a rung must carry an explicit AND/OR combinator")]
+    MissingCombinator { row: u32, column: u32 },
 }
 
 #[cfg(test)]

@@ -1,10 +1,10 @@
 [package]
-name = "app"
+name = "ladder-studio"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
-license = ""
-repository = ""
+description = "Ladder Studio — worker-facing ladder logic editor and 8085 compiler"
+authors = ["GrandViewTech"]
+license = "GPL-3.0"
+repository = "https://github.com/GrandViewTech/ProgrammablelogicController"
 edition = "2021"
 rust-version = "1.77.2"
 

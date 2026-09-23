@@ -53,6 +53,13 @@ fn placeholder_regex() -> Regex {
 }
 
 impl RoutineLibrary {
+    /// A library with zero routines. Lets a host application (e.g. the Tauri
+    /// shell) start up and stay usable when the bundled routine directory is
+    /// missing or unparseable, instead of failing hard at launch.
+    pub fn empty() -> Self {
+        Self { templates: HashMap::new() }
+    }
+
     pub fn load_from_dir(dir: &Path) -> Result<Self, RoutineLoadError> {
         let mut templates = HashMap::new();
         let entries = fs::read_dir(dir).map_err(|e| RoutineLoadError::Io(dir.display().to_string(), e))?;
@@ -163,6 +170,13 @@ mod tests {
         // INPUT2 deliberately omitted.
         let err = library.inject_with_origin("BIT RESET", &values).unwrap_err();
         assert_eq!(err, InjectError::MissingInputs { routine: "BIT RESET".into(), missing: vec![2] });
+    }
+
+    #[test]
+    fn empty_library_has_no_routines_and_still_answers_lookups() {
+        let library = RoutineLibrary::empty();
+        assert!(library.names().is_empty());
+        assert!(library.get("BIT RESET").is_none());
     }
 
     #[test]

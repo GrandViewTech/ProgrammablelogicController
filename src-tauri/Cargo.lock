@@ -60,23 +60,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
 
 [[package]]
-name = "app"
-version = "0.1.0"
-dependencies = [
- "dirs 5.0.1",
- "ladder-compiler",
- "ladder-model",
- "ladder-routines",
- "ladder-storage",
- "ladder-target-8085",
- "rusqlite",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
-]
-
-[[package]]
 name = "atk"
 version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1798,6 +1781,23 @@ dependencies = [
  "rusqlite",
  "serde_json",
  "thiserror 1.0.69",
+]
+
+[[package]]
+name = "ladder-studio"
+version = "0.1.0"
+dependencies = [
+ "dirs 5.0.1",
+ "ladder-compiler",
+ "ladder-model",
+ "ladder-routines",
+ "ladder-storage",
+ "ladder-target-8085",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
 ]
 
 [[package]]
