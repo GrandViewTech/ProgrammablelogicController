@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [feature/ladder-studio-v2]
+    tags: ['ladder-studio-v*']
+  pull_request:
+    branches: [feature/ladder-studio-v2]
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Install Linux Tauri dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf build-essential curl wget file libssl-dev libgtk-3-dev
+
+      - name: Cargo test (ladder-core workspace)
+        run: cd ladder-core && cargo test --workspace
+
+      - name: Cargo clippy (ladder-core workspace)
+        run: cd ladder-core && cargo clippy --workspace -- -D warnings
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ui/package-lock.json
+
+      - name: Install UI dependencies
+        run: cd ui && npm ci
+
+      - name: UI unit tests
+        run: cd ui && npx vitest run
+
+      - name: UI production build
+        run: cd ui && npm run build
+
+      - name: Install Playwright browsers
+        run: cd ui && npx playwright install --with-deps chromium
+
+      - name: UI e2e tests
+        run: cd ui && npx playwright test
+
+      - name: Cargo test (src-tauri)
+        run: cd src-tauri && cargo test
+
+  release:
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/ladder-studio-v')
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Linux Tauri dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf build-essential curl wget file libssl-dev libgtk-3-dev
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ui/package-lock.json
+
+      - name: Install UI dependencies
+        run: cd ui && npm ci
+
+      - name: Build installer
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: .
+          tauriScript: 'cargo tauri'
+          releaseId: ${{ github.event.release && github.event.release.id }}
