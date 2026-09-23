@@ -22,3 +22,23 @@ body {
 code, pre, .mono {
   font-family: var(--font-code);
 }
+
+.block-node--routine {
+  background: color-mix(in srgb, var(--color-lock) 12%, var(--color-card-bg));
+  border-radius: var(--radius-card);
+}
+.lock-badge { color: var(--color-lock); }
+.canvas-scroll-box {
+  display: inline-flex;
+  flex-direction: column;
+  min-width: 100%;
+  overflow-x: auto;
+  position: relative;
+}
+.canvas-edge-fade {
+  position: sticky;
+  right: 0;
+  width: 48px;
+  background: linear-gradient(to right, transparent, var(--color-page-bg));
+  pointer-events: none;
+}
