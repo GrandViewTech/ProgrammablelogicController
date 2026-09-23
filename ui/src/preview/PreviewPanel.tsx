@@ -20,10 +20,23 @@ function describeRow(row: Screen['rows'][number]): string {
 export function PreviewPanel({ screen }: { screen: Screen }) {
   const [mode, setMode] = useState<ViewMode>('PLAIN_ENGLISH');
   const [code, setCode] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (mode === 'CODE') {
-      ladderStudioApi.generate(screen).then(setCode);
+      ladderStudioApi
+        .generate(screen)
+        .then((asm) => {
+          setCode(asm);
+          setError(null);
+        })
+        // `generate` reports real compile errors (a missing combinator, an
+        // un-injected ROUTINE block, a non-numeric value). Swallowing them left
+        // the Code view showing stale or empty ASM with no explanation.
+        .catch((e: unknown) => {
+          setCode('');
+          setError(`Could not generate code: ${e instanceof Error ? e.message : String(e)}`);
+        });
     }
   }, [mode, screen]);
 
@@ -45,6 +58,11 @@ export function PreviewPanel({ screen }: { screen: Screen }) {
           Code
         </button>
       </div>
+      {error && (
+        <p className="panel-error" role="alert">
+          {error}
+        </p>
+      )}
       {mode === 'PLAIN_ENGLISH' ? (
         <ul className="preview-panel__plain-english">
           {screen.rows.map((row) => (

@@ -1,3 +1,13 @@
+/*
+ * The single owner of the visual design system (requirements §8, v2
+ * direction): light, card-based layout — white elevated cards with soft
+ * shadows and no hard borders, on a soft neutral page background, 18px+
+ * corner radii, pill-shaped buttons and toggles, coral accent, teal lock
+ * indicator, Manrope for UI and JetBrains Mono for code.
+ *
+ * `index.css` is baseline resets only and must not set colors or layout.
+ */
+
 :root {
   --color-page-bg: #F4F3F8;
   --color-card-bg: #FFFFFF;
@@ -5,11 +15,17 @@
   --color-lock: #0F9B8E;
   --color-text: #1A1A1A;
   --color-text-muted: #6B6B76;
+  --color-danger: #B3261E;
   --radius-card: 18px;
   --radius-pill: 999px;
   --font-ui: 'Manrope', -apple-system, sans-serif;
   --font-code: 'JetBrains Mono', 'SFMono-Regular', monospace;
   --shadow-card: 0 2px 12px rgba(20, 20, 30, 0.06);
+
+  /* Derived surfaces — kept as tokens so tints stay consistent. */
+  --color-accent-soft: color-mix(in srgb, var(--color-accent) 12%, var(--color-card-bg));
+  --color-sunken-bg: color-mix(in srgb, var(--color-page-bg) 70%, var(--color-card-bg));
+  --space-gutter: 20px;
 }
 
 body {
@@ -23,22 +39,367 @@ code, pre, .mono {
   font-family: var(--font-code);
 }
 
+/* ---------------------------------------------------------------- shell */
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  padding: var(--space-gutter);
+  gap: 16px;
+}
+
+.app-shell > header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 4px 8px;
+  flex: none;
+}
+
+.app-shell > header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+/* Palette | Canvas | Preview, always visible side-by-side (requirements §7.4).
+   `min-height: 0` lets the children own their own scrolling instead of
+   stretching the shell past the viewport. */
+.app-shell > main {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* --------------------------------------------------------------- errors */
+
+.app-error,
+.panel-error {
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 8%, var(--color-card-bg));
+  border-radius: var(--radius-card);
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  flex: none;
+}
+
+.panel-error {
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+/* -------------------------------------------------------------- palette */
+
+.palette {
+  flex: 0 0 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  padding: 16px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.palette input {
+  flex: none;
+  width: 100%;
+  padding: 9px 16px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-sunken-bg);
+  font-size: 14px;
+  outline-offset: 2px;
+}
+
+.palette input:focus-visible {
+  outline: 2px solid var(--color-accent);
+}
+
+.palette ul {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.palette li {
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  background: transparent;
+  transition: background 120ms ease;
+}
+
+.palette li:hover,
+.palette li:focus-visible {
+  background: var(--color-accent-soft);
+}
+
+.palette li strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.palette li p {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+/* --------------------------------------------------------------- canvas */
+
+/* Positioning context for the scroll affordances: they must stay pinned to
+   the canvas edge rather than scrolling away with the diagram content, so
+   their containing block is `.canvas`, not the scrolling box. */
+.canvas {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+/* Whole-canvas scroll (requirements §7.5): the rungs live in one scrollable
+   box so both power rails span that box's full width and stay anchored. */
+.canvas-scroll-box {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* `max-content` is what actually makes a wide rung overflow (and therefore
+   scroll); `min-width: 100%` keeps the rails spanning the box when it
+   doesn't. Without both, the lane would be stretched to the box width and
+   never scroll. */
+.row-lane {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  width: max-content;
+  min-width: 100%;
+  padding: 8px 0;
+}
+
+.row-lane__cell {
+  position: relative;
+  padding: 4px 2px;
+}
+
+.power-rail {
+  flex: none;
+  align-self: stretch;
+  width: 4px;
+  min-height: 56px;
+  border-radius: var(--radius-pill);
+  background: var(--color-text-muted);
+}
+
+.canvas-edge-fade {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 48px;
+  background: linear-gradient(to right, transparent, var(--color-card-bg));
+  pointer-events: none;
+}
+
+.canvas-scroll-chip {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--color-sunken-bg);
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+/* ----------------------------------------------------------- blocks */
+
+.block-node {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 132px;
+  min-height: 56px;
+  padding: 12px 16px;
+  border-radius: var(--radius-card);
+  background: var(--color-sunken-bg);
+  box-shadow: var(--shadow-card);
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .block-node--routine {
   background: color-mix(in srgb, var(--color-lock) 12%, var(--color-card-bg));
   border-radius: var(--radius-card);
 }
-.lock-badge { color: var(--color-lock); }
-.canvas-scroll-box {
-  display: inline-flex;
-  flex-direction: column;
-  min-width: 100%;
-  overflow-x: auto;
-  position: relative;
+
+.lock-badge {
+  color: var(--color-lock);
+  font-size: 13px;
+  line-height: 1;
 }
-.canvas-edge-fade {
-  position: sticky;
-  right: 0;
-  width: 48px;
-  background: linear-gradient(to right, transparent, var(--color-page-bg));
-  pointer-events: none;
+
+.block-node__raw {
+  font-family: var(--font-code);
+}
+
+.combinator-badge {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.combinator-badge--or {
+  background: var(--color-lock);
+}
+
+/* Floats above the three-column layout so showing it never reflows the
+   canvas or the preview panel. */
+.combinator-picker {
+  position: fixed;
+  left: 50%;
+  bottom: 40px;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-card-bg);
+  box-shadow: 0 8px 28px rgba(20, 20, 30, 0.18);
+}
+
+.combinator-picker button {
+  padding: 8px 22px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.combinator-picker button:hover {
+  background: color-mix(in srgb, var(--color-accent) 85%, #000000);
+}
+
+/* -------------------------------------------------- segmented controls */
+
+.edit-mode-toggle,
+.preview-panel__toggle {
+  display: inline-flex;
+  flex: none;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--color-sunken-bg);
+}
+
+.edit-mode-toggle button,
+.preview-panel__toggle button {
+  padding: 7px 18px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.edit-mode-toggle button.active,
+.preview-panel__toggle button.active {
+  background: var(--color-accent);
+  color: #FFFFFF;
+}
+
+.preview-panel__toggle button {
+  flex: 1;
+  padding: 7px 10px;
+}
+
+/* -------------------------------------------------------- preview panel */
+
+.preview-panel {
+  flex: 0 0 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  padding: 16px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.preview-panel__toggle {
+  display: flex;
+}
+
+.preview-panel__plain-english {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.preview-panel__plain-english li {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--color-sunken-bg);
+  font-size: 13px;
+}
+
+.preview-panel__code {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  margin: 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--color-sunken-bg);
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre;
 }
