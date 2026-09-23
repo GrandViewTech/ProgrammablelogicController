@@ -71,6 +71,39 @@ impl Target for Target8085 {
     fn emit_label(&self, buf: &mut Vec<String>, label: &str) {
         buf.push(format!("{label} :"));
     }
+
+    fn emit_not(&self, buf: &mut Vec<String>) {
+        buf.push("CMC".to_string());
+    }
+
+    fn emit_relay_write(&self, buf: &mut Vec<String>, byte: u32, bit: u32) {
+        buf.push(format!("MOV  DTPR , #RLY512_+{byte}"));
+        buf.push("MOV X A,@DPTR".to_string());
+        buf.push(format!("MOV ACC.{bit} , C"));
+        buf.push("MOVX @DPTR,A".to_string());
+    }
+
+    // Contract: the caller has already stashed the first operand's carry in
+    // ACC.7 (`MOV ACC.7 , C`) and then evaluated the second operand into
+    // carry, so at entry ACC.7 holds operand A and the carry flag holds
+    // operand B. This computes `carry := A XOR B` via
+    // `(A OR B) AND NOT(A AND B)`, branch-free, using only the bit-carry
+    // primitives `emit_load`/`emit_not` already establish in this file
+    // (`MOV`/`ANL`/`ORL`/`CMC`) rather than an unprecedented
+    // accumulator-wide `XRL`. See the corresponding test's doc comment for
+    // why this replaces the brief's original 3-line draft (which reduced to
+    // a plain carry-complement, ignoring the stashed operand entirely) and
+    // task-4-report.md for the hand-traced truth table.
+    fn emit_xor(&self, buf: &mut Vec<String>) {
+        buf.push("MOV ACC.6 , C".to_string()); // ACC.6 = B
+        buf.push("MOV C, ACC.7".to_string()); // C = A
+        buf.push("ORL C, ACC.6".to_string()); // C = A OR B
+        buf.push("MOV ACC.5 , C".to_string()); // ACC.5 = A OR B
+        buf.push("MOV C, ACC.7".to_string()); // C = A
+        buf.push("ANL C, ACC.6".to_string()); // C = A AND B
+        buf.push("CMC".to_string()); // C = NOT(A AND B)
+        buf.push("ANL C, ACC.5".to_string()); // C = NOT(A AND B) AND (A OR B) = A XOR B
+    }
 }
 
 pub fn generate_8085(screen: &Screen) -> Result<String, CompileError> {
@@ -187,5 +220,69 @@ mod tests {
         Target8085.emit_jnc(&mut buf, "LABEL_2_1");
         Target8085.emit_label(&mut buf, "LABEL_2_1");
         assert_eq!(buf, vec!["JNC LABEL_2_1", "LABEL_2_1 :"]);
+    }
+
+    #[test]
+    fn emit_not_appends_complement_carry() {
+        let mut buf = Vec::new();
+        Target8085.emit_not(&mut buf);
+        assert_eq!(buf, vec!["CMC"]);
+    }
+
+    #[test]
+    fn emit_relay_write_mirrors_the_output_none_case_pattern_against_the_relay_base() {
+        let mut buf = Vec::new();
+        Target8085.emit_relay_write(&mut buf, 2, 3);
+        assert_eq!(
+            buf,
+            vec![
+                "MOV  DTPR , #RLY512_+2",
+                "MOV X A,@DPTR",
+                "MOV ACC.3 , C",
+                "MOVX @DPTR,A",
+            ]
+        );
+    }
+
+    #[test]
+    fn emit_xor_combines_two_operands_carry_results() {
+        // Contract: by the time this is called, the caller has already
+        // stashed the first operand's carry in ACC.7 (`MOV ACC.7 , C`) and
+        // then evaluated the second operand into carry — so at entry,
+        // ACC.7 holds operand A and the carry flag holds operand B.
+        //
+        // The brief's original 3-line draft (`MOV ACC.7 , C` / `XRL A,
+        // #0x80` / `MOV C, ACC.7`) does NOT implement this: its first line
+        // overwrites ACC.7 with the *current* carry (operand B per this
+        // contract), clobbering the stashed operand A before it's ever
+        // read. Hand-tracing it shows the whole sequence reduces to
+        // `carry := NOT(carry)` — i.e. it's functionally identical to
+        // `emit_not`/CMC and completely ignores the stashed operand. That's
+        // a genuine correctness bug, not a style nit, so this sequence
+        // replaces it (task-4-report.md documents the change).
+        //
+        // Replacement: `A XOR B = (A OR B) AND NOT(A AND B)`, branch-free,
+        // built only from the bit-carry primitives this file already uses
+        // elsewhere (`MOV`/`ANL`/`ORL`/`CMC`) rather than introducing an
+        // unprecedented accumulator-wide `XRL`. ACC.7 (operand A) is only
+        // ever read, never overwritten, so it's left intact for any caller
+        // that still needs it afterward. ACC.6 and ACC.5 are scratch bits
+        // used only within this sequence. Hand-verified against all 4
+        // input combinations (see task-4-report.md).
+        let mut buf = Vec::new();
+        Target8085.emit_xor(&mut buf);
+        assert_eq!(
+            buf,
+            vec![
+                "MOV ACC.6 , C",
+                "MOV C, ACC.7",
+                "ORL C, ACC.6",
+                "MOV ACC.5 , C",
+                "MOV C, ACC.7",
+                "ANL C, ACC.6",
+                "CMC",
+                "ANL C, ACC.5",
+            ]
+        );
     }
 }
