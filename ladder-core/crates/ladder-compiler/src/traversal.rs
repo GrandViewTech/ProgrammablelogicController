@@ -5,6 +5,15 @@ use ladder_model::{CoilType, Combinator, ColumnScreen, InputType, Screen};
 use crate::target::Target;
 use crate::types::{CompileError, LoadCombinator, LoadKind, OutputType};
 
+/// Named-output relay addresses: row-output name -> (byte, bit).
+type RelayAddresses = HashMap<String, (u32, u32)>;
+
+/// Scratch relay addresses for non-leading groups: (row_number,
+/// column_number) of the group-owning column -> (byte, bit). A disjoint key
+/// space and a disjoint address range from `RelayAddresses` (see
+/// `assign_relay_addresses`), so the two can never collide.
+type ScratchAddresses = HashMap<(u32, u32), (u32, u32)>;
+
 fn create_label(row_number: u32, column_number: u32) -> String {
     format!("LABEL_{row_number}_{column_number}")
 }
@@ -75,16 +84,57 @@ fn find_output_type() -> OutputType {
 /// exactly (see its doc comment), so an address computed here and later
 /// re-split by a `Target` implementation's own `find_param` call lands on
 /// the same (byte, bit).
-fn assign_relay_addresses(screen: &Screen) -> HashMap<String, (u32, u32)> {
+///
+/// Also assigns a **scratch** relay address to every non-leading group (a
+/// column with `group: Some(_)` that has a preceding sibling in its own
+/// slice — top-level columns or a nested group's own columns). A
+/// non-leading group needs somewhere to stash the running total from before
+/// it, in memory, while it recurses and clobbers the carry with its own
+/// fresh evaluation (fix round 1: see task-3-report.md). Scratch addresses
+/// are keyed by `(row_number, column_number)` of the group-owning column —
+/// unique within a screen, since `column_number` is unique within its row
+/// and groups only nest inside specific columns.
+///
+/// Scratch addresses share the SAME sequential counter as named-output
+/// addresses, continuing from wherever the named-output pass left off, so
+/// the two address spaces (`String` name -> address, `(u32, u32)` position
+/// -> address) can never collide with each other: every address is handed
+/// out by exactly one increment of `next_relay_index`, once, to exactly one
+/// key in exactly one of the two maps.
+fn assign_relay_addresses(screen: &Screen) -> (RelayAddresses, ScratchAddresses) {
     let mut addresses = HashMap::new();
+    let mut scratch_addresses = HashMap::new();
     let mut next_relay_index: i32 = 0;
     for row in &screen.rows {
         if let Some(name) = &row.output_name {
             addresses.insert(name.clone(), crate::legacy::find_param(next_relay_index));
             next_relay_index += 1;
         }
+        assign_scratch_addresses(&row.columns, row.row_number, &mut scratch_addresses, &mut next_relay_index);
     }
-    addresses
+    (addresses, scratch_addresses)
+}
+
+/// Walks `columns` (a row's top-level columns, or recursively a nested
+/// group's own columns — groups can themselves contain non-leading groups)
+/// assigning a scratch address to every group-owning column that has a
+/// preceding sibling in `columns`, using and advancing the shared counter.
+fn assign_scratch_addresses(
+    columns: &[ColumnScreen],
+    row_number: u32,
+    scratch_addresses: &mut ScratchAddresses,
+    next_relay_index: &mut i32,
+) {
+    for (column_index, column) in columns.iter().enumerate() {
+        if let Some(group_columns) = &column.group {
+            if previous_in(columns, column_index).is_some() {
+                scratch_addresses
+                    .insert((row_number, column.column_number), crate::legacy::find_param(*next_relay_index));
+                *next_relay_index += 1;
+            }
+            assign_scratch_addresses(group_columns, row_number, scratch_addresses, next_relay_index);
+        }
+    }
 }
 
 /// Companion to `assign_relay_addresses`: which row number owns each named
@@ -105,12 +155,19 @@ fn assign_row_owners(screen: &Screen) -> HashMap<String, u32> {
 /// (requirements §6, item 2) — `generate()` itself has no I/O.
 pub fn generate(screen: &Screen, target: &dyn Target) -> Result<String, CompileError> {
     let mut buf: Vec<String> = Vec::new();
-    let relay_addresses = assign_relay_addresses(screen);
+    let (relay_addresses, scratch_addresses) = assign_relay_addresses(screen);
     let row_owners = assign_row_owners(screen);
 
     for row in &screen.rows {
-        let end_hit =
-            evaluate_columns(&row.columns, row.row_number, &relay_addresses, &row_owners, target, &mut buf)?;
+        let end_hit = evaluate_columns(
+            &row.columns,
+            row.row_number,
+            &relay_addresses,
+            &scratch_addresses,
+            &row_owners,
+            target,
+            &mut buf,
+        )?;
         if end_hit {
             // matches the original: nothing after End runs, in this row or
             // any later one — including this row's own output_name write,
@@ -136,7 +193,8 @@ pub fn generate(screen: &Screen, target: &dyn Target) -> Result<String, CompileE
 fn evaluate_columns(
     columns: &[ColumnScreen],
     row_number: u32,
-    relay_addresses: &HashMap<String, (u32, u32)>,
+    relay_addresses: &RelayAddresses,
+    scratch_addresses: &ScratchAddresses,
     row_owners: &HashMap<String, u32>,
     target: &dyn Target,
     buf: &mut Vec<String>,
@@ -158,8 +216,40 @@ fn evaluate_columns(
             // the group, propagate the stop signal immediately — don't
             // finish this group, don't apply this slot's inversion, don't
             // continue the row.
-            if evaluate_columns(group_columns, row_number, relay_addresses, row_owners, target, buf)? {
+            //
+            // Fix round 1: when this group has a preceding sibling, there's
+            // already a running total in the carry that the group's own
+            // fresh evaluation would otherwise silently clobber (its first
+            // internal load resolves its OWN combinator as None and
+            // overwrites the carry — it has no visibility into what came
+            // before it in the OUTER slice). Stash the running total in a
+            // memory-backed scratch relay bit before recursing, then after
+            // the group returns, read that stash back and combine it with
+            // the group's fresh result via THIS column's own combinator
+            // (resolved against the outer `columns` slice) — exactly the
+            // same mechanism a normal leaf load-with-combinator already
+            // uses, just pointed at scratch memory instead of a real input.
+            let has_preceding_sibling = previous_in(columns, column_index).is_some();
+            if has_preceding_sibling {
+                let (scratch_byte, scratch_bit) = scratch_addresses
+                    .get(&(row_number, column.column_number))
+                    .copied()
+                    .expect("assigned in the pre-pass for every non-leading group");
+                target.emit_relay_write(buf, scratch_byte, scratch_bit);
+            }
+
+            if evaluate_columns(group_columns, row_number, relay_addresses, scratch_addresses, row_owners, target, buf)? {
                 return Ok(true);
+            }
+
+            if has_preceding_sibling {
+                let (scratch_byte, scratch_bit) = scratch_addresses
+                    .get(&(row_number, column.column_number))
+                    .copied()
+                    .expect("assigned in the pre-pass for every non-leading group");
+                let resolved_combinator = resolve_combinator(columns, row_number, column_index, column)?;
+                let scratch_input = (scratch_byte * 8 + scratch_bit) as i32;
+                target.emit_load(buf, LoadKind::Flag, scratch_input, resolved_combinator);
             }
         } else {
             match column.coil_type {
@@ -528,6 +618,49 @@ mod tests {
         assert_eq!(
             out,
             "LOAD Input 1 None\nLOAD Input 2 Series\nLOAD Input 3 Parallel"
+        );
+    }
+
+    #[test]
+    fn a_non_leading_group_combines_with_the_running_total_via_its_own_combinator() {
+        // raw_a OR (b AND c) — `grouped` is the SECOND top-level column, so
+        // there's already a running total (raw_a's) in the carry when the
+        // group is reached. The group's result must combine with that
+        // running total via `grouped`'s OWN combinator (Or), not silently
+        // overwrite it. Confirmed bug scenario from the Task 3 review.
+        let mut raw_a = column(CoilType::Load);
+        raw_a.column_number = 1;
+        raw_a.input_type = Some(InputType::Input);
+        raw_a.value = "1".into();
+
+        let mut group_head = column(CoilType::Load);
+        group_head.column_number = 1;
+        group_head.input_type = Some(InputType::Input);
+        group_head.value = "2".into();
+
+        let mut group_tail = column(CoilType::Load);
+        group_tail.column_number = 2;
+        group_tail.input_type = Some(InputType::Input);
+        group_tail.value = "3".into();
+        group_tail.combinator = Some(Combinator::And);
+
+        let mut grouped = column(CoilType::Load);
+        grouped.column_number = 2;
+        grouped.input_type = Some(InputType::Input);
+        grouped.value = "0".into(); // unused when `group` is Some
+        grouped.combinator = Some(Combinator::Or);
+        grouped.group = Some(vec![group_head, group_tail]);
+
+        let screen = Screen {
+            rows: vec![RowScreen { row_number: 1, columns: vec![raw_a, grouped], output_name: None }],
+            end_row_number: None,
+            end_column_number: None,
+        };
+        let target = RecordingTarget::new();
+        let out = generate(&screen, &target).unwrap();
+        assert_eq!(
+            out,
+            "LOAD Input 1 None\nRELAY_WRITE 0 0\nLOAD Input 2 None\nLOAD Input 3 Series\nLOAD Flag 0 Parallel"
         );
     }
 
