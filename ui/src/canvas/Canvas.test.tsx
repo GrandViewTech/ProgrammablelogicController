@@ -27,7 +27,7 @@ const wideScreen: Screen = {
 
 describe('Canvas', () => {
   it('renders a lock badge for routine-sourced blocks in Worker mode', () => {
-    render(<Canvas screen={wideScreen} mode="WORKER" />);
+    render(<Canvas screen={wideScreen} mode="WORKER" viewStyle="CARDS" />);
     expect(screen.getByText('Resets the target bit')).toBeInTheDocument();
     expect(screen.getByLabelText('Locked routine block')).toBeInTheDocument();
   });
@@ -37,13 +37,41 @@ describe('Canvas', () => {
       ...wideScreen,
       rows: [{ rowNumber: 1, columns: [wideScreen.rows[0].columns[0]] }],
     };
-    render(<Canvas screen={engineerScreen} mode="WORKER" />);
+    render(<Canvas screen={engineerScreen} mode="WORKER" viewStyle="CARDS" />);
     expect(screen.queryByLabelText('Locked routine block')).not.toBeInTheDocument();
   });
 
   it('wraps rows in a horizontally scrollable, explicit-width box', () => {
-    const { container } = render(<Canvas screen={wideScreen} mode="WORKER" />);
+    const { container } = render(<Canvas screen={wideScreen} mode="WORKER" viewStyle="CARDS" />);
     const scrollBox = container.querySelector('.canvas-scroll-box');
     expect(scrollBox).not.toBeNull();
+  });
+
+  it('passes viewStyle down so a raw block renders as a symbol in Symbols view', () => {
+    const engineerScreen: Screen = {
+      ...wideScreen,
+      rows: [{ rowNumber: 1, columns: [wideScreen.rows[0].columns[0]] }],
+    };
+    render(<Canvas screen={engineerScreen} mode="ENGINEER" viewStyle="SYMBOLS" />);
+    expect(screen.getByLabelText('Contact')).toBeInTheDocument();
+  });
+
+  it('renders an OR-connected pair of blocks as a branch group', () => {
+    const branchedScreen: Screen = {
+      rows: [
+        {
+          rowNumber: 1,
+          columns: [
+            wideScreen.rows[0].columns[0],
+            { ...wideScreen.rows[0].columns[1], combinator: 'OR' },
+          ],
+        },
+      ],
+      endRowNumber: null,
+      endColumnNumber: null,
+    };
+    const { container } = render(<Canvas screen={branchedScreen} mode="WORKER" viewStyle="CARDS" />);
+    expect(container.querySelector('.row-branch')).not.toBeNull();
+    expect(container.querySelectorAll('.row-branch__path')).toHaveLength(2);
   });
 });

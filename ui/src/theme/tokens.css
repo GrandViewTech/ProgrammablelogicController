@@ -66,6 +66,12 @@ code, pre, .mono {
   letter-spacing: -0.2px;
 }
 
+.header-toggles {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 /* Palette | Canvas | Preview, always visible side-by-side (requirements §7.4).
    `min-height: 0` lets the children own their own scrolling instead of
    stretching the shell past the viewport. */
@@ -244,6 +250,7 @@ code, pre, .mono {
 
 .block-node {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   min-width: 132px;
@@ -254,6 +261,59 @@ code, pre, .mono {
   box-shadow: var(--shadow-card);
   font-size: 13px;
   font-weight: 600;
+}
+
+.block-node__expand {
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1;
+  padding: 2px 4px;
+  cursor: pointer;
+}
+
+.block-node__expand:hover {
+  color: var(--color-text);
+}
+
+.block-node__asm {
+  flex-basis: 100%;
+  margin: 4px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--color-page-bg);
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  font-weight: 400;
+}
+
+/* Traditional ladder symbols, Symbols view only. Routine blocks never use
+   these — they're an opaque injected subroutine, not a single contact/coil
+   (requirements §5) — so they stay a labeled box in both views. */
+.block-symbol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-family: var(--font-code);
+}
+
+.block-symbol__glyph {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.block-symbol--coil .block-symbol__glyph {
+  color: var(--color-accent);
+}
+
+.block-symbol__value {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
 }
 
 .block-node--routine {
@@ -271,6 +331,9 @@ code, pre, .mono {
   font-family: var(--font-code);
 }
 
+/* AND continuations only — OR is drawn as a real branch (.row-branch)
+   rather than a badge, since a badge alone doesn't read as "either path"
+   the way an actual fork/merge does. */
 .combinator-badge {
   position: absolute;
   top: -6px;
@@ -286,8 +349,31 @@ code, pre, .mono {
   letter-spacing: 0.4px;
 }
 
-.combinator-badge--or {
-  background: var(--color-lock);
+/* A run of one anchor block plus one or more OR-connected blocks, each
+   drawn on its own parallel path inside a shared bracket that visually
+   forks from and merges back into the main line. Underlying data is still
+   the flat, explicit-combinator sequence from requirements §7.3 — this is
+   rendering only. */
+.row-branch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-top: 10px;
+}
+
+.row-branch__paths {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--color-accent) 5%, transparent);
+}
+
+.row-branch__path {
+  display: flex;
+  align-items: center;
 }
 
 /* Floats above the three-column layout so showing it never reflows the
@@ -324,6 +410,7 @@ code, pre, .mono {
 /* -------------------------------------------------- segmented controls */
 
 .edit-mode-toggle,
+.view-style-toggle,
 .preview-panel__toggle {
   display: inline-flex;
   flex: none;
@@ -334,6 +421,7 @@ code, pre, .mono {
 }
 
 .edit-mode-toggle button,
+.view-style-toggle button,
 .preview-panel__toggle button {
   padding: 7px 18px;
   border: none;
@@ -347,6 +435,7 @@ code, pre, .mono {
 }
 
 .edit-mode-toggle button.active,
+.view-style-toggle button.active,
 .preview-panel__toggle button.active {
   background: var(--color-accent);
   color: #FFFFFF;

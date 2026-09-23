@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { type EditMode, EditModeToggle } from './modes/EditModeToggle';
+import { ViewStyleToggle } from './modes/ViewStyleToggle';
 import { Palette } from './palette/Palette';
 import { Canvas } from './canvas/Canvas';
+import type { ViewStyle } from './canvas/BlockNode';
 import { CombinatorPicker } from './canvas/CombinatorPicker';
 import { PreviewPanel } from './preview/PreviewPanel';
 import { ladderStudioApi } from './api/ladderStudio';
@@ -15,6 +17,7 @@ function message(error: unknown): string {
 
 export default function App() {
   const [mode, setMode] = useState<EditMode>('WORKER');
+  const [viewStyle, setViewStyle] = useState<ViewStyle>('CARDS');
   const [activeScreen, setActiveScreen] = useState<Screen>({ rows: [], endRowNumber: null, endColumnNumber: null });
   const [pendingDrop, setPendingDrop] = useState<{ routine: RoutineSummary; rowNumber: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -97,7 +100,10 @@ export default function App() {
     <div className="app-shell">
       <header>
         <h1>Ladder Studio</h1>
-        <EditModeToggle mode={mode} onChange={setMode} />
+        <div className="header-toggles">
+          <ViewStyleToggle style={viewStyle} onChange={setViewStyle} />
+          <EditModeToggle mode={mode} onChange={setMode} />
+        </div>
       </header>
       {error && (
         <p className="app-error" role="alert">
@@ -106,7 +112,7 @@ export default function App() {
       )}
       <main>
         <Palette onSelect={handleRoutineSelect} />
-        <Canvas screen={activeScreen} mode={mode} />
+        <Canvas screen={activeScreen} mode={mode} viewStyle={viewStyle} />
         {pendingDrop && (
           <CombinatorPicker onPick={(c) => finishInjection(pendingDrop.routine, pendingDrop.rowNumber, c)} />
         )}

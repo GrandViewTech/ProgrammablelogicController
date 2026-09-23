@@ -1,4 +1,5 @@
 import type { Screen } from '../api/ladderStudio';
+import type { ViewStyle } from './BlockNode';
 import { RowLane } from './RowLane';
 
 /**
@@ -7,12 +8,20 @@ import { RowLane } from './RowLane';
  * §7.5): the content sits in an explicit-width scrollable box so both power
  * rails span the box's full width and stay anchored while scrolling.
  */
-export function Canvas({ screen, mode }: { screen: Screen; mode: 'WORKER' | 'ENGINEER' }) {
+export function Canvas({
+  screen,
+  mode,
+  viewStyle,
+}: {
+  screen: Screen;
+  mode: 'WORKER' | 'ENGINEER';
+  viewStyle: ViewStyle;
+}) {
   return (
     <div className="canvas">
       <div className="canvas-scroll-box">
         {screen.rows.map((row) => (
-          <RowLane key={row.rowNumber} columns={row.columns} mode={mode} />
+          <RowLane key={row.rowNumber} columns={row.columns} mode={mode} viewStyle={viewStyle} />
         ))}
         <div className="canvas-edge-fade" aria-hidden="true" />
         <div className="canvas-scroll-chip">Scroll for more →</div>
