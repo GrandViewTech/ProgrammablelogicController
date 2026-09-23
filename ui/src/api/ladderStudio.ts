@@ -8,7 +8,7 @@ export type Screen = {
 
 export type RowScreen = { rowNumber: number; columns: ColumnScreen[]; outputName?: string | null };
 
-export type Combinator = 'AND' | 'OR';
+export type Combinator = 'AND' | 'OR' | 'XOR';
 
 export type RoutineOrigin = {
   routineName: string;
