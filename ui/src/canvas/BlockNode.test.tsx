@@ -79,3 +79,28 @@ describe('BlockNode view style', () => {
     expect(screen.queryByLabelText('Contact')).not.toBeInTheDocument();
   });
 });
+
+function groupedColumn(): ColumnScreen {
+  return {
+    ...rawColumn('LOAD', '1'),
+    group: [rawColumn('LOAD', '2'), { ...rawColumn('LOAD', '3'), combinator: 'AND' }],
+  };
+}
+
+describe('BlockNode nested groups', () => {
+  it('renders every column inside a group', () => {
+    render(<BlockNode column={groupedColumn()} mode="ENGINEER" viewStyle="CARDS" />);
+    expect(screen.getByText('LOAD 2')).toBeInTheDocument();
+    expect(screen.getByText('LOAD 3')).toBeInTheDocument();
+  });
+
+  it('shows an inversion badge for an inverted block', () => {
+    render(<BlockNode column={{ ...rawColumn('LOAD', '1'), inverted: true }} mode="ENGINEER" viewStyle="CARDS" />);
+    expect(screen.getByLabelText('Inverted (NOT)')).toBeInTheDocument();
+  });
+
+  it('does not show an inversion badge when not inverted', () => {
+    render(<BlockNode column={rawColumn('LOAD', '1')} mode="ENGINEER" viewStyle="CARDS" />);
+    expect(screen.queryByLabelText('Inverted (NOT)')).not.toBeInTheDocument();
+  });
+});

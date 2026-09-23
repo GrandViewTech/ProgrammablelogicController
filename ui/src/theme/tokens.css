@@ -327,6 +327,25 @@ code, pre, .mono {
   line-height: 1;
 }
 
+.invert-badge {
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-text);
+  color: #FFFFFF;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.block-node__group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 8px 8px 0;
+}
+
 .block-node__raw {
   font-family: var(--font-code);
 }

@@ -43,13 +43,23 @@ export function BlockNode({
   viewStyle: ViewStyle;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const hasGroup = column.group !== undefined && column.group.length > 0;
   const isRoutine = column.routineOrigin !== null;
   const isLocked = mode === 'WORKER' && isRoutine;
 
   return (
     <div className={`block-node${isRoutine ? ' block-node--routine' : ''}`}>
       {isLocked && <span aria-label="Locked routine block" className="lock-badge">🔒</span>}
-      {isRoutine ? (
+      {column.inverted && (
+        <span aria-label="Inverted (NOT)" className="invert-badge">NOT</span>
+      )}
+      {hasGroup ? (
+        <div className="block-node__group">
+          {column.group!.map((inner) => (
+            <BlockNode key={`${inner.rowNumber}-${inner.columnNumber}`} column={inner} mode={mode} viewStyle={viewStyle} />
+          ))}
+        </div>
+      ) : isRoutine ? (
         <>
           <span className="block-node__description">{column.routineOrigin!.description}</span>
           <button
