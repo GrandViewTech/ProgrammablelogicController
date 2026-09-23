@@ -5,6 +5,8 @@ import { Palette } from './palette/Palette';
 import { Canvas } from './canvas/Canvas';
 import type { ViewStyle } from './canvas/BlockNode';
 import { CombinatorPicker } from './canvas/CombinatorPicker';
+import { RowOutputName } from './canvas/RowOutputName';
+import { RowReferencePicker } from './canvas/RowReferencePicker';
 import { PreviewPanel } from './preview/PreviewPanel';
 import { ladderStudioApi } from './api/ladderStudio';
 import type { Combinator, ColumnScreen, RoutineSummary, Screen } from './api/ladderStudio';
@@ -15,12 +17,31 @@ function message(error: unknown): string {
   return String(error);
 }
 
+// The single append-into-`prev` pattern used by every operation that adds a
+// column to a row (routine injection, row-reference insertion, and any
+// future one): find the row (or default to an empty one), hand the caller
+// the next column number so it can build the new `ColumnScreen`, then
+// splice the updated row back in and re-sort. Keeping this as one function
+// is what "reuse the pattern, don't invent a second one" means in practice —
+// two call sites building the same row/columns/sort logic by hand would
+// silently drift apart.
+function appendColumn(prev: Screen, rowNumber: number, makeColumn: (columnNumber: number) => ColumnScreen): Screen {
+  const row = prev.rows.find((r) => r.rowNumber === rowNumber) ?? { rowNumber, columns: [] };
+  const newColumn = makeColumn(row.columns.length + 1);
+  const updatedRow = { ...row, columns: [...row.columns, newColumn] };
+  return {
+    ...prev,
+    rows: [...prev.rows.filter((r) => r.rowNumber !== rowNumber), updatedRow].sort((a, b) => a.rowNumber - b.rowNumber),
+  };
+}
+
 export default function App() {
   const [mode, setMode] = useState<EditMode>('WORKER');
   const [viewStyle, setViewStyle] = useState<ViewStyle>('CARDS');
   const [activeScreen, setActiveScreen] = useState<Screen>({ rows: [], endRowNumber: null, endColumnNumber: null });
   const [pendingDrop, setPendingDrop] = useState<{ routine: RoutineSummary; rowNumber: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showReferencePicker, setShowReferencePicker] = useState(false);
 
   // Mirrors `activeScreen` for the synchronous pre-check in
   // `handleRoutineSelect`, which has to decide whether to show the AND/OR
@@ -37,13 +58,18 @@ export default function App() {
 
   async function handleRoutineDrop(routine: RoutineSummary, rowNumber: number, isFirstOnRow: boolean) {
     if (isFirstOnRow) {
-      await finishInjection(routine, rowNumber, null);
+      await finishInjection(routine, rowNumber, null, false);
     } else {
       setPendingDrop({ routine, rowNumber });
     }
   }
 
-  async function finishInjection(routine: RoutineSummary, rowNumber: number, combinator: Combinator | null) {
+  async function finishInjection(
+    routine: RoutineSummary,
+    rowNumber: number,
+    combinator: Combinator | null,
+    inverted: boolean,
+  ) {
     setPendingDrop(null);
     try {
       const injected = await ladderStudioApi.injectRoutine(routine.name, {});
@@ -52,11 +78,10 @@ export default function App() {
       // `columnNumber`, which is also its React key) from the render-time
       // `activeScreen` closure would drop a block and collide keys whenever two
       // injections resolve close together.
-      setActiveScreen((prev) => {
-        const row = prev.rows.find((r) => r.rowNumber === rowNumber) ?? { rowNumber, columns: [] };
-        const newColumn: ColumnScreen = {
+      setActiveScreen((prev) =>
+        appendColumn(prev, rowNumber, (columnNumber) => ({
           rowNumber,
-          columnNumber: row.columns.length + 1,
+          columnNumber,
           coilType: 'ROUTINE',
           inputType: null,
           value: '',
@@ -66,15 +91,9 @@ export default function App() {
           renderedAsm: injected.renderedAsm,
           combinator,
           isBlank: false,
-        };
-        const updatedRow = { rowNumber, columns: [...row.columns, newColumn] };
-        return {
-          ...prev,
-          rows: [...prev.rows.filter((r) => r.rowNumber !== rowNumber), updatedRow].sort(
-            (a, b) => a.rowNumber - b.rowNumber,
-          ),
-        };
-      });
+          inverted,
+        })),
+      );
       setError(null);
     } catch (e) {
       // Injection legitimately fails for routines with unfilled `${INPUTn}`
@@ -82,6 +101,53 @@ export default function App() {
       // previous behavior, where the click simply did nothing.
       setError(`Could not add "${routine.name}": ${message(e)}`);
     }
+  }
+
+  // Renaming a row's output is a pure local edit (no backend round-trip),
+  // but it uses the same `prev`-based updater discipline as everything else
+  // that touches `activeScreen` — never the render-time closure.
+  function handleRowOutputRename(rowNumber: number, name: string | null) {
+    setActiveScreen((prev) => ({
+      ...prev,
+      rows: prev.rows.map((row) => (row.rowNumber === rowNumber ? { ...row, outputName: name ?? undefined } : row)),
+    }));
+  }
+
+  const availableRowOutputNames = activeScreen.rows
+    .map((row) => row.outputName)
+    .filter((name): name is string => Boolean(name));
+
+  // Row-reference blocks always target the first existing row (or a new row
+  // 1), mirroring `handleRoutineSelect` below — there's no rung/row-picking
+  // UI yet for either flow.
+  function handleOpenReferencePicker() {
+    setShowReferencePicker(true);
+  }
+
+  function handleRowReferencePick(name: string) {
+    setShowReferencePicker(false);
+    setActiveScreen((prev) => {
+      const targetRowNumber = prev.rows[0]?.rowNumber ?? 1;
+      const targetRow = prev.rows.find((r) => r.rowNumber === targetRowNumber);
+      const isFirstOnRow = !targetRow || targetRow.columns.length === 0;
+      return appendColumn(prev, targetRowNumber, (columnNumber) => ({
+        rowNumber: targetRowNumber,
+        columnNumber,
+        coilType: 'ROW_REF',
+        inputType: null,
+        value: '',
+        tag: '',
+        comment: '',
+        routineOrigin: null,
+        renderedAsm: null,
+        // Same requirement as routine blocks (§7.3): every non-first block on
+        // a row needs an explicit combinator. There's no picker step in this
+        // flow yet, so a plain append defaults to AND — the common case.
+        combinator: isFirstOnRow ? null : 'AND',
+        isBlank: false,
+        rowRefName: name,
+      }));
+    });
   }
 
   // Palette selection stands in for drag-and-drop until a real drop target
@@ -112,9 +178,36 @@ export default function App() {
       )}
       <main>
         <Palette onSelect={handleRoutineSelect} />
-        <Canvas screen={activeScreen} mode={mode} viewStyle={viewStyle} />
+        <div className="canvas-column">
+          {activeScreen.rows.length > 0 && (
+            <div className="row-outputs-bar">
+              {activeScreen.rows.map((row) => (
+                <div key={row.rowNumber} className="row-outputs-bar__row">
+                  <span className="row-outputs-bar__label">Row {row.rowNumber}</span>
+                  <RowOutputName
+                    name={row.outputName ?? null}
+                    onRename={(name) => handleRowOutputRename(row.rowNumber, name)}
+                  />
+                </div>
+              ))}
+              <button type="button" className="row-outputs-bar__reference" onClick={handleOpenReferencePicker}>
+                Reference row output…
+              </button>
+            </div>
+          )}
+          <Canvas screen={activeScreen} mode={mode} viewStyle={viewStyle} />
+        </div>
         {pendingDrop && (
-          <CombinatorPicker onPick={(c) => finishInjection(pendingDrop.routine, pendingDrop.rowNumber, c)} />
+          <CombinatorPicker
+            onPick={(c, inverted) => finishInjection(pendingDrop.routine, pendingDrop.rowNumber, c, inverted)}
+          />
+        )}
+        {showReferencePicker && (
+          <RowReferencePicker
+            availableNames={availableRowOutputNames}
+            onPick={handleRowReferencePick}
+            onCancel={() => setShowReferencePicker(false)}
+          />
         )}
         <PreviewPanel screen={activeScreen} />
       </main>
