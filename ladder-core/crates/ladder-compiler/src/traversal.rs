@@ -45,15 +45,97 @@ fn resolve_combinator(
     match column.combinator {
         Some(Combinator::And) => Ok(LoadCombinator::Series),
         Some(Combinator::Or) => Ok(LoadCombinator::Parallel),
-        // TODO: real XOR codegen (`Target::emit_xor`) is not yet wired into
-        // combinator resolution — no test in this plan so far exercises a
-        // top-level or in-group XOR-combined LOAD. Until that lands, treat
-        // XOR the same as OR (LoadCombinator has no XOR variant yet) so that
-        // a screen with an XOR-combined column compiles instead of
-        // panicking a Tauri command on frontend-supplied JSON. This is a
-        // temporary placeholder, not a design decision.
-        Some(Combinator::Xor) => Ok(LoadCombinator::Parallel),
+        // Task 4b: XOR is no longer resolved here. Every call site that
+        // could reach a non-leading XOR-combined column (every LOAD
+        // sub-kind's dispatch in `evaluate_columns`, RowRef's dispatch, and
+        // the group-dispatch branch) checks `column.combinator ==
+        // Some(Combinator::Xor)` itself, before ever calling
+        // `resolve_combinator`, and routes that case through
+        // `Target::emit_xor`'s own stash/evaluate-fresh/read-back sequence
+        // instead (see `emit_combined_load` and the group-dispatch branch
+        // below). A *first-position* XOR column also never reaches this
+        // match arm: the early return above for "no preceding sibling"
+        // fires before `column.combinator` is ever inspected, regardless of
+        // its value. So this arm is provably unreachable given the current
+        // call sites — not a placeholder (the old "treat XOR as OR" TODO
+        // from Task 1's panic-prevention fix is gone; Task 3 already
+        // landed). It's kept only to make this match exhaustive and to fail
+        // loudly — rather than silently miscompiling to OR semantics — if a
+        // future call site is ever added that forgets to pre-filter XOR.
+        Some(Combinator::Xor) => {
+            unreachable!("Combinator::Xor is routed around resolve_combinator by every call site")
+        }
         None => Err(CompileError::MissingCombinator { row: row_number, column: column.column_number }),
+    }
+}
+
+/// True when `column` is combined with a preceding sibling via XOR — the
+/// only case `emit_combined_load` and the group-dispatch branch route
+/// around the normal single-instruction AND/OR/None combine, since 8085 has
+/// no single "XOR carry" instruction. A first-position column (no preceding
+/// sibling) is never routed this way, even if its nominal combinator is
+/// XOR: XOR's identity element is the same as OR's — "nothing precedes it,
+/// so just take the value" — matching how `resolve_combinator` already
+/// returns `LoadCombinator::None` for any first-position column regardless
+/// of its nominal combinator.
+fn is_xor_combined(columns: &[ColumnScreen], column_index: usize, column: &ColumnScreen) -> bool {
+    previous_in(columns, column_index).is_some() && column.combinator == Some(Combinator::Xor)
+}
+
+/// Bundles a column together with the slice it lives in and its index in
+/// that slice — the same 4 values `resolve_combinator` and `is_xor_combined`
+/// each already take individually — purely to keep `emit_combined_load`'s
+/// own argument count under clippy's `too_many_arguments` threshold.
+struct ColumnContext<'a> {
+    columns: &'a [ColumnScreen],
+    row_number: u32,
+    column_index: usize,
+    column: &'a ColumnScreen,
+}
+
+/// Emits either the normal single-instruction combinator load or, when this
+/// leaf is XOR-combined with a preceding sibling (`is_xor_combined`), the
+/// XOR-specific sequence: stash the running total to a scratch relay
+/// address (`emit_relay_write`) — durable across the fresh evaluation's own
+/// `MOVX`, unlike an accumulator bit (see `Target::emit_xor`'s doc comment
+/// and task-3-report.md for why) — evaluate this leaf's own value fresh
+/// into carry ignoring the outer combinator, apply `column.inverted` to
+/// that fresh value (before combining, matching Task 3's inversion-ordering
+/// fix for groups), read the stash back into the accumulator
+/// (`emit_relay_read`, which doesn't touch carry), then `emit_xor` combines
+/// the two. Shared by every LOAD sub-kind (Flag/Input/Word) and RowRef,
+/// which all resolve their combinator against the same outer `columns`
+/// slice the same way.
+///
+/// Returns `true` if it already applied `column.inverted` itself (XOR path
+/// only), so the caller's shared trailing inversion check can skip
+/// re-applying it.
+fn emit_combined_load(
+    ctx: ColumnContext<'_>,
+    kind: LoadKind,
+    input: i32,
+    next_scratch_index: &mut i32,
+    target: &dyn Target,
+    buf: &mut Vec<String>,
+) -> Result<bool, CompileError> {
+    let ColumnContext { columns, row_number, column_index, column } = ctx;
+    if is_xor_combined(columns, column_index, column) {
+        let (scratch_byte, scratch_bit) = crate::legacy::find_param(*next_scratch_index);
+        *next_scratch_index += 1;
+        target.emit_relay_write(buf, scratch_byte, scratch_bit); // stash running total
+
+        target.emit_load(buf, kind, input, LoadCombinator::None); // fresh value into carry
+        if column.inverted {
+            target.emit_not(buf); // invert fresh value, before combining
+        }
+
+        target.emit_relay_read(buf, scratch_byte); // old total -> ACC, carry untouched
+        target.emit_xor(buf, scratch_bit); // carry := fresh XOR old total
+        Ok(true)
+    } else {
+        let combinator = resolve_combinator(columns, row_number, column_index, column)?;
+        target.emit_load(buf, kind, input, combinator);
+        Ok(false)
     }
 }
 
@@ -237,9 +319,22 @@ fn evaluate_columns(
                     target.emit_not(buf); // invert the group's OWN result, before combining
                 }
 
-                let resolved_combinator = resolve_combinator(columns, row_number, column_index, column)?;
-                let scratch_input = (scratch_byte * 8 + scratch_bit) as i32;
-                target.emit_load(buf, LoadKind::Flag, scratch_input, resolved_combinator);
+                // Task 4b: 8085 has no single "XOR carry" instruction, so a
+                // non-leading group combined via XOR can't use the same
+                // single-instruction `emit_load(..., combinator)` combine
+                // AND/OR groups use above. Everything up to this point
+                // (stash, recurse, invert) is identical for XOR — only the
+                // final combine differs: read the stash back into the
+                // accumulator (carry, holding the group's fresh result,
+                // stays untouched) and let `emit_xor` do the combining.
+                if column.combinator == Some(Combinator::Xor) {
+                    target.emit_relay_read(buf, scratch_byte);
+                    target.emit_xor(buf, scratch_bit);
+                } else {
+                    let resolved_combinator = resolve_combinator(columns, row_number, column_index, column)?;
+                    let scratch_input = (scratch_byte * 8 + scratch_bit) as i32;
+                    target.emit_load(buf, LoadKind::Flag, scratch_input, resolved_combinator);
+                }
             } else {
                 if evaluate_columns(group_columns, row_number, relay_addresses, row_owners, next_scratch_index, target, buf)? {
                     return Ok(true);
@@ -253,6 +348,7 @@ fn evaluate_columns(
                 }
             }
         } else {
+            let mut xor_inversion_applied = false;
             match column.coil_type {
                 CoilType::Load => {
                     let input = parse_value(row_number, column)?;
@@ -261,16 +357,19 @@ fn evaluate_columns(
                             // GAP (spec §3): PreferenceScreen-backed min-value bounds for
                             // FLAG inputs aren't ported (no settings store exists yet) —
                             // the original's `min - input` offset is not applied.
-                            let combinator = resolve_combinator(columns, row_number, column_index, column)?;
-                            target.emit_load(buf, LoadKind::Flag, input, combinator);
+                            let ctx = ColumnContext { columns, row_number, column_index, column };
+                            xor_inversion_applied =
+                                emit_combined_load(ctx, LoadKind::Flag, input, next_scratch_index, target, buf)?;
                         }
                         Some(InputType::Input) => {
-                            let combinator = resolve_combinator(columns, row_number, column_index, column)?;
-                            target.emit_load(buf, LoadKind::Input, input, combinator);
+                            let ctx = ColumnContext { columns, row_number, column_index, column };
+                            xor_inversion_applied =
+                                emit_combined_load(ctx, LoadKind::Input, input, next_scratch_index, target, buf)?;
                         }
                         Some(InputType::Word) => {
-                            let combinator = resolve_combinator(columns, row_number, column_index, column)?;
-                            target.emit_load(buf, LoadKind::Word, input, combinator);
+                            let ctx = ColumnContext { columns, row_number, column_index, column };
+                            xor_inversion_applied =
+                                emit_combined_load(ctx, LoadKind::Word, input, next_scratch_index, target, buf)?;
                         }
                         Some(InputType::Output) => {
                             target.emit_output(buf, input, find_output_type(), &label);
@@ -314,14 +413,15 @@ fn evaluate_columns(
                             name: name.to_string(),
                         }
                     })?;
-                    let combinator = resolve_combinator(columns, row_number, column_index, column)?;
                     // Reconstruct a single `input` consistent with how
                     // `find_param` would split it back apart, so the round
                     // trip through a `Target`'s own `find_param` call (e.g.
                     // `Target8085`) lands on the same (byte, bit) address
                     // `assign_relay_addresses` computed.
                     let input = (byte * 8 + bit) as i32;
-                    target.emit_load(buf, LoadKind::Flag, input, combinator);
+                    let ctx = ColumnContext { columns, row_number, column_index, column };
+                    xor_inversion_applied =
+                        emit_combined_load(ctx, LoadKind::Flag, input, next_scratch_index, target, buf)?;
                 }
                 _ => {
                     // LABEL, JUMP, LINE, LEFT_LINK, RIGHT_LINK, PARALLEL, DEFAULT,
@@ -343,7 +443,13 @@ fn evaluate_columns(
             // piece of work involving `emit_load`'s single-instruction
             // load+combine semantics. Only the *group* case's inversion
             // ordering (handled above) was in scope for this round.
-            if column.inverted {
+            //
+            // Task 4b: `emit_combined_load`'s XOR path already applies
+            // `column.inverted` itself, to the leaf's own fresh value before
+            // combining (matching the group fix above, not this pre-existing
+            // AND/OR gap) — `xor_inversion_applied` guards against inverting
+            // twice for that path.
+            if column.inverted && !xor_inversion_applied {
                 target.emit_not(buf);
             }
         }
@@ -401,13 +507,18 @@ mod tests {
             self.calls.borrow_mut().push(line.clone());
             buf.push(line);
         }
-        fn emit_xor(&self, buf: &mut Vec<String>) {
-            let line = "XOR".to_string();
+        fn emit_xor(&self, buf: &mut Vec<String>, bit: u32) {
+            let line = format!("XOR {bit}");
             self.calls.borrow_mut().push(line.clone());
             buf.push(line);
         }
         fn emit_relay_write(&self, buf: &mut Vec<String>, byte: u32, bit: u32) {
             let line = format!("RELAY_WRITE {byte} {bit}");
+            self.calls.borrow_mut().push(line.clone());
+            buf.push(line);
+        }
+        fn emit_relay_read(&self, buf: &mut Vec<String>, byte: u32) {
+            let line = format!("RELAY_READ {byte}");
             self.calls.borrow_mut().push(line.clone());
             buf.push(line);
         }
@@ -488,10 +599,12 @@ mod tests {
     }
 
     #[test]
-    fn xor_combinator_compiles_without_panicking_as_temporary_or_fallback() {
-        // TODO(Task 3): once real XOR codegen exists, this should assert on
-        // XOR-specific output, not "Parallel". For now this only proves the
-        // `todo!()` panic reachable via frontend-supplied JSON is gone.
+    fn non_leading_leaf_xor_combinator_uses_the_stash_evaluate_read_back_emit_xor_pattern() {
+        // Task 4b: `Combinator::Xor` used to compile as plain OR (a
+        // placeholder from Task 1's panic-prevention fix, kept until this
+        // task wired real XOR codegen into the live path). This proves
+        // real XOR output now — the stash/evaluate-fresh/read-back/
+        // `emit_xor` sequence, not a plain `LOAD ... Parallel` call.
         let mut first = column(CoilType::Load);
         first.input_type = Some(InputType::Input);
         first.value = "1".into();
@@ -507,7 +620,37 @@ mod tests {
         };
         let target = RecordingTarget::new();
         let out = generate(&screen, &target).unwrap();
-        assert_eq!(out, "LOAD Input 1 None\nLOAD Input 2 Parallel");
+        // No named outputs, so the scratch counter starts at 0 -> (byte 0,
+        // bit 0). The running total (first's result) is stashed there
+        // before second's own value is loaded fresh (ignoring the outer
+        // combinator, `LoadCombinator::None`), then the stash is read back
+        // and combined via `emit_xor`.
+        assert_eq!(
+            out,
+            "LOAD Input 1 None\nRELAY_WRITE 0 0\nLOAD Input 2 None\nRELAY_READ 0\nXOR 0"
+        );
+    }
+
+    #[test]
+    fn first_position_xor_combinator_needs_no_special_handling() {
+        // XOR's identity element is the same as OR's: "nothing precedes it,
+        // so just take the value." A first-position column with a nominal
+        // XOR combinator must NOT trigger the stash/read-back sequence —
+        // it should compile exactly like a first-position AND/OR/no-op
+        // column, matching how `resolve_combinator` already returns
+        // `LoadCombinator::None` regardless of the nominal combinator.
+        let mut only = column(CoilType::Load);
+        only.input_type = Some(InputType::Input);
+        only.value = "1".into();
+        only.combinator = Some(Combinator::Xor);
+        let screen = Screen {
+            rows: vec![RowScreen { row_number: 1, columns: vec![only], output_name: None }],
+            end_row_number: None,
+            end_column_number: None,
+        };
+        let target = RecordingTarget::new();
+        let out = generate(&screen, &target).unwrap();
+        assert_eq!(out, "LOAD Input 1 None");
     }
 
     #[test]
@@ -672,6 +815,85 @@ mod tests {
         assert_eq!(
             out,
             "LOAD Input 1 None\nRELAY_WRITE 0 0\nLOAD Input 2 None\nLOAD Input 3 Series\nLOAD Flag 0 Parallel"
+        );
+    }
+
+    #[test]
+    fn a_non_leading_group_combined_via_xor_uses_the_stash_read_back_emit_xor_pattern() {
+        // Task 4b: same shape as
+        // `a_non_leading_group_combines_with_the_running_total_via_its_own_combinator`
+        // above, but `grouped`'s own combinator is Xor. The stash/recurse
+        // steps are identical to the AND/OR case (same mechanism Task 3
+        // proved out) — only the final combine differs: a read-back
+        // (`RELAY_READ`) plus `emit_xor`, not a single `LOAD Flag ...
+        // Parallel`/`Series` call, proving this is real XOR codegen, not
+        // the old OR-equivalent placeholder.
+        let mut raw_a = column(CoilType::Load);
+        raw_a.column_number = 1;
+        raw_a.input_type = Some(InputType::Input);
+        raw_a.value = "1".into();
+
+        let mut group_head = column(CoilType::Load);
+        group_head.column_number = 1;
+        group_head.input_type = Some(InputType::Input);
+        group_head.value = "2".into();
+
+        let mut group_tail = column(CoilType::Load);
+        group_tail.column_number = 2;
+        group_tail.input_type = Some(InputType::Input);
+        group_tail.value = "3".into();
+        group_tail.combinator = Some(Combinator::And);
+
+        let mut grouped = column(CoilType::Load);
+        grouped.column_number = 2;
+        grouped.input_type = Some(InputType::Input);
+        grouped.value = "0".into(); // unused when `group` is Some
+        grouped.combinator = Some(Combinator::Xor);
+        grouped.group = Some(vec![group_head, group_tail]);
+
+        let screen = Screen {
+            rows: vec![RowScreen { row_number: 1, columns: vec![raw_a, grouped], output_name: None }],
+            end_row_number: None,
+            end_column_number: None,
+        };
+        let target = RecordingTarget::new();
+        let out = generate(&screen, &target).unwrap();
+        assert_eq!(
+            out,
+            "LOAD Input 1 None\nRELAY_WRITE 0 0\nLOAD Input 2 None\nLOAD Input 3 Series\nRELAY_READ 0\nXOR 0"
+        );
+    }
+
+    #[test]
+    fn inverted_non_leading_leaf_xor_inverts_its_own_fresh_value_before_combining_once() {
+        // Mirrors `inverted_non_leading_group_inverts_its_own_result_before_combining`
+        // for the leaf-XOR path: `column.inverted` must apply to this leaf's
+        // own fresh value (between the fresh LOAD and the read-back/XOR
+        // combine), not after the XOR combine, and must not be applied a
+        // second time by the shared trailing inversion check
+        // (`xor_inversion_applied` guards that).
+        let mut raw_a = column(CoilType::Load);
+        raw_a.column_number = 1;
+        raw_a.input_type = Some(InputType::Input);
+        raw_a.value = "1".into();
+
+        let mut second = column(CoilType::Load);
+        second.column_number = 2;
+        second.input_type = Some(InputType::Input);
+        second.value = "2".into();
+        second.combinator = Some(Combinator::Xor);
+        second.inverted = true;
+
+        let screen = Screen {
+            rows: vec![RowScreen { row_number: 1, columns: vec![raw_a, second], output_name: None }],
+            end_row_number: None,
+            end_column_number: None,
+        };
+        let target = RecordingTarget::new();
+        let out = generate(&screen, &target).unwrap();
+        assert_eq!(
+            out,
+            "LOAD Input 1 None\nRELAY_WRITE 0 0\nLOAD Input 2 None\nNOT\nRELAY_READ 0\nXOR 0"
         );
     }
 
