@@ -3,6 +3,7 @@ import { type EditMode, EditModeToggle } from './modes/EditModeToggle';
 import { Palette } from './palette/Palette';
 import { Canvas } from './canvas/Canvas';
 import { CombinatorPicker } from './canvas/CombinatorPicker';
+import { PreviewPanel } from './preview/PreviewPanel';
 import { ladderStudioApi } from './api/ladderStudio';
 import type { Combinator, ColumnScreen, RoutineSummary, Screen } from './api/ladderStudio';
 
@@ -66,7 +67,7 @@ export default function App() {
         {pendingDrop && (
           <CombinatorPicker onPick={(c) => finishInjection(pendingDrop.routine, pendingDrop.rowNumber, c)} />
         )}
-        {/* PreviewPanel wired in Task 14 */}
+        <PreviewPanel screen={activeScreen} />
       </main>
     </div>
   );
