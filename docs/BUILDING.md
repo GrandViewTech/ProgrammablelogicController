@@ -29,9 +29,11 @@ cd ../src-tauri && cargo tauri dev
 ```
 
 A bare `cargo run` from `src-tauri/` also works if the Vite dev server is already running in
-another terminal, but it skips Tauri's resource staging; routine XML is then picked up from
-`../resources/routine` relative to the working directory instead (see
-`load_routine_library` in `src-tauri/src/main.rs`).
+another terminal. Tauri's `build.rs` stages `resources/routine/*.xml` into the target
+directory on every `cargo build`/`cargo run`, not just `cargo tauri build`, so this path
+still finds the routine library via Tauri's resource resolution — the `../resources/routine`
+cwd-relative fallback in `load_routine_library` (`src-tauri/src/main.rs`) only matters if
+that staged resource directory is ever missing.
 
 ## Tests
 
