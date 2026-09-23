@@ -5,7 +5,21 @@ shell (`src-tauri/`) on top of a pure-Rust core (`ladder-core/`, a Cargo workspa
 the model, compiler, 8085 target, routine library and SQLite storage crates). The 2016 Java
 application under `src/` is the original and is not part of this build.
 
+## Quick setup
+
+```bash
+./scripts/setup-dev-env.sh
+```
+
+Installs Rust (if missing), fixes cargo's PATH for zsh (rustup's installer only patches
+`~/.profile`, which zsh doesn't read by default — a common source of "cargo not found" in a
+fresh terminal even after a successful install), installs the Tauri CLI, runs `npm ci` in
+`ui/`, and does a full build of every piece (`ladder-core`, `src-tauri`, `ui`) to confirm the
+environment actually works. Safe to re-run any time.
+
 ## Prerequisites
+
+The script above handles all of this. Manually, you need:
 
 - **Rust**, stable toolchain, via [rustup](https://rustup.rs). The `src-tauri` crate sets
   `rust-version = "1.77.2"`, so anything at or above that works.
