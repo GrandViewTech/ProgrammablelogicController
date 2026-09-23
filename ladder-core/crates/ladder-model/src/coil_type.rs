@@ -16,6 +16,7 @@ pub enum CoilType {
     Parallel,
     Default,
     Delete,
+    RowRef,
 }
 
 #[cfg(test)]
@@ -34,5 +35,10 @@ mod tests {
     fn round_trips_through_json() {
         let value: CoilType = serde_json::from_str("\"END\"").unwrap();
         assert_eq!(value, CoilType::End);
+    }
+
+    #[test]
+    fn row_ref_wire_form_matches_screaming_snake_case_convention() {
+        assert_eq!(serde_json::to_string(&CoilType::RowRef).unwrap(), "\"ROW_REF\"");
     }
 }

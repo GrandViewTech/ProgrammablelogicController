@@ -11,6 +11,7 @@ use crate::{CoilType, InputType};
 pub enum Combinator {
     And,
     Or,
+    Xor,
 }
 
 /// Worker vs Engineer editing mode (requirements §7.1). Enforcement lives on
@@ -56,6 +57,18 @@ pub struct ColumnScreen {
     /// the first block. Read directly by the compiler (requirements §7.3).
     pub combinator: Option<Combinator>,
     pub is_blank: bool,
+    /// Independent inversion flag (design spec: NOT is orthogonal to
+    /// AND/OR/XOR, not a 4th `Combinator` value) — "is this value flipped"
+    /// is a separate question from "how does this combine with what came
+    /// before".
+    pub inverted: bool,
+    /// A nested boolean sub-expression: when present, this column represents
+    /// the AND/OR/XOR-combined group of its child columns rather than a
+    /// single leaf condition.
+    pub group: Option<Vec<ColumnScreen>>,
+    /// Name of another row this column references (cross-row reference),
+    /// used together with `CoilType::RowRef`.
+    pub row_ref_name: Option<String>,
 }
 
 impl ColumnScreen {
@@ -76,6 +89,10 @@ impl ColumnScreen {
 pub struct RowScreen {
     pub row_number: u32,
     pub columns: Vec<ColumnScreen>,
+    /// Name this row can be referenced by from other rows via
+    /// `CoilType::RowRef` + `ColumnScreen.row_ref_name`. `None` if the row
+    /// has not been given a name.
+    pub output_name: Option<String>,
 }
 
 impl RowScreen {
@@ -117,6 +134,9 @@ mod tests {
             rendered_asm: Some("MOV DPTR,#RLY512_519+".into()),
             combinator: None,
             is_blank: false,
+            inverted: false,
+            group: None,
+            row_ref_name: None,
         }
     }
 
@@ -148,6 +168,7 @@ mod tests {
         let row = RowScreen {
             row_number: 1,
             columns: vec![hand_built_column(), locked_column()],
+            output_name: None,
         };
         assert_eq!(row.previous(0), None);
         assert_eq!(row.previous(1).unwrap().coil_type, CoilType::Routine);
@@ -156,12 +177,48 @@ mod tests {
     #[test]
     fn screen_round_trips_through_json() {
         let screen = Screen {
-            rows: vec![RowScreen { row_number: 1, columns: vec![hand_built_column()] }],
+            rows: vec![RowScreen {
+                row_number: 1,
+                columns: vec![hand_built_column()],
+                output_name: None,
+            }],
             end_row_number: Some(1),
             end_column_number: Some(1),
         };
         let json = serde_json::to_string(&screen).unwrap();
         let back: Screen = serde_json::from_str(&json).unwrap();
         assert_eq!(screen, back);
+    }
+
+    #[test]
+    fn xor_wire_form_matches_screaming_snake_case_convention() {
+        assert_eq!(serde_json::to_string(&Combinator::Xor).unwrap(), "\"XOR\"");
+    }
+
+    #[test]
+    fn new_column_fields_default_to_inactive() {
+        let column = hand_built_column();
+        assert!(!column.inverted);
+        assert!(column.group.is_none());
+        assert!(column.row_ref_name.is_none());
+    }
+
+    #[test]
+    fn group_round_trips_through_json() {
+        let mut outer = hand_built_column();
+        outer.group = Some(vec![hand_built_column(), locked_column()]);
+        outer.combinator = Some(Combinator::Xor);
+        outer.inverted = true;
+        let json = serde_json::to_string(&outer).unwrap();
+        let back: ColumnScreen = serde_json::from_str(&json).unwrap();
+        assert_eq!(outer, back);
+    }
+
+    #[test]
+    fn row_screen_output_name_defaults_to_none_and_round_trips() {
+        let row = RowScreen { row_number: 1, columns: vec![], output_name: Some("Conveyor Running".into()) };
+        let json = serde_json::to_string(&row).unwrap();
+        let back: RowScreen = serde_json::from_str(&json).unwrap();
+        assert_eq!(row, back);
     }
 }

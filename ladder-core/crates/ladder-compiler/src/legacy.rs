@@ -46,6 +46,9 @@ mod tests {
             rendered_asm: None,
             combinator: None,
             is_blank: false,
+            inverted: false,
+            group: None,
+            row_ref_name: None,
         }
     }
 
@@ -64,6 +67,7 @@ mod tests {
                 blank_column(1, 1, CoilType::Load),
                 blank_column(1, 2, CoilType::Output),
             ],
+            output_name: None,
         };
         assert_eq!(find_parallel_series(&row, 1), LegacyParallelSeries::Series);
     }
@@ -76,6 +80,7 @@ mod tests {
                 blank_column(1, 1, CoilType::Output),
                 blank_column(1, 2, CoilType::Output),
             ],
+            output_name: None,
         };
         assert_eq!(find_parallel_series(&row, 0), LegacyParallelSeries::None);
         assert_eq!(find_parallel_series(&row, 1), LegacyParallelSeries::None);

@@ -26,6 +26,10 @@ fn resolve_combinator(
     match column.combinator {
         Some(Combinator::And) => Ok(LoadCombinator::Series),
         Some(Combinator::Or) => Ok(LoadCombinator::Parallel),
+        // XOR combining and nested-group evaluation are added by the
+        // recursive-evaluation rewrite of this function (implementation
+        // plan Task 3); this whole function is superseded there.
+        Some(Combinator::Xor) => todo!("XOR combinator support added in Task 3"),
         None => Err(CompileError::MissingCombinator {
             row: row.row_number,
             column: column.column_number,
@@ -181,6 +185,9 @@ mod tests {
             rendered_asm: None,
             combinator: None,
             is_blank: false,
+            inverted: false,
+            group: None,
+            row_ref_name: None,
         }
     }
 
@@ -188,10 +195,11 @@ mod tests {
     fn end_coil_stops_traversal_before_later_rows() {
         let screen = Screen {
             rows: vec![
-                RowScreen { row_number: 1, columns: vec![column(CoilType::End)] },
+                RowScreen { row_number: 1, columns: vec![column(CoilType::End)], output_name: None },
                 RowScreen {
                     row_number: 2,
                     columns: vec![ColumnScreen { input_type: Some(InputType::Input), ..column(CoilType::Load) }],
+                    output_name: None,
                 },
             ],
             end_row_number: None,
@@ -209,7 +217,7 @@ mod tests {
         c.input_type = Some(InputType::Input);
         c.value = "19".into();
         let screen = Screen {
-            rows: vec![RowScreen { row_number: 1, columns: vec![c] }],
+            rows: vec![RowScreen { row_number: 1, columns: vec![c], output_name: None }],
             end_row_number: None,
             end_column_number: None,
         };
@@ -229,7 +237,7 @@ mod tests {
         second.value = "2".into();
         second.combinator = Some(Combinator::Or);
         let screen = Screen {
-            rows: vec![RowScreen { row_number: 1, columns: vec![first, second] }],
+            rows: vec![RowScreen { row_number: 1, columns: vec![first, second], output_name: None }],
             end_row_number: None,
             end_column_number: None,
         };
@@ -252,7 +260,7 @@ mod tests {
         second.value = "2".into();
         second.combinator = None;
         let screen = Screen {
-            rows: vec![RowScreen { row_number: 1, columns: vec![first, second] }],
+            rows: vec![RowScreen { row_number: 1, columns: vec![first, second], output_name: None }],
             end_row_number: None,
             end_column_number: None,
         };
@@ -275,7 +283,7 @@ mod tests {
         });
         routine.rendered_asm = Some("MOV DPTR,#RLY512_519+".into());
         let screen = Screen {
-            rows: vec![RowScreen { row_number: 1, columns: vec![load, routine] }],
+            rows: vec![RowScreen { row_number: 1, columns: vec![load, routine], output_name: None }],
             end_row_number: None,
             end_column_number: None,
         };
@@ -292,7 +300,7 @@ mod tests {
         let mut routine = column(CoilType::Routine);
         routine.rendered_asm = None;
         let screen = Screen {
-            rows: vec![RowScreen { row_number: 1, columns: vec![routine] }],
+            rows: vec![RowScreen { row_number: 1, columns: vec![routine], output_name: None }],
             end_row_number: None,
             end_column_number: None,
         };
@@ -306,7 +314,7 @@ mod tests {
         let mut c = column(CoilType::Output);
         c.value = "not-a-number".into();
         let screen = Screen {
-            rows: vec![RowScreen { row_number: 3, columns: vec![c] }],
+            rows: vec![RowScreen { row_number: 3, columns: vec![c], output_name: None }],
             end_row_number: None,
             end_column_number: None,
         };
