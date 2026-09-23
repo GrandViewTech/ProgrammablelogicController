@@ -34,15 +34,27 @@
 
 ## 3. Data model (`ladder-model`)
 
-- `Combinator` gains two variants: `Not`, `Xor`, alongside the existing `And`,
-  `Or`. Wire form via the existing `SCREAMING_SNAKE_CASE` rename: `"NOT"`, `"XOR"`.
+- `Combinator` gains one variant: `Xor`, alongside the existing `And`, `Or` — all
+  three answer the same question, "how does this block/group combine with the
+  running result so far." Wire form via the existing `SCREAMING_SNAKE_CASE`
+  rename: `"XOR"`.
+- **NOT is not a `Combinator` value.** AND/OR/XOR describe *how a value combines
+  with what came before*; NOT describes *whether a value is inverted before that
+  combination happens* — a different, orthogonal question. Conflating them left
+  "how does a NOT block combine with the previous one" undefined. Instead,
+  `ColumnScreen` gains a separate `inverted: bool` field (default `false`). This
+  also matches how real ladder logic already treats this: a "NOT" contact is just
+  a **normally-closed contact**, combined via the exact same series/parallel
+  (AND/OR) rules as any other contact, with its raw value flipped first. The
+  combinator picker becomes three buttons (AND/OR/XOR) plus an independent
+  "Invert (NOT)" checkbox, rather than four mutually-exclusive buttons.
 - `ColumnScreen` gains one new optional field: `group: Option<Vec<ColumnScreen>>`.
   - `group: None` — behaves exactly as every existing column does today (a leaf).
   - `group: Some(columns)` — a bracketed sub-expression: `columns` is evaluated the
-    same way a row's columns are (recursively), and the group's own `combinator`
-    (the same field, on the *outer* column) says how the group's result combines
-    with whatever precedes it. `Not` is unary — it complements the group's own
-    result and ignores any "previous" running result.
+    same way a row's columns are (recursively) to produce one boolean result,
+    which is then combined with the running total via this outer column's own
+    `combinator` (and inverted first if the outer column's `inverted` is `true`),
+    exactly like a leaf would be.
 - `ColumnScreen` gains a new coil kind for cross-row references: `CoilType::RowRef`,
   with a new field `row_ref_name: Option<String>` naming the target row's output.
   Looked up **by name**, not by row index, so reordering rows can't silently break
@@ -57,9 +69,10 @@
 
 - The row-walk becomes recursive: evaluating a "slot" (a `ColumnScreen`) means
   evaluating its own value/reference if `group` is `None`, or recursively
-  evaluating and combining every column in `group` if `Some`, then applying this
-  slot's own `combinator` against the running result exactly as today (`Not` is
-  unary, as above).
+  evaluating and combining every column in `group` if `Some`, to get one boolean
+  result; if the slot's `inverted` is `true`, that result is complemented
+  (`emit_not`, below) *before* being folded into the running total via the slot's
+  `combinator`, exactly as any leaf value would be.
 - New `Target` trait methods:
   - `emit_not(&self, buf: &mut Vec<String>)` — appends the 8085 `CMC` (Complement
     Carry) instruction. A real, standard, direct-fit instruction — high confidence.
@@ -93,8 +106,9 @@
   group's result flows downward into its combinator; siblings that need to stay
   paired (e.g. "Routine n AND Routine 2") stack side by side within their own
   branch, matching the mockup.
-- The AND/OR combinator picker (`CombinatorPicker`) gains NOT and XOR as two more
-  choices.
+- The AND/OR combinator picker (`CombinatorPicker`) gains a third mutually-exclusive
+  choice, XOR, plus an independent "Invert (NOT)" checkbox (see §3) — not a fourth
+  mutually-exclusive button.
 - New: naming a row's output (a short text field, shown the first time a row gets
   an output) and a "reference an existing row" picker (a list of named outputs,
   the same interaction pattern as today's routine palette) for building `RowRef`
