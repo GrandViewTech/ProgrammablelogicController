@@ -2,10 +2,10 @@ name: CI
 
 on:
   push:
-    branches: [feature/ladder-studio-v2]
+    branches: [feature/ladder-studio-v2, master]
     tags: ['ladder-studio-v*']
   pull_request:
-    branches: [feature/ladder-studio-v2]
+    branches: [feature/ladder-studio-v2, master]
 
 jobs:
   test:
@@ -62,6 +62,10 @@ jobs:
   release:
     needs: test
     if: startsWith(github.ref, 'refs/tags/ladder-studio-v')
+    # tauri-action creates the GitHub release and uploads the installers to it
+    # with GITHUB_TOKEN, which needs write access to repository contents.
+    permissions:
+      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -89,11 +93,21 @@ jobs:
       - name: Install UI dependencies
         run: cd ui && npm ci
 
+      # No `tauriScript` override: tauri-action installs and runs its own
+      # bundled CLI. Overriding it with `cargo tauri` would require a
+      # `cargo install tauri-cli` step that this job does not have.
+      # `ui/dist` is produced by tauri.conf.json's `beforeBuildCommand`.
+      # This workflow triggers on `push.tags`, not on a `release` event, so
+      # there is no `github.event.release.id` to attach to — tauri-action
+      # creates the release itself from the pushed tag instead.
       - name: Build installer
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: .
-          tauriScript: 'cargo tauri'
-          releaseId: ${{ github.event.release && github.event.release.id }}
+          tagName: ${{ github.ref_name }}
+          releaseName: 'Ladder Studio ${{ github.ref_name }}'
+          releaseBody: 'See the assets to download this version and install.'
+          releaseDraft: true
+          prerelease: false

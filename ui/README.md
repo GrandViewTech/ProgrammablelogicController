@@ -1,32 +1,25 @@
-# React + TypeScript + Vite
+# Ladder Studio v2 — frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+This is the React + TypeScript + Vite frontend for Ladder Studio v2, the ladder-logic
+editor that replaces the original Swing application. It runs inside the Tauri shell in
+`../src-tauri` and talks to the Rust core (`../ladder-core`) over Tauri IPC — see
+`src/api/ladderStudio.ts` for the command surface. It is not meant to be deployed as a
+standalone web app.
 
-Currently, two official plugins are available:
+See [`../docs/BUILDING.md`](../docs/BUILDING.md) for prerequisites and the full dev/release
+flow. Within this directory:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm ci            # install dependencies
+npm run dev       # Vite dev server on :5173 (normally started for you by `tauri dev`)
+npm test          # vitest unit tests
+npm run test:e2e  # Playwright e2e tests (builds are served from dist/)
+npm run build     # type-check and produce dist/, which Tauri bundles
+npm run lint      # oxlint
+```
 
 ## Expanding the Oxlint configuration
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+For type-aware lint rules, install `oxlint-tsgolint` and set `options.typeAware` in
+`.oxlintrc.json`. See the
+[Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules).
