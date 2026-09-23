@@ -21,7 +21,7 @@ application under `src/` is the original and is not part of this build.
 ## Running in development
 
 One terminal is enough. `tauri.conf.json`'s `beforeDevCommand` starts the Vite dev server
-(`npm --prefix ../ui run dev`, port 5173) for you:
+(`npm run dev` in `ui/`, port 5173) for you:
 
 ```bash
 cd ui && npm ci      # once, to install frontend dependencies
@@ -63,8 +63,8 @@ cd ui && npm run build && npm run test:e2e   # Playwright, served from ui/dist
 cd src-tauri && cargo tauri build
 ```
 
-This runs `beforeBuildCommand` (`npm --prefix ../ui run build`) to produce `ui/dist` first,
-then bundles the platform installers under `src-tauri/target/release/bundle/`.
+This runs `beforeBuildCommand` (`npm run build` in `ui/`) to produce `ui/dist` first, then
+bundles the platform installers under `src-tauri/target/release/bundle/`.
 
 ## Cutting a release
 
