@@ -588,6 +588,85 @@ git commit -m "Implement Target8085::emit_not/emit_relay_write/emit_xor"
 
 ---
 
+### Task 4b: `ladder-compiler`/`ladder-target-8085` — wire XOR into the live compiler path
+
+> **Added after Task 4 landed.** Task 4's implementer correctly implemented and tested `emit_xor()` against its own narrow, documented contract, but flagged that the contract (an ACC.7-based two-operand stash) doesn't survive the memory-based staging the rest of the compiler actually needs — the same lesson Task 3 learned the hard way for groups (an accumulator-bit stash is destroyed by any intervening `MOVX A,@DPTR`, which every leaf load does). This task exists because the original plan never scoped "wire XOR into `resolve_combinator`'s live path" as its own step — it was silently assumed to fall out of Task 3, but Task 3's actual scope never touched it, and `Combinator::Xor` has been compiling as plain OR (a placeholder from Task 1's panic-prevention fix) ever since. The user was asked and chose to fix this properly now, before Tasks 5-8 add a worker-facing XOR button to the UI.
+
+**Files:**
+- Modify: `ladder-core/crates/ladder-target-8085/src/lib.rs`
+- Modify: `ladder-core/crates/ladder-compiler/src/target.rs`
+- Modify: `ladder-core/crates/ladder-compiler/src/traversal.rs`
+
+**Interfaces:**
+- Consumes: the existing `emit_relay_write`/`emit_load(LoadKind::Flag, ...)` stash/read-back pattern already proven correct for non-leading groups in Task 3.
+- Produces: a corrected `Target::emit_xor` signature and real XOR codegen reachable from `generate()` for both a non-leading leaf and a non-leading group. A first-position XOR (nothing precedes it) needs no special handling — XOR's identity element is the same as OR's (combining with nothing means "just take this value"), matching how `resolve_combinator` already returns `LoadCombinator::None` for any first-position column regardless of its nominal combinator.
+
+- [ ] **Step 1: Change `emit_xor`'s contract to match how it will actually be called**
+
+The core problem: MOVX clobbers the whole accumulator, but leaves the carry flag alone. So the durable place to stash "the old running total" across a fresh sub-evaluation (which may itself do MOVX) is memory (a relay address, exactly like groups already do) — not an accumulator bit. Once the old total is safely stashed in memory and the new operand is freshly evaluated into carry, *reading the old total back* via `MOVX A,@DPTR` is safe, because that only clobbers the accumulator, and the new operand's value is sitting in carry, untouched by MOVX. What's needed at that point is exactly the same shape as the AND/OR combining already built into every leaf load (`ANL C, ACC.{bit}` / `ORL C, ACC.{bit}` — combine the current carry with a specific accumulator bit) — just the XOR version of it, which doesn't exist as a single 8085 instruction and needs the short synthesized sequence Task 4 already derived and truth-table-verified, adapted to take an arbitrary bit rather than assuming a fixed one.
+
+In `ladder-core/crates/ladder-compiler/src/target.rs`, change the trait method:
+
+```rust
+/// XORs the current carry with a specific accumulator bit, leaving the
+/// result in carry — the XOR counterpart to the AND/OR combining every
+/// leaf load already does via `ANL C, ACC.{bit}` / `ORL C, ACC.{bit}`.
+/// Unlike `emit_load`'s combinator parameter, 8085 has no single
+/// instruction for this, so it's a short synthesized sequence (see
+/// `Target8085`'s implementation). Callers combine two operands by
+/// stashing one to a relay address (`emit_relay_write`), evaluating the
+/// other fresh into carry, reading the first one back into the
+/// accumulator (`emit_load`'s own `MOVX` pattern, or an equivalent), and
+/// then calling this with the bit that read landed on.
+fn emit_xor(&self, buf: &mut Vec<String>, bit: u32);
+```
+
+Update the failing test in `ladder-core/crates/ladder-target-8085/src/lib.rs` for the new signature — re-derive the instruction sequence for "XOR current carry with ACC.{bit}" from the same truth table Task 4 already used (`A XOR B = (A OR B) AND NOT(A AND B)`), verify it by hand for all 4 input combinations the way Task 4's report did, and write the test's expected `buf` to match your verified sequence (don't guess — trace it).
+
+Update `Target8085`'s implementation to match.
+
+- [ ] **Step 2: Run tests to verify RED then GREEN**
+
+Run: `cd ladder-core && cargo test -p ladder-target-8085` — confirm it fails first (signature mismatch), then implement, then confirm it passes.
+
+- [ ] **Step 3: Wire XOR into `evaluate_columns`**
+
+In `ladder-core/crates/ladder-compiler/src/traversal.rs`: at both the leaf-dispatch site and the group-dispatch site, before falling into the existing AND/OR/None combining logic, check whether this column has a preceding sibling AND its own `combinator` is `Some(Combinator::Xor)`. If so, use this sequence instead of the normal single-instruction combine:
+
+1. Allocate a scratch address via the existing `next_scratch_index` counter (same mechanism Task 3's group-fix already uses — reuse it directly, don't build a second counter).
+2. `target.emit_relay_write(buf, scratch_byte, scratch_bit)` — stash the current running total.
+3. Evaluate this slot's own value fresh into carry, ignoring the outer combinator (`LoadCombinator::None` for a leaf; the existing group-recursion call for a group) — same "evaluate fresh" step the AND/OR/group path already does before combining.
+4. Read the stashed total back: `target.emit_relay_write`'s address-resolution pattern already computes `MOV DPTR,#RLY512_+{byte}` / `MOVX A,@DPTR` internally — you'll need the equivalent read here (reuse whatever the existing `emit_load(LoadKind::Flag, ...)` path already does for loading a relay address into the accumulator, but stop short of its own combine step, since you need `emit_xor` to do the combining instead — read the actual current code to find the cleanest way to reuse this without duplicating the DPTR/MOVX lines verbatim; a `bit` parameter for the address you already computed in step 1 is what `emit_xor` needs).
+5. `target.emit_xor(buf, scratch_bit)` — combines the read-back stash with the freshly-evaluated carry.
+6. Apply `column.inverted` at the correct point (on this slot's own fresh value, matching Task 3's inversion-ordering fix for groups — the same principle applies here: invert before combining, not after).
+
+Also replace `resolve_combinator`'s `Some(Combinator::Xor) => Ok(LoadCombinator::Parallel)` placeholder arm (added in Task 1's fix round, purely to prevent a panic) — once XOR has its own real dispatch path that never calls `resolve_combinator` for the XOR case, this arm should become genuinely unreachable for any column actually using it correctly; decide whether to leave it as a defensive fallback with a comment explaining it's now dead in the intended flow, or restructure so it's provably unreachable — your call, but don't leave a misleading comment claiming it's "temporary until Task 3" (Task 3 already landed; update or remove that comment).
+
+- [ ] **Step 4: Write tests proving real XOR, not OR-equivalent behavior**
+
+At minimum:
+- A non-leading LOAD column with `combinator: Some(Xor)` — assert the emitted sequence shows the stash/fresh-load/read-back/`emit_xor` pattern (not a plain `ORL`-equivalent `LOAD ... Parallel` call).
+- A non-leading GROUP with `combinator: Some(Xor)` — same proof, via the group path.
+- Confirm the *previous* `xor_combinator_compiles_without_panicking_as_temporary_or_fallback` test (from Task 1's fix round) — if it still exists and still asserts OR-equivalent output, either update it to assert real XOR output now that this is wired, or replace it; don't leave a test on the books asserting the old, now-incorrect placeholder behavior as if it were still the intended design.
+
+- [ ] **Step 5: Full verification**
+
+```bash
+cd ladder-core && cargo test --workspace
+cd ladder-core && cargo clippy --workspace -- -D warnings
+```
+
+All prior tests (56, per Task 4's report) pass unchanged except any you deliberately updated per Step 4's note about the old placeholder test, plus your new ones.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add ladder-core
+git commit -m "Wire Combinator::Xor into the live compiler path"
+```
+
+---
+
 ### Task 5: `ui` — `segments.ts` extended for recursive nested groups
 
 **Files:**
