@@ -6,7 +6,7 @@ export type Screen = {
   endColumnNumber: number | null;
 };
 
-export type RowScreen = { rowNumber: number; columns: ColumnScreen[] };
+export type RowScreen = { rowNumber: number; columns: ColumnScreen[]; outputName?: string | null };
 
 export type Combinator = 'AND' | 'OR';
 
@@ -28,6 +28,9 @@ export type ColumnScreen = {
   renderedAsm: string | null;
   combinator: Combinator | null;
   isBlank: boolean;
+  inverted?: boolean;
+  group?: ColumnScreen[];
+  rowRefName?: string | null;
 };
 
 export type RoutineSummary = { name: string; description: string };

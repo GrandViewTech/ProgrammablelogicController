@@ -72,4 +72,11 @@ describe('groupIntoSegments', () => {
       { kind: 'branch', columns: [c3, c4] },
     ]);
   });
+
+  it('treats a column with a group as its own series segment carrying the nested columns', () => {
+    const inner1 = column(1, null);
+    const inner2 = column(2, 'AND');
+    const grouped = { ...column(1, null), group: [inner1, inner2] };
+    expect(groupIntoSegments([grouped])).toEqual([{ kind: 'series', column: grouped }]);
+  });
 });
