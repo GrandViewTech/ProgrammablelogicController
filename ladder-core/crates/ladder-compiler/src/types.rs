@@ -35,6 +35,10 @@ pub enum CompileError {
     MissingRenderedAsm { row: u32, column: u32 },
     #[error("row {row}, column {column}: every block after the first on a rung must carry an explicit AND/OR combinator")]
     MissingCombinator { row: u32, column: u32 },
+    #[error("row {row}, column {column}: reference to unknown row output {name:?}")]
+    UnknownRowReference { row: u32, column: u32, name: String },
+    #[error("row {row}, column {column}: reference to {name:?} points at a row that isn't earlier in the screen")]
+    ForwardRowReference { row: u32, column: u32, name: String },
 }
 
 #[cfg(test)]
@@ -47,6 +51,24 @@ mod tests {
         assert_eq!(
             err.to_string(),
             "row 2, column 3: value \"abc\" is not a valid integer"
+        );
+    }
+
+    #[test]
+    fn unknown_row_reference_message_names_the_row_and_reference() {
+        let err = CompileError::UnknownRowReference { row: 3, column: 1, name: "Conveyor Running".into() };
+        assert_eq!(
+            err.to_string(),
+            "row 3, column 1: reference to unknown row output \"Conveyor Running\""
+        );
+    }
+
+    #[test]
+    fn forward_row_reference_message_names_the_row_and_reference() {
+        let err = CompileError::ForwardRowReference { row: 1, column: 1, name: "Conveyor Running".into() };
+        assert_eq!(
+            err.to_string(),
+            "row 1, column 1: reference to \"Conveyor Running\" points at a row that isn't earlier in the screen"
         );
     }
 }

@@ -175,6 +175,21 @@ mod tests {
             self.calls.borrow_mut().push(line.clone());
             buf.push(line);
         }
+        fn emit_not(&self, buf: &mut Vec<String>) {
+            let line = "NOT".to_string();
+            self.calls.borrow_mut().push(line.clone());
+            buf.push(line);
+        }
+        fn emit_xor(&self, buf: &mut Vec<String>) {
+            let line = "XOR".to_string();
+            self.calls.borrow_mut().push(line.clone());
+            buf.push(line);
+        }
+        fn emit_relay_write(&self, buf: &mut Vec<String>, byte: u32, bit: u32) {
+            let line = format!("RELAY_WRITE {byte} {bit}");
+            self.calls.borrow_mut().push(line.clone());
+            buf.push(line);
+        }
     }
 
     fn column(coil_type: CoilType) -> ColumnScreen {
