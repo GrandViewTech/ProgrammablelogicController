@@ -366,30 +366,41 @@ fn assign_relay_addresses(screen: &Screen) -> HashMap<String, (u32, u32)> {
 
 (`legacy::find_param` is already `pub` via `ladder_compiler::compat::find_param` — within this crate you can call `crate::legacy::find_param` directly.)
 
-2. **Extract the existing per-row column-walk into a recursive helper.** The current `generate()` loop body (everything inside `for (column_index, column) in row.columns.iter().enumerate() { ... }`) becomes a function taking a column slice instead of always `&row.columns`, so it can call itself for a `group`:
+2. **Extract the existing per-row column-walk into a recursive helper — with an explicit "stop everything" signal.** The original `generate()` used a *labeled* `break 'rows` to make an `End` coil stop both the column loop and the row loop at once, in one function. Extracting the column loop into its own function means that label is no longer in scope there — a bare `break` inside the new helper would only stop that one call's loop (or, worse, only the innermost recursive call when `End` is nested inside a `group`), silently leaving `generate()`'s outer row loop to keep processing rows after `End`, which would be a real behavior regression, not just a refactor. Instead, thread the "stop everything" signal back up as a return value, the way the original *Java* `CompileService` did with its own `loopbreakCondition` boolean before the Rust port collapsed it into a labeled break:
 
 ```rust
+/// Returns `Ok(true)` if an `End` coil was encountered anywhere in this
+/// slice (including inside a nested group) — the caller must stop
+/// processing immediately: skip the rest of this row (including any
+/// row-output write) and every row after it, matching the original's
+/// "END coil early-exit" behavior (requirements §3) exactly, now that the
+/// column walk is recursive instead of one flat loop with a labeled break.
 fn evaluate_columns(
     columns: &[ColumnScreen],
     row_number: u32,
     relay_addresses: &HashMap<String, (u32, u32)>,
     target: &dyn Target,
     buf: &mut Vec<String>,
-) -> Result<(), CompileError> {
+) -> Result<bool, CompileError> {
     for (column_index, column) in columns.iter().enumerate() {
         if column.is_blank {
             continue;
         }
         if column.coil_type == CoilType::End {
-            break; // note: End's "stop the whole screen" behavior is still handled by generate()'s outer loop, unchanged — this only affects a nested group, where End isn't a meaningful thing to place anyway
+            return Ok(true);
         }
 
         // NEW: if this slot is a group, recursively evaluate the group's
-        // own columns into a throwaway buffer first, to get "the group's
-        // result" onto the carry, then treat that exactly like a leaf load
-        // for the purposes of inversion/combining below.
+        // own columns first, to get "the group's result" onto the carry,
+        // then treat that exactly like a leaf load for the purposes of
+        // inversion/combining below. If an End coil turns up inside the
+        // group, propagate the stop signal immediately — don't finish this
+        // group, don't apply this slot's inversion/combinator, don't
+        // continue the row.
         if let Some(group_columns) = &column.group {
-            evaluate_columns(group_columns, row_number, relay_addresses, target, buf)?;
+            if evaluate_columns(group_columns, row_number, relay_addresses, target, buf)? {
+                return Ok(true);
+            }
         } else {
             // existing LOAD/OUTPUT/ROUTINE dispatch from the original
             // generate(), UNCHANGED, except: add a CoilType::RowRef arm
@@ -411,11 +422,25 @@ fn evaluate_columns(
             target.emit_not(buf);
         }
     }
-    Ok(())
+    Ok(false)
 }
 ```
 
-   Keep every existing behavior from the original `generate()` (LOAD/OUTPUT/ROUTINE dispatch, label creation, jump wrapping, `find_output_type`'s documented gap, `parse_value`'s error handling) — this step is additive, not a rewrite of working logic. All 11 existing `ladder-compiler` tests (from the original plan) must still pass unchanged after this refactor; if any assertion changes, that's a bug in the refactor, not a spec change.
+   `generate()`'s outer row loop becomes:
+
+```rust
+for row in &screen.rows {
+    let end_hit = evaluate_columns(&row.columns, row.row_number, &relay_addresses, target, &mut buf)?;
+    if end_hit {
+        break; // matches the original: nothing after End runs, in this row or any later one — including this row's own output_name write, since its expression didn't finish evaluating
+    }
+    if let Some(name) = &row.output_name {
+        // point 4, below
+    }
+}
+```
+
+   Keep every existing behavior from the original `generate()` (LOAD/OUTPUT/ROUTINE dispatch, label creation, jump wrapping, `find_output_type`'s documented gap, `parse_value`'s error handling) — this step is additive, not a rewrite of working logic. All 11 existing `ladder-compiler` tests (from the original plan) must still pass unchanged after this refactor, **including `end_coil_stops_traversal_before_later_rows`, which is the one that would silently start failing if the stop-signal propagation above is wrong** — pay particular attention to it. If any assertion changes, that's a bug in the refactor, not a spec change.
 
 3. **`CoilType::RowRef` handling**, added as a new match arm alongside the existing `Load`/`Output`/`Routine`/`_` arms:
 
@@ -432,7 +457,7 @@ CoilType::RowRef => {
 
    Note: `emit_load` takes an `input: i32` that `Target8085` re-splits into byte/bit via `find_param` internally — since `assign_relay_addresses` already computed `(byte, bit)`, reconstruct a single `input` value consistent with how `find_param` would split it (`(byte * 8 + bit) as i32`), so the round trip through `Target8085`'s own `find_param` call lands on the same address. Add a unit test locally if this reconstruction is non-obvious to verify.
 
-4. **Row-level `output_name` write**, added in `generate()`'s outer per-row loop, immediately after a row's `evaluate_columns` call returns successfully:
+4. **Row-level `output_name` write**, added in `generate()`'s outer per-row loop, immediately after a row's `evaluate_columns` call returns `Ok(false)` — i.e. only when that row did *not* hit an `End` coil, per point 2's `end_hit` check:
 
 ```rust
 if let Some(name) = &row.output_name {
