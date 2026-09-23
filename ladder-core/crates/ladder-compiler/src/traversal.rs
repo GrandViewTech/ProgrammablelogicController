@@ -1,4 +1,6 @@
-use ladder_model::{CoilType, Combinator, ColumnScreen, InputType, RowScreen, Screen};
+use std::collections::HashMap;
+
+use ladder_model::{CoilType, Combinator, ColumnScreen, InputType, Screen};
 
 use crate::target::Target;
 use crate::types::{CompileError, LoadCombinator, LoadKind, OutputType};
@@ -7,8 +9,21 @@ fn create_label(row_number: u32, column_number: u32) -> String {
     format!("LABEL_{row_number}_{column_number}")
 }
 
+/// The column immediately to the left of `column_index` within `columns`, or
+/// `None` if it's the first entry. Slice-based sibling of
+/// `RowScreen::previous` (requirements: `resolve_combinator`/
+/// `is_jump_required` need to walk either a row's top-level columns or a
+/// nested `group`'s own columns, so they operate on whatever slice they were
+/// called with rather than always `row.columns`).
+fn previous_in(columns: &[ColumnScreen], column_index: usize) -> Option<&ColumnScreen> {
+    column_index.checked_sub(1).and_then(|i| columns.get(i))
+}
+
 /// Reads the combinator directly off the block (requirements §7.3) instead
-/// of inferring it. The first column on a row has no combinator.
+/// of inferring it. The first column in `columns` has no combinator — this
+/// applies equally to a row's top-level columns and to a nested `group`'s
+/// own columns, since group members combine among themselves the same way
+/// top-level columns do (requirements: nested expressions).
 ///
 /// A *later* column with no combinator is malformed input, not a defaultable
 /// case: falling back to `LoadCombinator::None` would emit a plain
@@ -16,36 +31,33 @@ fn create_label(row_number: u32, column_number: u32) -> String {
 /// wrong logic on real hardware. Requirements §7.3 makes the combinator
 /// mandatory for every block after the first, so this is rejected instead.
 fn resolve_combinator(
-    row: &RowScreen,
+    columns: &[ColumnScreen],
+    row_number: u32,
     column_index: usize,
     column: &ColumnScreen,
 ) -> Result<LoadCombinator, CompileError> {
-    if row.previous(column_index).is_none() {
+    if previous_in(columns, column_index).is_none() {
         return Ok(LoadCombinator::None);
     }
     match column.combinator {
         Some(Combinator::And) => Ok(LoadCombinator::Series),
         Some(Combinator::Or) => Ok(LoadCombinator::Parallel),
-        // TODO(Task 3): XOR combining and nested-group evaluation are added by
-        // the recursive-evaluation rewrite of this function (implementation
-        // plan Task 3); this whole function is superseded there. Until then,
-        // treat XOR the same as OR (LoadCombinator has no XOR variant yet) so
-        // that a screen with an XOR-combined column compiles instead of
+        // TODO: real XOR codegen (`Target::emit_xor`) is not yet wired into
+        // combinator resolution — no test in this plan so far exercises a
+        // top-level or in-group XOR-combined LOAD. Until that lands, treat
+        // XOR the same as OR (LoadCombinator has no XOR variant yet) so that
+        // a screen with an XOR-combined column compiles instead of
         // panicking a Tauri command on frontend-supplied JSON. This is a
-        // temporary placeholder, not a design decision — Task 3 must replace
-        // this with real XOR codegen.
+        // temporary placeholder, not a design decision.
         Some(Combinator::Xor) => Ok(LoadCombinator::Parallel),
-        None => Err(CompileError::MissingCombinator {
-            row: row.row_number,
-            column: column.column_number,
-        }),
+        None => Err(CompileError::MissingCombinator { row: row_number, column: column.column_number }),
     }
 }
 
 /// Ported from CompileService.isJumpRequired: true when the previous column
-/// in the row is a LOAD.
-fn is_jump_required(row: &RowScreen, column_index: usize) -> bool {
-    matches!(row.previous(column_index), Some(previous) if previous.coil_type == CoilType::Load)
+/// in `columns` is a LOAD.
+fn is_jump_required(columns: &[ColumnScreen], column_index: usize) -> bool {
+    matches!(previous_in(columns, column_index), Some(previous) if previous.coil_type == CoilType::Load)
 }
 
 /// GAP (spec §3): the original's findOutputType(NoNc) lookup was disconnected
@@ -57,66 +69,168 @@ fn find_output_type() -> OutputType {
     OutputType::None
 }
 
+/// Pre-pass (requirements: named row outputs / cross-row references): every
+/// row with an `output_name` is assigned the next internal-relay address, in
+/// row order. `legacy::find_param` reproduces the original's byte/bit split
+/// exactly (see its doc comment), so an address computed here and later
+/// re-split by a `Target` implementation's own `find_param` call lands on
+/// the same (byte, bit).
+fn assign_relay_addresses(screen: &Screen) -> HashMap<String, (u32, u32)> {
+    let mut addresses = HashMap::new();
+    let mut next_relay_index: i32 = 0;
+    for row in &screen.rows {
+        if let Some(name) = &row.output_name {
+            addresses.insert(name.clone(), crate::legacy::find_param(next_relay_index));
+            next_relay_index += 1;
+        }
+    }
+    addresses
+}
+
+/// Companion to `assign_relay_addresses`: which row number owns each named
+/// output, so a `RowRef` can be checked for forward-reference (requirements:
+/// a row may only reference a strictly earlier row's output).
+fn assign_row_owners(screen: &Screen) -> HashMap<String, u32> {
+    let mut owners = HashMap::new();
+    for row in &screen.rows {
+        if let Some(name) = &row.output_name {
+            owners.insert(name.clone(), row.row_number);
+        }
+    }
+    owners
+}
+
 /// Faithful ASM emission for one screen. Runs synchronously; the Tauri
 /// command wrapping this (Task 9) is what makes it async off the UI thread
 /// (requirements §6, item 2) — `generate()` itself has no I/O.
 pub fn generate(screen: &Screen, target: &dyn Target) -> Result<String, CompileError> {
     let mut buf: Vec<String> = Vec::new();
+    let relay_addresses = assign_relay_addresses(screen);
+    let row_owners = assign_row_owners(screen);
 
-    'rows: for row in &screen.rows {
-        for (column_index, column) in row.columns.iter().enumerate() {
-            if column.is_blank {
-                continue;
+    for row in &screen.rows {
+        let end_hit =
+            evaluate_columns(&row.columns, row.row_number, &relay_addresses, &row_owners, target, &mut buf)?;
+        if end_hit {
+            // matches the original: nothing after End runs, in this row or
+            // any later one — including this row's own output_name write,
+            // since its expression didn't finish evaluating.
+            break;
+        }
+        if let Some(name) = &row.output_name {
+            let (byte, bit) =
+                relay_addresses.get(name).expect("assigned in the pre-pass for every row.output_name");
+            target.emit_relay_write(&mut buf, *byte, *bit);
+        }
+    }
+
+    Ok(buf.join("\n"))
+}
+
+/// Returns `Ok(true)` if an `End` coil was encountered anywhere in this
+/// slice (including inside a nested group) — the caller must stop
+/// processing immediately: skip the rest of this row (including any
+/// row-output write) and every row after it, matching the original's
+/// "END coil early-exit" behavior (requirements §3) exactly, now that the
+/// column walk is recursive instead of one flat loop with a labeled break.
+fn evaluate_columns(
+    columns: &[ColumnScreen],
+    row_number: u32,
+    relay_addresses: &HashMap<String, (u32, u32)>,
+    row_owners: &HashMap<String, u32>,
+    target: &dyn Target,
+    buf: &mut Vec<String>,
+) -> Result<bool, CompileError> {
+    for (column_index, column) in columns.iter().enumerate() {
+        if column.is_blank {
+            continue;
+        }
+        if column.coil_type == CoilType::End {
+            return Ok(true);
+        }
+
+        let label = create_label(row_number, column.column_number);
+
+        if let Some(group_columns) = &column.group {
+            // A group is evaluated recursively to get "the group's result"
+            // onto the carry, then treated exactly like a leaf load for the
+            // purposes of inversion below. If an End coil turns up inside
+            // the group, propagate the stop signal immediately — don't
+            // finish this group, don't apply this slot's inversion, don't
+            // continue the row.
+            if evaluate_columns(group_columns, row_number, relay_addresses, row_owners, target, buf)? {
+                return Ok(true);
             }
-
-            if column.coil_type == CoilType::End {
-                break 'rows;
-            }
-
-            let label = create_label(row.row_number, column.column_number);
-
+        } else {
             match column.coil_type {
                 CoilType::Load => {
-                    let input = parse_value(row.row_number, column)?;
+                    let input = parse_value(row_number, column)?;
                     match column.input_type {
                         Some(InputType::Flag) => {
                             // GAP (spec §3): PreferenceScreen-backed min-value bounds for
                             // FLAG inputs aren't ported (no settings store exists yet) —
                             // the original's `min - input` offset is not applied.
-                            let combinator = resolve_combinator(row, column_index, column)?;
-                            target.emit_load(&mut buf, LoadKind::Flag, input, combinator);
+                            let combinator = resolve_combinator(columns, row_number, column_index, column)?;
+                            target.emit_load(buf, LoadKind::Flag, input, combinator);
                         }
                         Some(InputType::Input) => {
-                            let combinator = resolve_combinator(row, column_index, column)?;
-                            target.emit_load(&mut buf, LoadKind::Input, input, combinator);
+                            let combinator = resolve_combinator(columns, row_number, column_index, column)?;
+                            target.emit_load(buf, LoadKind::Input, input, combinator);
                         }
                         Some(InputType::Word) => {
-                            let combinator = resolve_combinator(row, column_index, column)?;
-                            target.emit_load(&mut buf, LoadKind::Word, input, combinator);
+                            let combinator = resolve_combinator(columns, row_number, column_index, column)?;
+                            target.emit_load(buf, LoadKind::Word, input, combinator);
                         }
                         Some(InputType::Output) => {
-                            target.emit_output(&mut buf, input, find_output_type(), &label);
+                            target.emit_output(buf, input, find_output_type(), &label);
                         }
                         None => {}
                     }
                 }
                 CoilType::Output => {
-                    let value = parse_value(row.row_number, column)?;
-                    target.emit_output(&mut buf, value, find_output_type(), &label);
+                    let value = parse_value(row_number, column)?;
+                    target.emit_output(buf, value, find_output_type(), &label);
                 }
                 CoilType::Routine => {
-                    let jump = is_jump_required(row, column_index);
+                    let jump = is_jump_required(columns, column_index);
                     if jump {
-                        target.emit_jnc(&mut buf, &label);
+                        target.emit_jnc(buf, &label);
                     }
                     let asm = column.rendered_asm.as_deref().ok_or(CompileError::MissingRenderedAsm {
-                        row: row.row_number,
+                        row: row_number,
                         column: column.column_number,
                     })?;
                     buf.push(asm.to_string());
                     if jump {
-                        target.emit_label(&mut buf, &label);
+                        target.emit_label(buf, &label);
                     }
+                }
+                CoilType::RowRef => {
+                    let name = column.row_ref_name.as_deref().unwrap_or_default();
+                    if let Some(&owner_row) = row_owners.get(name) {
+                        if owner_row >= row_number {
+                            return Err(CompileError::ForwardRowReference {
+                                row: row_number,
+                                column: column.column_number,
+                                name: name.to_string(),
+                            });
+                        }
+                    }
+                    let (byte, bit) = relay_addresses.get(name).copied().ok_or_else(|| {
+                        CompileError::UnknownRowReference {
+                            row: row_number,
+                            column: column.column_number,
+                            name: name.to_string(),
+                        }
+                    })?;
+                    let combinator = resolve_combinator(columns, row_number, column_index, column)?;
+                    // Reconstruct a single `input` consistent with how
+                    // `find_param` would split it back apart, so the round
+                    // trip through a `Target`'s own `find_param` call (e.g.
+                    // `Target8085`) lands on the same (byte, bit) address
+                    // `assign_relay_addresses` computed.
+                    let input = (byte * 8 + bit) as i32;
+                    target.emit_load(buf, LoadKind::Flag, input, combinator);
                 }
                 _ => {
                     // LABEL, JUMP, LINE, LEFT_LINK, RIGHT_LINK, PARALLEL, DEFAULT,
@@ -125,9 +239,15 @@ pub fn generate(screen: &Screen, target: &dyn Target) -> Result<String, CompileE
                 }
             }
         }
-    }
 
-    Ok(buf.join("\n"))
+        // Inversion applies after obtaining this slot's value (leaf or
+        // group), before folding into the running total (design spec: NOT
+        // is orthogonal to AND/OR/XOR, not a 4th `Combinator` value).
+        if column.inverted {
+            target.emit_not(buf);
+        }
+    }
+    Ok(false)
 }
 
 fn parse_value(row_number: u32, column: &ColumnScreen) -> Result<i32, CompileError> {
@@ -141,7 +261,7 @@ fn parse_value(row_number: u32, column: &ColumnScreen) -> Result<i32, CompileErr
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ladder_model::{CoilType, ColumnScreen, RoutineOrigin};
+    use ladder_model::{CoilType, ColumnScreen, RoutineOrigin, RowScreen};
     use std::cell::RefCell;
 
     struct RecordingTarget {
@@ -367,5 +487,127 @@ mod tests {
             err,
             CompileError::InvalidValue { row: 3, column: 1, value: "not-a-number".into() }
         );
+    }
+
+    #[test]
+    fn a_group_is_evaluated_and_its_result_combines_like_a_leaf() {
+        // (raw_a AND raw_b) OR raw_c — the parenthesized pair is a `group` on
+        // the second top-level column; group members combine among themselves
+        // the same way top-level columns do (raw_b's combinator is AND,
+        // relative to raw_a, both inside the group).
+        let mut group_head = column(CoilType::Load);
+        group_head.column_number = 1;
+        group_head.input_type = Some(InputType::Input);
+        group_head.value = "1".into();
+
+        let mut group_tail = column(CoilType::Load);
+        group_tail.column_number = 2;
+        group_tail.input_type = Some(InputType::Input);
+        group_tail.value = "2".into();
+        group_tail.combinator = Some(Combinator::And);
+
+        let mut grouped = column(CoilType::Load);
+        grouped.column_number = 1;
+        grouped.input_type = Some(InputType::Input);
+        grouped.value = "0".into(); // unused when `group` is Some — the group's own columns are what's evaluated
+        grouped.group = Some(vec![group_head, group_tail]);
+
+        let mut raw_c = column(CoilType::Load);
+        raw_c.column_number = 2;
+        raw_c.input_type = Some(InputType::Input);
+        raw_c.value = "3".into();
+        raw_c.combinator = Some(Combinator::Or);
+
+        let screen = Screen {
+            rows: vec![RowScreen { row_number: 1, columns: vec![grouped, raw_c], output_name: None }],
+            end_row_number: None,
+            end_column_number: None,
+        };
+        let target = RecordingTarget::new();
+        let out = generate(&screen, &target).unwrap();
+        assert_eq!(
+            out,
+            "LOAD Input 1 None\nLOAD Input 2 Series\nLOAD Input 3 Parallel"
+        );
+    }
+
+    #[test]
+    fn inverted_flag_emits_not_before_folding_into_the_running_total() {
+        let mut raw = column(CoilType::Load);
+        raw.input_type = Some(InputType::Input);
+        raw.value = "1".into();
+        raw.inverted = true;
+        let screen = Screen {
+            rows: vec![RowScreen { row_number: 1, columns: vec![raw], output_name: None }],
+            end_row_number: None,
+            end_column_number: None,
+        };
+        let target = RecordingTarget::new();
+        let out = generate(&screen, &target).unwrap();
+        assert_eq!(out, "LOAD Input 1 None\nNOT");
+    }
+
+    #[test]
+    fn row_ref_reads_a_prior_row_s_named_output() {
+        let mut named_row_output = column(CoilType::Load);
+        named_row_output.input_type = Some(InputType::Input);
+        named_row_output.value = "1".into();
+
+        let mut row_ref = column(CoilType::RowRef);
+        row_ref.row_ref_name = Some("Conveyor Running".into());
+
+        let screen = Screen {
+            rows: vec![
+                RowScreen { row_number: 1, columns: vec![named_row_output], output_name: Some("Conveyor Running".into()) },
+                RowScreen { row_number: 2, columns: vec![row_ref], output_name: None },
+            ],
+            end_row_number: None,
+            end_column_number: None,
+        };
+        let target = RecordingTarget::new();
+        let out = generate(&screen, &target).unwrap();
+        // Row 1: loads its own column, then writes the result to the relay
+        // address assigned to "Conveyor Running" (the first named output, so
+        // relay index 0 -> byte 0, bit 0). Row 2: reads that same address back
+        // as a Flag-style load (RowRef reuses LoadKind::Flag — no new emission
+        // path needed for reading).
+        assert_eq!(
+            out,
+            "LOAD Input 1 None\nRELAY_WRITE 0 0\nLOAD Flag 0 None"
+        );
+    }
+
+    #[test]
+    fn unknown_row_reference_name_is_a_compile_error() {
+        let mut row_ref = column(CoilType::RowRef);
+        row_ref.row_ref_name = Some("Nonexistent".into());
+        let screen = Screen {
+            rows: vec![RowScreen { row_number: 1, columns: vec![row_ref], output_name: None }],
+            end_row_number: None,
+            end_column_number: None,
+        };
+        let target = RecordingTarget::new();
+        let err = generate(&screen, &target).unwrap_err();
+        assert_eq!(err, CompileError::UnknownRowReference { row: 1, column: 1, name: "Nonexistent".into() });
+    }
+
+    #[test]
+    fn referencing_a_row_that_is_not_earlier_is_a_compile_error() {
+        let mut row_ref = column(CoilType::RowRef);
+        row_ref.row_ref_name = Some("Later".into());
+        let mut later_output = column(CoilType::Load);
+        later_output.input_type = Some(InputType::Input);
+        later_output.value = "1".into();
+        let screen = Screen {
+            rows: vec![
+                RowScreen { row_number: 1, columns: vec![row_ref], output_name: None },
+                RowScreen { row_number: 2, columns: vec![later_output], output_name: Some("Later".into()) },
+            ],
+            end_row_number: None,
+            end_column_number: None,
+        };
+        let target = RecordingTarget::new();
+        let err = generate(&screen, &target).unwrap_err();
+        assert_eq!(err, CompileError::ForwardRowReference { row: 1, column: 1, name: "Later".into() });
     }
 }
