@@ -64,6 +64,19 @@ async function addRoutineBlock() {
   await click(await screen.findByText('BIT RESET'));
 }
 
+async function switchToEngineerMode() {
+  await click(screen.getByRole('radio', { name: 'Engineer' }));
+}
+
+/** Fills and submits the Engineer-only raw block form. */
+async function addRawBlock({ coil = 'Contact (LOAD)', value }: { coil?: string; value: string }) {
+  await act(async () => {
+    fireEvent.click(screen.getByLabelText(coil));
+    fireEvent.change(screen.getByLabelText('Address'), { target: { value } });
+  });
+  await click(screen.getByRole('button', { name: 'Add block' }));
+}
+
 async function nameTargetRowOutput(rowIndex: number, name: string) {
   const fields = screen.getAllByPlaceholderText('Name this row\u2019s output (optional)');
   await act(async () => {
@@ -149,6 +162,99 @@ describe('App — cross-row references', () => {
     // Still targeting row 1 — "X" is row 1's own output.
     await click(screen.getByRole('button', { name: 'Reference row output…' }));
     expect(screen.getByText(/no named row outputs yet/i)).toBeInTheDocument();
+  });
+});
+
+describe('App — raw block placement', () => {
+  it('hides the raw block form in Worker mode', async () => {
+    // Requirements §7.1: worker mode is routine-only.
+    await renderApp();
+    expect(screen.queryByLabelText('Add a raw block')).not.toBeInTheDocument();
+  });
+
+  it('shows the raw block form in Engineer mode', async () => {
+    await renderApp();
+    await switchToEngineerMode();
+    expect(screen.getByLabelText('Add a raw block')).toBeInTheDocument();
+  });
+
+  it('places a raw LOAD contact on the targeted row', async () => {
+    await renderApp();
+    await switchToEngineerMode();
+    await addRawBlock({ value: '19' });
+
+    const built = await waitForScreen((s) => s.rows.length === 1);
+    expect(built.rows[0].columns).toEqual([
+      expect.objectContaining({
+        rowNumber: 1,
+        columnNumber: 1,
+        coilType: 'LOAD',
+        inputType: 'INPUT',
+        value: '19',
+        combinator: null,
+        inverted: false,
+      }),
+    ]);
+  });
+
+  it('places a raw OUTPUT coil with no input type', async () => {
+    await renderApp();
+    await switchToEngineerMode();
+    await addRawBlock({ coil: 'Coil (OUTPUT)', value: '4' });
+
+    const built = await waitForScreen((s) => s.rows.length === 1);
+    expect(built.rows[0].columns[0]).toMatchObject({ coilType: 'OUTPUT', inputType: null, value: '4' });
+  });
+
+  it('routes a raw block appended to a non-empty row through the combinator picker', async () => {
+    await renderApp();
+    await switchToEngineerMode();
+    await addRawBlock({ value: '1' });
+    await waitForScreen((s) => s.rows[0]?.columns.length === 1);
+
+    await addRawBlock({ value: '2' });
+    // Not committed yet — the picker is open, exactly as it is for a routine.
+    expect(lastGeneratedScreen().rows[0].columns).toHaveLength(1);
+    expect(screen.getByRole('group', { name: /Choose AND, OR, or XOR/ })).toBeInTheDocument();
+
+    await click(screen.getByLabelText('Invert (NOT)'));
+    await click(screen.getByRole('button', { name: 'XOR' }));
+
+    const built = await waitForScreen((s) => s.rows[0].columns.length === 2);
+    expect(built.rows[0].columns[1]).toMatchObject({
+      coilType: 'LOAD',
+      value: '2',
+      columnNumber: 2,
+      combinator: 'XOR',
+      inverted: true,
+    });
+  });
+
+  it('routes a row reference appended to a non-empty row through the picker too', async () => {
+    // Previously this flow silently defaulted to AND with no picker step.
+    await renderApp();
+    await switchToEngineerMode();
+    await addRawBlock({ value: '1' });
+    await waitForScreen((s) => s.rows.length === 1);
+    await nameTargetRowOutput(0, 'X');
+    await waitForScreen((s) => s.rows[0].outputName === 'X');
+
+    await click(screen.getByRole('button', { name: 'New row' }));
+    await addRawBlock({ value: '2' });
+    await waitForScreen((s) => s.rows.length === 2);
+
+    await click(screen.getByRole('button', { name: 'Reference row output…' }));
+    await click(screen.getByText('X'));
+    expect(screen.getByRole('group', { name: /Choose AND, OR, or XOR/ })).toBeInTheDocument();
+    await click(screen.getByRole('button', { name: 'OR' }));
+
+    const built = await waitForScreen((s) => s.rows[1].columns.length === 2);
+    expect(built.rows[1].columns[1]).toMatchObject({
+      coilType: 'ROW_REF',
+      rowRefName: 'X',
+      combinator: 'OR',
+      inverted: false,
+    });
   });
 });
 
