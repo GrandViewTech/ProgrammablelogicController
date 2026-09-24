@@ -16,14 +16,22 @@ type RelayAddresses = HashMap<String, (u32, u32)>;
 /// `(index / 8, index % 8)` byte is what `Target8085::emit_relay_write` /
 /// `emit_relay_read` render as the literal address `RLY512_+{byte}`. The
 /// shipped routine library (`resources/routine/**.xml`) writes to literal
-/// relay addresses of its own, and several of them land inside that exact
-/// `RLY512_+n` family: `RLY512, RLY514, RLY517, RLY567, RLY598, RLY600`
-/// correspond to byte offsets `0, 2, 5, 55, 86, 88`. Starting at byte 0
-/// therefore handed a worker's first named row output the same physical bit
-/// a shipped routine already drives — a silent, data-dependent miscompile.
-/// (The library's other literals — `RLY33, RLY34, RLY35` — belong to a
-/// separate low bank with unrelated addressing and are not reachable via
-/// `RLY512_+n` at all, so they are not a collision risk here.)
+/// relay symbols of its own — `RLY512_519` (used as a `MOV DPTR,#...` byte
+/// base) and bit-level symbols `RLY514, RLY517, RLY567, RLY598, RLY600`
+/// (used as `SETB`/`CLR` operands) — that plausibly share this same address
+/// family. **The exact symbol-to-(byte,bit) resolution the original 8085
+/// assembler used for those `SETB`/`CLR` operands isn't fully recoverable
+/// from source alone**: reading the raw `N - 512` as this scheme's byte
+/// offset gives a maximum of 88 (`RLY600`); reading it as a bit index
+/// needing `/8` to reach a byte offset gives a maximum of 11. Both readings
+/// are far below the 100-byte start chosen here, so the reservation is safe
+/// under either interpretation — but neither reading is asserted as
+/// confirmed. Starting at byte 0 would have handed a worker's first named
+/// row output the same physical byte region a shipped routine may already
+/// drive — a silent, data-dependent miscompile either way.
+/// (The library's other literals — `RLY33, RLY34, RLY35` — are far below
+/// either reading of `RLY512`'s own range and use unrelated low-number
+/// addressing, so they aren't a collision risk here regardless.)
 ///
 /// **HEURISTIC RESERVATION — NOT A PROVEN-SAFE HARDWARE RANGE.** Byte 100 is
 /// simply a documented margin above the highest routine-library offset
@@ -1276,11 +1284,25 @@ mod tests {
 
     #[test]
     fn relay_alloc_start_byte_clears_the_highest_observed_routine_library_offset() {
-        // `RLY600` is the highest literal address in the routine library that
-        // falls in the `RLY512_+n` family: 600 - 512 = byte 88. Anything at
-        // or below that is reachable by a shipped routine's own writes.
-        const HIGHEST_OBSERVED_ROUTINE_LIBRARY_BYTE: u32 = 88;
-        assert!(RELAY_ALLOC_START_BYTE > HIGHEST_OBSERVED_ROUTINE_LIBRARY_BYTE);
+        // `RLY600` is the highest literal relay symbol in the routine library
+        // that plausibly falls in the `RLY512_+n` family. Its own
+        // symbol-to-(byte,bit) resolution isn't fully recoverable from source
+        // alone (see the doc comment on `RELAY_ALLOC_START_BYTE`), so this
+        // checks both plausible readings rather than asserting one as fact:
+        // the raw `600 - 512 = 88` reading, and the `/8`-for-a-true-byte-offset
+        // reading (`88 / 8 = 11`). `RELAY_ALLOC_START_BYTE` must clear the
+        // larger of the two to be safe under either interpretation.
+        const HIGHEST_OBSERVED_ROUTINE_LIBRARY_RAW_OFFSET: u32 = 88;
+        const HIGHEST_OBSERVED_ROUTINE_LIBRARY_BYTE_OFFSET: u32 =
+            HIGHEST_OBSERVED_ROUTINE_LIBRARY_RAW_OFFSET / 8;
+        // `assert!` on two compile-time constants trips clippy's
+        // `assertions-on-constants` lint under `--all-targets`; wrapping it in
+        // a `const {}` block makes the check happen at compile time instead,
+        // which is what the lint is steering toward anyway.
+        const {
+            assert!(RELAY_ALLOC_START_BYTE > HIGHEST_OBSERVED_ROUTINE_LIBRARY_RAW_OFFSET);
+            assert!(RELAY_ALLOC_START_BYTE > HIGHEST_OBSERVED_ROUTINE_LIBRARY_BYTE_OFFSET);
+        }
         assert_eq!(crate::legacy::find_param(RELAY_ALLOC_START_INDEX), (RELAY_ALLOC_START_BYTE, 0));
     }
 

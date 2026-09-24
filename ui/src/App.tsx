@@ -500,12 +500,16 @@ export default function App() {
             // diagram's shape, which requirements §7.1 keeps out of worker
             // mode. A worker still gets the plain AND/OR/XOR + Invert choice.
             onGroup={mode === 'ENGINEER' ? handleStartGrouping : undefined}
+            // See CombinatorPicker's own doc comment: a bare routine block
+            // combined via XOR can silently collapse to a constant result.
+            excludeXor={pendingAppend.block.kind === 'ROUTINE'}
           />
         )}
         {pendingAppend?.stage.step === 'GROUP_INNER' && (
           <CombinatorPicker
             prompt="Inside the group: how does the new block join the previous one?"
             onPick={handleInnerCombinatorPick}
+            excludeXor={pendingAppend.block.kind === 'ROUTINE'}
           />
         )}
         {pendingAppend?.stage.step === 'GROUP_OUTER' && (

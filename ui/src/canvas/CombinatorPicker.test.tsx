@@ -51,4 +51,20 @@ describe('CombinatorPicker', () => {
     expect(screen.getByText('How does the group combine?')).toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'How does the group combine?' })).toBeInTheDocument();
   });
+
+  it('hides the XOR button when excludeXor is set, e.g. combining a routine block', () => {
+    // A routine block combined via XOR can silently collapse to a constant
+    // result (most shipped routines never touch the carry flag), so the
+    // picker hides the option rather than let it produce a rung that always
+    // reads the same regardless of the routine's actual state.
+    render(<CombinatorPicker onPick={() => {}} excludeXor />);
+    expect(screen.getByText('AND')).toBeInTheDocument();
+    expect(screen.getByText('OR')).toBeInTheDocument();
+    expect(screen.queryByText('XOR')).not.toBeInTheDocument();
+  });
+
+  it('still offers XOR when excludeXor is not set', () => {
+    render(<CombinatorPicker onPick={() => {}} />);
+    expect(screen.getByText('XOR')).toBeInTheDocument();
+  });
 });

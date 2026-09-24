@@ -17,17 +17,28 @@ const DEFAULT_LABEL = 'Choose AND, OR, or XOR, and optionally invert';
  * rung's current last block. The invert checkbox deliberately does not apply
  * to that path — grouping captures its own inversion choices in the two
  * follow-up steps, one for the new block and one for the group as a whole.
+ *
+ * `excludeXor` hides the XOR button. Pass it when the block this picker is
+ * combining is a bare ROUTINE block: most shipped routines never touch the
+ * carry flag, so their compiled "own result" lands identical to the running
+ * total being combined against, making `X XOR X` collapse to a constant
+ * 0 (or 1, inverted) instead of a real per-routine comparison — a confirmed
+ * compiler-level regression versus prior behavior, parked as not
+ * blocking but cheap to keep out of reach in the UI meanwhile.
  */
 export function CombinatorPicker({
   prompt,
   onPick,
   onGroup,
+  excludeXor,
 }: {
   prompt?: string;
   onPick: (combinator: Combinator, inverted: boolean) => void;
   onGroup?: () => void;
+  excludeXor?: boolean;
 }) {
   const [inverted, setInverted] = useState(false);
+  const combinators = excludeXor ? (['AND', 'OR'] as const) : (['AND', 'OR', 'XOR'] as const);
 
   return (
     <div className="combinator-picker" role="group" aria-label={prompt ?? DEFAULT_LABEL}>
@@ -42,7 +53,7 @@ export function CombinatorPicker({
         Invert (NOT)
       </label>
       <div className="combinator-picker__buttons">
-        {(['AND', 'OR', 'XOR'] as const).map((combinator) => (
+        {combinators.map((combinator) => (
           <button key={combinator} onClick={() => onPick(combinator, inverted)}>
             {combinator}
           </button>
