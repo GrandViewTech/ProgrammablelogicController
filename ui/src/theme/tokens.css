@@ -178,6 +178,46 @@ code, pre, .mono {
   gap: 12px;
 }
 
+/* Always visible, unlike `.row-outputs-bar` (which only appears once a row
+   exists): a worker needs "New row" reachable from an empty screen too, and
+   needs to see which rung the next block will land on before placing it. */
+.canvas-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  flex: none;
+}
+
+.canvas-toolbar__target {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.canvas-toolbar__target strong {
+  color: var(--color-text);
+}
+
+.canvas-toolbar__new-row {
+  margin-left: auto;
+  padding: 7px 16px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.canvas-toolbar__new-row:hover {
+  background: color-mix(in srgb, var(--color-accent) 20%, var(--color-card-bg));
+}
+
 /* One row per rung: its output name field, plus a single action to open
    the reference picker. Sits above the canvas rather than inline in each
    RowLane, so naming/referencing stays independent of view style (Cards vs
@@ -200,10 +240,22 @@ code, pre, .mono {
   gap: 6px;
 }
 
+/* Doubles as the "add to this rung" selector — pressed state marks the rung
+   that `targetRowNumber` currently points at. */
 .row-outputs-bar__label {
+  padding: 5px 12px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
   font-size: 12px;
   font-weight: 700;
   color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.row-outputs-bar__label[aria-pressed='true'] {
+  background: var(--color-accent);
+  color: #FFFFFF;
 }
 
 .row-output-name {
@@ -418,7 +470,7 @@ code, pre, .mono {
   font-family: var(--font-code);
 }
 
-/* AND continuations only — OR is drawn as a real branch (.row-branch)
+/* AND and XOR continuations — OR is drawn as a real branch (.row-branch)
    rather than a badge, since a badge alone doesn't read as "either path"
    the way an actual fork/merge does. */
 .combinator-badge {
@@ -434,6 +486,13 @@ code, pre, .mono {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.4px;
+}
+
+/* XOR is rarer and semantically sharper than AND — a distinct fill keeps a
+   rung's exclusive-or joins scannable at a glance instead of blending into
+   the accent-colored AND badges. */
+.combinator-badge--xor {
+  background: var(--color-text);
 }
 
 /* A run of one anchor block plus one or more OR-connected blocks, each

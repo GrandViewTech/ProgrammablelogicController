@@ -56,6 +56,33 @@ describe('Canvas', () => {
     expect(screen.getByLabelText('Contact')).toBeInTheDocument();
   });
 
+  it('renders a series block’s actual combinator in the badge, not a hardcoded AND', () => {
+    // The badge used to always read "AND", which silently mislabeled every
+    // XOR rung this plan made possible.
+    const xorScreen: Screen = {
+      rows: [
+        {
+          rowNumber: 1,
+          columns: [
+            wideScreen.rows[0].columns[0],
+            { ...wideScreen.rows[0].columns[1], combinator: 'XOR' },
+          ],
+        },
+      ],
+      endRowNumber: null,
+      endColumnNumber: null,
+    };
+    const { container } = render(<Canvas screen={xorScreen} mode="WORKER" viewStyle="CARDS" />);
+    expect(screen.getByText('XOR')).toBeInTheDocument();
+    expect(screen.queryByText('AND')).not.toBeInTheDocument();
+    expect(container.querySelector('.combinator-badge--xor')).not.toBeNull();
+  });
+
+  it('still renders AND for an AND-combined block', () => {
+    render(<Canvas screen={wideScreen} mode="WORKER" viewStyle="CARDS" />);
+    expect(screen.getByText('AND')).toBeInTheDocument();
+  });
+
   it('renders an OR-connected pair of blocks as a branch group', () => {
     const branchedScreen: Screen = {
       rows: [

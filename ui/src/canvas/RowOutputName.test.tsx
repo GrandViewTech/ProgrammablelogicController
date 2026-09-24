@@ -22,6 +22,28 @@ describe('RowOutputName', () => {
     expect(onRename).toHaveBeenCalledWith('Conveyor Running');
   });
 
+  it('snaps the field back to the applied name when the rename is rejected', () => {
+    // A duplicate name is refused by App (row output names key the
+    // compiler's relay-address allocation, so they have to stay unique).
+    // The field must not keep showing a name the screen never took.
+    const onRename = vi.fn().mockReturnValue(false);
+    render(<RowOutputName name="Conveyor Running" onRename={onRename} />);
+    const input = screen.getByDisplayValue('Conveyor Running');
+    fireEvent.change(input, { target: { value: 'Door Open' } });
+    fireEvent.blur(input);
+    expect(onRename).toHaveBeenCalledWith('Door Open');
+    expect(screen.getByDisplayValue('Conveyor Running')).toBeInTheDocument();
+  });
+
+  it('keeps the typed name when the rename is accepted', () => {
+    const onRename = vi.fn().mockReturnValue(true);
+    render(<RowOutputName name="Conveyor Running" onRename={onRename} />);
+    const input = screen.getByDisplayValue('Conveyor Running');
+    fireEvent.change(input, { target: { value: 'Door Open' } });
+    fireEvent.blur(input);
+    expect(screen.getByDisplayValue('Door Open')).toBeInTheDocument();
+  });
+
   it('calls onRename with null when the field is cleared', () => {
     const onRename = vi.fn();
     render(<RowOutputName name="Conveyor Running" onRename={onRename} />);
