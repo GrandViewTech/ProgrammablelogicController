@@ -118,13 +118,95 @@ function appendColumn(prev: Screen, rowNumber: number, makeColumn: (columnNumber
   };
 }
 
+/**
+ * Replaces the row's current last top-level column with a single new column
+ * whose `group` is `[thatOldColumn, theNewColumn]` — the one grouping
+ * gesture this app offers ("group with the immediately preceding block"),
+ * deliberately not general multi-select.
+ *
+ * Two real combinator choices are captured, never defaulted:
+ *
+ * - `makeColumn` builds the new block already carrying the combinator and
+ *   inversion describing how it joins the old block *inside* the group.
+ * - `outer` describes how the whole group joins whatever precedes it in the
+ *   row, and becomes the grouping column's own combinator/inversion —
+ *   exactly what the compiler reads for a `group` slot (design spec §3).
+ *
+ * Two details that matter to the compiler:
+ *
+ * - The old column's own combinator is cleared as it moves inside the group.
+ *   It described how that block joined what preceded it *in the row*; that
+ *   role now belongs to the grouping column. Leaving it would describe a
+ *   relationship to a sibling it no longer has.
+ * - Column numbering restarts at 1 inside the group, matching `traversal.rs`,
+ *   which evaluates a group's own `Vec<ColumnScreen>` as its own slice with
+ *   its own first-position rules.
+ */
+function groupWithLastColumn(
+  prev: Screen,
+  rowNumber: number,
+  makeColumn: (columnNumber: number) => ColumnScreen,
+  outer: { combinator: Combinator | null; inverted: boolean },
+): Screen {
+  const row = prev.rows.find((r) => r.rowNumber === rowNumber);
+  // Nothing to group with — shouldn't be reachable (the grouping action is
+  // only offered once a rung has a block on it), but falling back to a plain
+  // append beats producing a one-member group.
+  if (!row || row.columns.length === 0) return appendColumn(prev, rowNumber, makeColumn);
+
+  const precedingColumns = row.columns.slice(0, -1);
+  const oldLastColumn = row.columns[row.columns.length - 1];
+
+  const groupingColumn: ColumnScreen = {
+    rowNumber,
+    columnNumber: oldLastColumn.columnNumber,
+    // The compiler never reads `coilType` for a column with a `group`: it
+    // dispatches on `group` being present, before the coil-type match. LOAD
+    // matches the convention `traversal.rs`'s own group tests use.
+    coilType: 'LOAD',
+    inputType: null,
+    value: '',
+    tag: '',
+    comment: '',
+    routineOrigin: null,
+    renderedAsm: null,
+    // Only meaningful when something actually precedes the group; when the
+    // group becomes the row's first column there is nothing to combine with,
+    // and a first-position combinator is ignored anyway.
+    combinator: precedingColumns.length > 0 ? outer.combinator : null,
+    isBlank: false,
+    inverted: outer.inverted,
+    group: [{ ...oldLastColumn, columnNumber: 1, combinator: null }, makeColumn(2)],
+  };
+
+  return {
+    ...prev,
+    rows: prev.rows.map((r) => (r.rowNumber === rowNumber ? { ...r, columns: [...precedingColumns, groupingColumn] } : r)),
+  };
+}
+
+/**
+ * Which question the combinator picker is currently asking for a pending
+ * block. A plain append asks one; grouping asks two more, in sequence.
+ */
+type AppendStage =
+  | { step: 'COMBINE' }
+  | { step: 'GROUP_INNER' }
+  | { step: 'GROUP_OUTER'; innerCombinator: Combinator; innerInverted: boolean };
+
 export default function App() {
   const [mode, setMode] = useState<EditMode>('WORKER');
   const [viewStyle, setViewStyle] = useState<ViewStyle>('CARDS');
   const [activeScreen, setActiveScreen] = useState<Screen>({ rows: [], endRowNumber: null, endColumnNumber: null });
   // The block a worker has asked to place on a non-empty rung, parked until
-  // they pick how it combines with what's already there.
-  const [pendingAppend, setPendingAppend] = useState<{ block: PendingBlock; rowNumber: number } | null>(null);
+  // they pick how it combines with what's already there — and, if they chose
+  // to group it with the previous block, through the two follow-up questions
+  // that grouping needs answered (`AppendStage`).
+  const [pendingAppend, setPendingAppend] = useState<{
+    block: PendingBlock;
+    rowNumber: number;
+    stage: AppendStage;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   // Compile errors reported by `PreviewPanel`'s always-on `generate` check.
   // Kept at app level, not inside the panel, so a worker sees an unbuildable
@@ -163,7 +245,7 @@ export default function App() {
     if (!targetRow || targetRow.columns.length === 0) {
       void commitAppend(block, targetRowNumber, null, false);
     } else {
-      setPendingAppend({ block, rowNumber: targetRowNumber });
+      setPendingAppend({ block, rowNumber: targetRowNumber, stage: { step: 'COMBINE' } });
     }
   }
 
@@ -200,6 +282,73 @@ export default function App() {
       // beats the previous behavior, where the click simply did nothing.
       setError(`Could not add "${describePendingBlock(block)}": ${message(e)}`);
     }
+  }
+
+  /**
+   * Same pipeline as `commitAppend`, but the new column is bracketed together
+   * with the rung's current last column instead of appended beside it.
+   */
+  async function commitGroup(
+    block: PendingBlock,
+    rowNumber: number,
+    inner: { combinator: Combinator; inverted: boolean },
+    outer: { combinator: Combinator | null; inverted: boolean },
+  ) {
+    setPendingAppend(null);
+    try {
+      const resolved = await resolveBlock(block);
+      setActiveScreen((prev) =>
+        groupWithLastColumn(
+          prev,
+          rowNumber,
+          (columnNumber) => buildColumn(resolved, rowNumber, columnNumber, inner.combinator, inner.inverted),
+          outer,
+        ),
+      );
+      setError(null);
+    } catch (e) {
+      setError(`Could not add "${describePendingBlock(block)}": ${message(e)}`);
+    }
+  }
+
+  /** "Group with previous block" — moves on to the first of two questions. */
+  function handleStartGrouping() {
+    setPendingAppend((prev) => (prev ? { ...prev, stage: { step: 'GROUP_INNER' } } : prev));
+  }
+
+  /**
+   * Answer to "how does the new block join the previous one *inside* the
+   * group". If something precedes the block being swallowed into the group,
+   * a second question follows (how the group itself joins that); if the group
+   * is becoming the rung's first column there is nothing before it to combine
+   * with, so it commits straight away.
+   */
+  function handleInnerCombinatorPick(combinator: Combinator, inverted: boolean) {
+    if (!pendingAppend) return;
+    const { block, rowNumber } = pendingAppend;
+    const row = activeScreenRef.current.rows.find((r) => r.rowNumber === rowNumber);
+    const groupWillHavePrecedingSiblings = (row?.columns.length ?? 0) > 1;
+    if (groupWillHavePrecedingSiblings) {
+      setPendingAppend({
+        block,
+        rowNumber,
+        stage: { step: 'GROUP_OUTER', innerCombinator: combinator, innerInverted: inverted },
+      });
+      return;
+    }
+    void commitGroup(block, rowNumber, { combinator, inverted }, { combinator: null, inverted: false });
+  }
+
+  /** Answer to "how does the whole group join what came before it". */
+  function handleOuterCombinatorPick(combinator: Combinator, inverted: boolean) {
+    if (!pendingAppend || pendingAppend.stage.step !== 'GROUP_OUTER') return;
+    const { block, rowNumber, stage } = pendingAppend;
+    void commitGroup(
+      block,
+      rowNumber,
+      { combinator: stage.innerCombinator, inverted: stage.innerInverted },
+      { combinator, inverted },
+    );
   }
 
   // Renaming a row's output is a pure local edit (no backend round-trip),
@@ -343,9 +492,22 @@ export default function App() {
           )}
           <Canvas screen={activeScreen} mode={mode} viewStyle={viewStyle} />
         </div>
-        {pendingAppend && (
+        {pendingAppend?.stage.step === 'COMBINE' && (
           <CombinatorPicker
             onPick={(c, inverted) => commitAppend(pendingAppend.block, pendingAppend.rowNumber, c, inverted)}
+            onGroup={handleStartGrouping}
+          />
+        )}
+        {pendingAppend?.stage.step === 'GROUP_INNER' && (
+          <CombinatorPicker
+            prompt="Inside the group: how does the new block join the previous one?"
+            onPick={handleInnerCombinatorPick}
+          />
+        )}
+        {pendingAppend?.stage.step === 'GROUP_OUTER' && (
+          <CombinatorPicker
+            prompt="How does the group combine with what comes before it?"
+            onPick={handleOuterCombinatorPick}
           />
         )}
         {showReferencePicker && (

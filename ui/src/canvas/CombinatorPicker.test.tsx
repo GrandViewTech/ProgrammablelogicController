@@ -31,4 +31,24 @@ describe('CombinatorPicker', () => {
     fireEvent.click(screen.getByText('AND'));
     expect(onPick).toHaveBeenCalledWith('AND', true);
   });
+
+  it('offers no grouping action unless onGroup is supplied', () => {
+    render(<CombinatorPicker onPick={() => {}} />);
+    expect(screen.queryByRole('button', { name: 'Group with previous block' })).not.toBeInTheDocument();
+  });
+
+  it('calls onGroup when the grouping action is used', () => {
+    const onGroup = vi.fn();
+    const onPick = vi.fn();
+    render(<CombinatorPicker onPick={onPick} onGroup={onGroup} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Group with previous block' }));
+    expect(onGroup).toHaveBeenCalled();
+    expect(onPick).not.toHaveBeenCalled();
+  });
+
+  it('shows the prompt and uses it as the accessible name when given', () => {
+    render(<CombinatorPicker prompt="How does the group combine?" onPick={() => {}} />);
+    expect(screen.getByText('How does the group combine?')).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'How does the group combine?' })).toBeInTheDocument();
+  });
 });

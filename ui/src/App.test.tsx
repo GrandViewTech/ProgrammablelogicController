@@ -258,6 +258,110 @@ describe('App — raw block placement', () => {
   });
 });
 
+describe('App — group authoring', () => {
+  const GROUP = 'Group with previous block';
+
+  async function engineerModeWithRawBlocks(addresses: string[]) {
+    await renderApp();
+    await switchToEngineerMode();
+    for (const [index, address] of addresses.entries()) {
+      await addRawBlock({ value: address });
+      if (index > 0) await click(screen.getByRole('button', { name: 'AND' }));
+      await waitForScreen((s) => (s.rows[0]?.columns.length ?? 0) === index + 1);
+    }
+  }
+
+  it('offers grouping only once the rung already has a block', async () => {
+    await renderApp();
+    await switchToEngineerMode();
+    // First block on an empty rung: committed straight away, no picker at all.
+    await addRawBlock({ value: '1' });
+    await waitForScreen((s) => s.rows.length === 1);
+    expect(screen.queryByRole('button', { name: GROUP })).not.toBeInTheDocument();
+
+    await addRawBlock({ value: '2' });
+    expect(screen.getByRole('button', { name: GROUP })).toBeInTheDocument();
+  });
+
+  it('builds a two-member group from the last block and the new one', async () => {
+    await engineerModeWithRawBlocks(['1']);
+    await addRawBlock({ value: '2' });
+    await click(screen.getByRole('button', { name: GROUP }));
+
+    // Only the inner question is asked: the group is becoming the rung's
+    // first column, so there is nothing before it to combine with.
+    expect(screen.getByRole('group', { name: /Inside the group/ })).toBeInTheDocument();
+    await click(screen.getByLabelText('Invert (NOT)'));
+    await click(screen.getByRole('button', { name: 'OR' }));
+
+    const built = await waitForScreen((s) => Boolean(s.rows[0].columns[0].group));
+    expect(built.rows[0].columns).toHaveLength(1);
+    const grouping = built.rows[0].columns[0];
+    expect(grouping.combinator).toBeNull();
+    expect(grouping.inverted).toBe(false);
+    expect(grouping.group).toHaveLength(2);
+    // The old last block, now the group's first member: its own combinator is
+    // cleared, since "how I join what precedes me" is now the group's job.
+    expect(grouping.group![0]).toMatchObject({ value: '1', columnNumber: 1, combinator: null });
+    // The new block, carrying the INNER combinator/inversion choice.
+    expect(grouping.group![1]).toMatchObject({
+      value: '2',
+      columnNumber: 2,
+      combinator: 'OR',
+      inverted: true,
+    });
+  });
+
+  it('captures both combinator choices when the group has something before it', async () => {
+    // Rung: [1, 2] -> group 2 with the new 3 -> [1, (2 XOR 3)].
+    await engineerModeWithRawBlocks(['1', '2']);
+    await addRawBlock({ value: '3' });
+    await click(screen.getByRole('button', { name: GROUP }));
+
+    // (a) how the new block joins the old one INSIDE the group.
+    expect(screen.getByRole('group', { name: /Inside the group/ })).toBeInTheDocument();
+    await click(screen.getByRole('button', { name: 'XOR' }));
+
+    // (b) how the whole group joins what came before it — a second, separate
+    // question, asked rather than silently defaulted.
+    expect(screen.getByRole('group', { name: /How does the group combine/ })).toBeInTheDocument();
+    await click(screen.getByLabelText('Invert (NOT)'));
+    await click(screen.getByRole('button', { name: 'OR' }));
+
+    const built = await waitForScreen((s) => s.rows[0].columns.length === 2);
+    const [first, grouping] = built.rows[0].columns;
+    expect(first.value).toBe('1');
+    expect(first.group).toBeUndefined();
+    expect(grouping).toMatchObject({ combinator: 'OR', inverted: true, columnNumber: 2 });
+    expect(grouping.group).toHaveLength(2);
+    expect(grouping.group![0]).toMatchObject({ value: '2', columnNumber: 1, combinator: null });
+    expect(grouping.group![1]).toMatchObject({ value: '3', columnNumber: 2, combinator: 'XOR' });
+  });
+
+  it('groups a routine block with the previous block too', async () => {
+    await engineerModeWithRawBlocks(['1']);
+    await addRoutineBlock();
+    await click(screen.getByRole('button', { name: GROUP }));
+    await click(screen.getByRole('button', { name: 'AND' }));
+
+    const built = await waitForScreen((s) => Boolean(s.rows[0].columns[0].group));
+    expect(built.rows[0].columns[0].group![1]).toMatchObject({
+      coilType: 'ROUTINE',
+      renderedAsm: 'MOV DPTR,#RLY512_519+',
+      combinator: 'AND',
+    });
+  });
+
+  it('still appends flat when a plain combinator is chosen', async () => {
+    await engineerModeWithRawBlocks(['1']);
+    await addRawBlock({ value: '2' });
+    await click(screen.getByRole('button', { name: 'AND' }));
+
+    const built = await waitForScreen((s) => s.rows[0].columns.length === 2);
+    expect(built.rows[0].columns.every((c) => c.group === undefined)).toBe(true);
+  });
+});
+
 describe('App — row output names', () => {
   /** Two rows, each holding one routine block. */
   async function twoRows() {

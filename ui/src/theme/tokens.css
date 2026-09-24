@@ -629,9 +629,34 @@ code, pre, .mono {
   box-shadow: 0 8px 28px rgba(20, 20, 30, 0.18);
 }
 
+/* Names which of the group flow's two questions this instance is asking —
+   without it, two identical AND/OR/XOR rows in a row would be ambiguous. */
+.combinator-picker__prompt {
+  max-width: 280px;
+  padding: 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
 .combinator-picker__buttons {
   display: flex;
   gap: 8px;
+}
+
+/* Set apart from the AND/OR/XOR row: it doesn't answer the same question,
+   it switches to a different (two-step) one. Selector is deliberately
+   `button.…` so it outranks the `.combinator-picker button` rule below
+   without reaching for `!important`. */
+.combinator-picker button.combinator-picker__group {
+  margin-top: 2px;
+  background: var(--color-sunken-bg);
+  color: var(--color-text);
+  font-size: 12px;
+}
+
+.combinator-picker button.combinator-picker__group:hover {
+  background: var(--color-accent-soft);
 }
 
 .combinator-picker__invert {
