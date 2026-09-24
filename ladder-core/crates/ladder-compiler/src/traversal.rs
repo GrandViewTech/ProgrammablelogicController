@@ -8,6 +8,41 @@ use crate::types::{CompileError, LoadCombinator, LoadKind, OutputType};
 /// Named-output relay addresses: row-output name -> (byte, bit).
 type RelayAddresses = HashMap<String, (u32, u32)>;
 
+/// Byte offset where this compiler's own automatic relay allocation (named
+/// row outputs first, then non-leading-group / XOR / routine scratch slots)
+/// begins, instead of byte 0.
+///
+/// **Why not 0.** Both allocators below feed `legacy::find_param`, whose
+/// `(index / 8, index % 8)` byte is what `Target8085::emit_relay_write` /
+/// `emit_relay_read` render as the literal address `RLY512_+{byte}`. The
+/// shipped routine library (`resources/routine/**.xml`) writes to literal
+/// relay addresses of its own, and several of them land inside that exact
+/// `RLY512_+n` family: `RLY512, RLY514, RLY517, RLY567, RLY598, RLY600`
+/// correspond to byte offsets `0, 2, 5, 55, 86, 88`. Starting at byte 0
+/// therefore handed a worker's first named row output the same physical bit
+/// a shipped routine already drives — a silent, data-dependent miscompile.
+/// (The library's other literals — `RLY33, RLY34, RLY35` — belong to a
+/// separate low bank with unrelated addressing and are not reachable via
+/// `RLY512_+n` at all, so they are not a collision risk here.)
+///
+/// **HEURISTIC RESERVATION — NOT A PROVEN-SAFE HARDWARE RANGE.** Byte 100 is
+/// simply a documented margin above the highest routine-library offset
+/// observed at the time of this fix (88). It is not derived from a hardware
+/// memory map, and nothing here proves bytes 100+ are free, or even that
+/// they exist, on real PLC hardware. A real fix needs either a
+/// hardware-provided safe address range, or the routine library's own
+/// addressing unified with this scheme so both draw from one allocator.
+/// Flagged in the same spirit as design spec §6's caveat about the relay
+/// write mnemonic needing hardware validation — stated honestly rather than
+/// asserted as safe. Adding a routine to the library that writes above
+/// `RLY512_+99` re-opens the collision this constant closes.
+const RELAY_ALLOC_START_BYTE: u32 = 100;
+
+/// `RELAY_ALLOC_START_BYTE` expressed in the flat index space both
+/// allocators count in — `find_param` splits it back to
+/// `(RELAY_ALLOC_START_BYTE, 0)`.
+const RELAY_ALLOC_START_INDEX: i32 = (RELAY_ALLOC_START_BYTE * 8) as i32;
+
 fn create_label(row_number: u32, column_number: u32) -> String {
     format!("LABEL_{row_number}_{column_number}")
 }
@@ -170,15 +205,22 @@ fn find_output_type() -> OutputType {
 /// inside it. Instead, scratch addresses are allocated lazily, inline,
 /// during `evaluate_columns` itself, via a monotonically-increasing counter
 /// (`next_scratch_index`) that `generate()` seeds starting from
-/// `relay_addresses.len()` — guaranteeing scratch indices never collide with
-/// named-output indices (which occupy `0..relay_addresses.len()`) — and
-/// threads through every recursive call by mutable reference. Allocation
-/// then happens in the exact same depth-first order as evaluation, and each
-/// non-leading group is allocated its slot exactly once, at the moment it's
-/// about to be used, so no two groups can ever share an index.
+/// `RELAY_ALLOC_START_INDEX + relay_addresses.len()` — guaranteeing scratch
+/// indices never collide with named-output indices (which occupy
+/// `RELAY_ALLOC_START_INDEX..RELAY_ALLOC_START_INDEX + relay_addresses.len()`)
+/// — and threads through every recursive call by mutable reference.
+/// Allocation then happens in the exact same depth-first order as
+/// evaluation, and each non-leading group is allocated its slot exactly
+/// once, at the moment it's about to be used, so no two groups can ever
+/// share an index.
+///
+/// Both sequences start at `RELAY_ALLOC_START_INDEX`, not 0 — see that
+/// constant's doc comment for the routine-library collision that motivates
+/// it, and for why the chosen offset is an honestly-flagged heuristic rather
+/// than a proven-safe hardware range.
 fn assign_relay_addresses(screen: &Screen) -> RelayAddresses {
     let mut addresses = HashMap::new();
-    let mut next_relay_index: i32 = 0;
+    let mut next_relay_index: i32 = RELAY_ALLOC_START_INDEX;
     for row in &screen.rows {
         if let Some(name) = &row.output_name {
             addresses.insert(name.clone(), crate::legacy::find_param(next_relay_index));
@@ -208,10 +250,13 @@ pub fn generate(screen: &Screen, target: &dyn Target) -> Result<String, CompileE
     let mut buf: Vec<String> = Vec::new();
     let relay_addresses = assign_relay_addresses(screen);
     let row_owners = assign_row_owners(screen);
-    // Scratch indices for non-leading groups start right after the
-    // named-output indices already handed out above, so the two address
-    // spaces never collide (see `assign_relay_addresses`'s doc comment).
-    let mut next_scratch_index: i32 = relay_addresses.len() as i32;
+    // Scratch indices for non-leading groups (and XOR / routine combines)
+    // start right after the named-output indices already handed out above,
+    // so the two address spaces never collide (see
+    // `assign_relay_addresses`'s doc comment). Both are offset by
+    // `RELAY_ALLOC_START_INDEX` to stay clear of the addresses the shipped
+    // routine library writes to directly.
+    let mut next_scratch_index: i32 = RELAY_ALLOC_START_INDEX + relay_addresses.len() as i32;
 
     for row in &screen.rows {
         let end_hit = evaluate_columns(
@@ -348,7 +393,7 @@ fn evaluate_columns(
                 }
             }
         } else {
-            let mut xor_inversion_applied = false;
+            let mut inversion_applied = false;
             match column.coil_type {
                 CoilType::Load => {
                     let input = parse_value(row_number, column)?;
@@ -358,17 +403,17 @@ fn evaluate_columns(
                             // FLAG inputs aren't ported (no settings store exists yet) —
                             // the original's `min - input` offset is not applied.
                             let ctx = ColumnContext { columns, row_number, column_index, column };
-                            xor_inversion_applied =
+                            inversion_applied =
                                 emit_combined_load(ctx, LoadKind::Flag, input, next_scratch_index, target, buf)?;
                         }
                         Some(InputType::Input) => {
                             let ctx = ColumnContext { columns, row_number, column_index, column };
-                            xor_inversion_applied =
+                            inversion_applied =
                                 emit_combined_load(ctx, LoadKind::Input, input, next_scratch_index, target, buf)?;
                         }
                         Some(InputType::Word) => {
                             let ctx = ColumnContext { columns, row_number, column_index, column };
-                            xor_inversion_applied =
+                            inversion_applied =
                                 emit_combined_load(ctx, LoadKind::Word, input, next_scratch_index, target, buf)?;
                         }
                         Some(InputType::Output) => {
@@ -382,6 +427,55 @@ fn evaluate_columns(
                     target.emit_output(buf, value, find_output_type(), &label);
                 }
                 CoilType::Routine => {
+                    // A Routine column used to consult neither `combinator`
+                    // nor the right inversion point: AND/OR/XOR all produced
+                    // byte-identical output (its ASM was spliced in and
+                    // whatever carry that left behind simply became the new
+                    // running total, discarding the preceding one), while the
+                    // shared trailing `if column.inverted` complemented that
+                    // post-splice carry — a different operation from "invert
+                    // this block's own result before combining it".
+                    //
+                    // The fix reuses the exact stash/evaluate-fresh/combine
+                    // pattern the non-leading-group path above (and the
+                    // XOR-leaf path in `emit_combined_load`) already
+                    // established, with the routine's own injected ASM
+                    // playing the "evaluate this operand fresh" role:
+                    //
+                    //   1. stash the running total (`emit_relay_write`)
+                    //   2. emit the routine's ASM, JNC-wrap unchanged
+                    //   3. `emit_not` here, on the routine's own fresh result
+                    //   4. read the stash back and combine via this column's
+                    //      own resolved combinator
+                    //
+                    // Step 1 is safe to place before the JNC wrap:
+                    // `emit_relay_write` is a pure ACC/DPTR read-modify-write
+                    // that never touches carry, so the JNC still tests the
+                    // same running total it tested before this change.
+                    //
+                    // Backward compatibility: a *non-first* Routine column
+                    // with no combinator at all is left on the legacy path
+                    // (splice only, no stash/combine) rather than becoming a
+                    // `MissingCombinator` error. Every routine block the UI
+                    // appends to a non-empty row carries an explicit
+                    // combinator, so this only affects screens saved before
+                    // the picker existed — turning those into hard compile
+                    // errors would be a regression, not a fix. The emitted
+                    // sequence for that legacy case is byte-for-byte what it
+                    // was before (the inversion below lands in exactly the
+                    // same position the shared trailing check used to put
+                    // it, since no combine step follows).
+                    let combines_with_previous =
+                        previous_in(columns, column_index).is_some() && column.combinator.is_some();
+                    let stash = if combines_with_previous {
+                        let (scratch_byte, scratch_bit) = crate::legacy::find_param(*next_scratch_index);
+                        *next_scratch_index += 1;
+                        target.emit_relay_write(buf, scratch_byte, scratch_bit);
+                        Some((scratch_byte, scratch_bit))
+                    } else {
+                        None
+                    };
+
                     let jump = is_jump_required(columns, column_index);
                     if jump {
                         target.emit_jnc(buf, &label);
@@ -393,6 +487,27 @@ fn evaluate_columns(
                     buf.push(asm.to_string());
                     if jump {
                         target.emit_label(buf, &label);
+                    }
+
+                    // Applies to the routine's OWN result, before combining —
+                    // matching design spec §4's ordering and the group path
+                    // above. For a first-position routine (nothing to combine
+                    // with) this is still the right and only place for it.
+                    if column.inverted {
+                        target.emit_not(buf);
+                    }
+                    inversion_applied = true;
+
+                    if let Some((scratch_byte, scratch_bit)) = stash {
+                        if column.combinator == Some(Combinator::Xor) {
+                            target.emit_relay_read(buf, scratch_byte);
+                            target.emit_xor(buf, scratch_bit);
+                        } else {
+                            let resolved_combinator =
+                                resolve_combinator(columns, row_number, column_index, column)?;
+                            let scratch_input = (scratch_byte * 8 + scratch_bit) as i32;
+                            target.emit_load(buf, LoadKind::Flag, scratch_input, resolved_combinator);
+                        }
                     }
                 }
                 CoilType::RowRef => {
@@ -420,7 +535,7 @@ fn evaluate_columns(
                     // `assign_relay_addresses` computed.
                     let input = (byte * 8 + bit) as i32;
                     let ctx = ColumnContext { columns, row_number, column_index, column };
-                    xor_inversion_applied =
+                    inversion_applied =
                         emit_combined_load(ctx, LoadKind::Flag, input, next_scratch_index, target, buf)?;
                 }
                 _ => {
@@ -447,9 +562,10 @@ fn evaluate_columns(
             // Task 4b: `emit_combined_load`'s XOR path already applies
             // `column.inverted` itself, to the leaf's own fresh value before
             // combining (matching the group fix above, not this pre-existing
-            // AND/OR gap) — `xor_inversion_applied` guards against inverting
-            // twice for that path.
-            if column.inverted && !xor_inversion_applied {
+            // AND/OR gap) — `inversion_applied` guards against inverting
+            // twice for that path. The Routine arm above sets the same flag
+            // for the same reason.
+            if column.inverted && !inversion_applied {
                 target.emit_not(buf);
             }
         }
@@ -620,14 +736,14 @@ mod tests {
         };
         let target = RecordingTarget::new();
         let out = generate(&screen, &target).unwrap();
-        // No named outputs, so the scratch counter starts at 0 -> (byte 0,
-        // bit 0). The running total (first's result) is stashed there
+        // No named outputs, so the scratch counter starts at
+        // RELAY_ALLOC_START_INDEX -> (byte 100, bit 0). The running total (first's result) is stashed there
         // before second's own value is loaded fresh (ignoring the outer
         // combinator, `LoadCombinator::None`), then the stash is read back
         // and combined via `emit_xor`.
         assert_eq!(
             out,
-            "LOAD Input 1 None\nRELAY_WRITE 0 0\nLOAD Input 2 None\nRELAY_READ 0\nXOR 0"
+            "LOAD Input 1 None\nRELAY_WRITE 100 0\nLOAD Input 2 None\nRELAY_READ 100\nXOR 0"
         );
     }
 
@@ -814,7 +930,7 @@ mod tests {
         let out = generate(&screen, &target).unwrap();
         assert_eq!(
             out,
-            "LOAD Input 1 None\nRELAY_WRITE 0 0\nLOAD Input 2 None\nLOAD Input 3 Series\nLOAD Flag 0 Parallel"
+            "LOAD Input 1 None\nRELAY_WRITE 100 0\nLOAD Input 2 None\nLOAD Input 3 Series\nLOAD Flag 800 Parallel"
         );
     }
 
@@ -860,7 +976,7 @@ mod tests {
         let out = generate(&screen, &target).unwrap();
         assert_eq!(
             out,
-            "LOAD Input 1 None\nRELAY_WRITE 0 0\nLOAD Input 2 None\nLOAD Input 3 Series\nRELAY_READ 0\nXOR 0"
+            "LOAD Input 1 None\nRELAY_WRITE 100 0\nLOAD Input 2 None\nLOAD Input 3 Series\nRELAY_READ 100\nXOR 0"
         );
     }
 
@@ -893,7 +1009,7 @@ mod tests {
         let out = generate(&screen, &target).unwrap();
         assert_eq!(
             out,
-            "LOAD Input 1 None\nRELAY_WRITE 0 0\nLOAD Input 2 None\nNOT\nRELAY_READ 0\nXOR 0"
+            "LOAD Input 1 None\nRELAY_WRITE 100 0\nLOAD Input 2 None\nNOT\nRELAY_READ 100\nXOR 0"
         );
     }
 
@@ -968,13 +1084,13 @@ mod tests {
         assert_eq!(
             out,
             "LOAD Input 1 None\n\
-             RELAY_WRITE 0 0\n\
+             RELAY_WRITE 100 0\n\
              LOAD Input 2 None\n\
-             RELAY_WRITE 0 1\n\
+             RELAY_WRITE 100 1\n\
              LOAD Input 3 None\n\
              LOAD Input 4 Series\n\
-             LOAD Flag 1 Series\n\
-             LOAD Flag 0 Parallel"
+             LOAD Flag 801 Series\n\
+             LOAD Flag 800 Parallel"
         );
     }
 
@@ -1011,7 +1127,7 @@ mod tests {
         let out = generate(&screen, &target).unwrap();
         assert_eq!(
             out,
-            "LOAD Input 1 None\nRELAY_WRITE 0 0\nLOAD Input 5 None\nNOT\nLOAD Flag 0 Parallel"
+            "LOAD Input 1 None\nRELAY_WRITE 100 0\nLOAD Input 5 None\nNOT\nLOAD Flag 800 Parallel"
         );
     }
 
@@ -1036,12 +1152,12 @@ mod tests {
         let out = generate(&screen, &target).unwrap();
         // Row 1: loads its own column, then writes the result to the relay
         // address assigned to "Conveyor Running" (the first named output, so
-        // relay index 0 -> byte 0, bit 0). Row 2: reads that same address back
+        // relay index RELAY_ALLOC_START_INDEX -> byte 100, bit 0). Row 2: reads that same address back
         // as a Flag-style load (RowRef reuses LoadKind::Flag — no new emission
         // path needed for reading).
         assert_eq!(
             out,
-            "LOAD Input 1 None\nRELAY_WRITE 0 0\nLOAD Flag 0 None"
+            "LOAD Input 1 None\nRELAY_WRITE 100 0\nLOAD Flag 800 None"
         );
     }
 
@@ -1077,5 +1193,307 @@ mod tests {
         let target = RecordingTarget::new();
         let err = generate(&screen, &target).unwrap_err();
         assert_eq!(err, CompileError::ForwardRowReference { row: 1, column: 1, name: "Later".into() });
+    }
+
+    // ------------------------------------------------------------------
+    // Fix 4: relay-address allocation must start clear of the addresses the
+    // shipped routine library already writes to directly.
+    // ------------------------------------------------------------------
+
+    /// Every `RELAY_WRITE {byte} {bit}` / `RELAY_READ {byte}` line the target
+    /// recorded, reduced to its byte, so a test can assert the whole
+    /// allocation run stayed inside the reserved range.
+    fn recorded_relay_bytes(target: &RecordingTarget) -> Vec<u32> {
+        target
+            .calls
+            .borrow()
+            .iter()
+            .filter_map(|line| {
+                let rest = line
+                    .strip_prefix("RELAY_WRITE ")
+                    .or_else(|| line.strip_prefix("RELAY_READ "))?;
+                rest.split_whitespace().next()?.parse::<u32>().ok()
+            })
+            .collect()
+    }
+
+    #[test]
+    fn named_output_and_scratch_addresses_start_clear_of_the_routine_library_range() {
+        // The shipped routine library writes literal `RLY512_+n` addresses at
+        // byte offsets up to 88 (RLY600). Allocation used to start at byte 0,
+        // handing the very first named row output the same physical bit
+        // `RLY512` — a silent collision. Both allocators now start at
+        // `RELAY_ALLOC_START_BYTE` (100).
+        //
+        // This screen exercises both allocators at once: row 1 has a named
+        // output (pre-pass allocator) and row 2 contains a non-leading group
+        // (lazy scratch allocator).
+        let mut named = column(CoilType::Load);
+        named.input_type = Some(InputType::Input);
+        named.value = "1".into();
+
+        let mut raw_a = column(CoilType::Load);
+        raw_a.row_number = 2;
+        raw_a.column_number = 1;
+        raw_a.input_type = Some(InputType::Input);
+        raw_a.value = "2".into();
+
+        let mut inner = column(CoilType::Load);
+        inner.input_type = Some(InputType::Input);
+        inner.value = "3".into();
+
+        let mut grouped = column(CoilType::Load);
+        grouped.row_number = 2;
+        grouped.column_number = 2;
+        grouped.combinator = Some(Combinator::And);
+        grouped.group = Some(vec![inner]);
+
+        let screen = Screen {
+            rows: vec![
+                RowScreen { row_number: 1, columns: vec![named], output_name: Some("Stage 1".into()) },
+                RowScreen { row_number: 2, columns: vec![raw_a, grouped], output_name: None },
+            ],
+            end_row_number: None,
+            end_column_number: None,
+        };
+        let target = RecordingTarget::new();
+        generate(&screen, &target).unwrap();
+
+        let bytes = recorded_relay_bytes(&target);
+        assert!(!bytes.is_empty(), "expected the screen to allocate at least one relay address");
+        for byte in &bytes {
+            assert!(
+                *byte >= RELAY_ALLOC_START_BYTE,
+                "relay byte {byte} is below the reserved start {RELAY_ALLOC_START_BYTE}; \
+                 it can collide with the shipped routine library's own RLY512_+n writes"
+            );
+        }
+        // Concretely: the named output takes index 800 -> (byte 100, bit 0),
+        // and the non-leading group's scratch takes the next index, 801 ->
+        // (byte 100, bit 1).
+        assert_eq!(bytes[0], 100);
+    }
+
+    #[test]
+    fn relay_alloc_start_byte_clears_the_highest_observed_routine_library_offset() {
+        // `RLY600` is the highest literal address in the routine library that
+        // falls in the `RLY512_+n` family: 600 - 512 = byte 88. Anything at
+        // or below that is reachable by a shipped routine's own writes.
+        const HIGHEST_OBSERVED_ROUTINE_LIBRARY_BYTE: u32 = 88;
+        assert!(RELAY_ALLOC_START_BYTE > HIGHEST_OBSERVED_ROUTINE_LIBRARY_BYTE);
+        assert_eq!(crate::legacy::find_param(RELAY_ALLOC_START_INDEX), (RELAY_ALLOC_START_BYTE, 0));
+    }
+
+    // ------------------------------------------------------------------
+    // Fix 5: a Routine column honors its own combinator, and applies
+    // inversion to its own fresh result before combining.
+    // ------------------------------------------------------------------
+
+    /// A routine column whose ASM is already rendered — the shape every
+    /// Fix 5/6 test below starts from.
+    fn routine_column(column_number: u32) -> ColumnScreen {
+        let mut routine = column(CoilType::Routine);
+        routine.column_number = column_number;
+        routine.routine_origin = Some(RoutineOrigin {
+            routine_name: "BIT RESET".into(),
+            description: "Resets the bit".into(),
+            values: Default::default(),
+        });
+        routine.rendered_asm = Some("ROUTINE_ASM".into());
+        routine
+    }
+
+    fn leading_load() -> ColumnScreen {
+        let mut load = column(CoilType::Load);
+        load.column_number = 1;
+        load.input_type = Some(InputType::Input);
+        load.value = "1".into();
+        load
+    }
+
+    fn one_row(columns: Vec<ColumnScreen>) -> Screen {
+        Screen {
+            rows: vec![RowScreen { row_number: 1, columns, output_name: None }],
+            end_row_number: None,
+            end_column_number: None,
+        }
+    }
+
+    #[test]
+    fn non_leading_routine_combined_via_or_stashes_then_reads_back_with_its_own_combinator() {
+        // Before this fix a Routine column never consulted `combinator` at
+        // all: AND, OR and XOR produced byte-identical output, and the
+        // preceding running total was silently discarded by whatever carry
+        // the routine's own ASM left behind. The emitted order must now be
+        // stash -> [JNC] routine ASM [LABEL] -> combine-read, reusing the
+        // same pattern the non-leading-group path established.
+        let mut routine = routine_column(2);
+        routine.combinator = Some(Combinator::Or);
+        let target = RecordingTarget::new();
+        let out = generate(&one_row(vec![leading_load(), routine]), &target).unwrap();
+        assert_eq!(
+            out,
+            "LOAD Input 1 None\n\
+             RELAY_WRITE 100 0\n\
+             JNC LABEL_1_2\n\
+             ROUTINE_ASM\n\
+             LABEL_1_2:\n\
+             LOAD Flag 800 Parallel"
+        );
+    }
+
+    #[test]
+    fn non_leading_routine_combined_via_and_uses_a_series_read_back() {
+        let mut routine = routine_column(2);
+        routine.combinator = Some(Combinator::And);
+        let target = RecordingTarget::new();
+        let out = generate(&one_row(vec![leading_load(), routine]), &target).unwrap();
+        assert_eq!(
+            out,
+            "LOAD Input 1 None\n\
+             RELAY_WRITE 100 0\n\
+             JNC LABEL_1_2\n\
+             ROUTINE_ASM\n\
+             LABEL_1_2:\n\
+             LOAD Flag 800 Series"
+        );
+    }
+
+    #[test]
+    fn non_leading_routine_combined_via_xor_uses_the_read_back_plus_emit_xor_pattern() {
+        // Same dispatch the group and leaf paths already use for XOR: 8085
+        // has no single "XOR carry" instruction, so the combine step is a
+        // read-back into ACC plus `emit_xor`, not a single `emit_load`.
+        let mut routine = routine_column(2);
+        routine.combinator = Some(Combinator::Xor);
+        let target = RecordingTarget::new();
+        let out = generate(&one_row(vec![leading_load(), routine]), &target).unwrap();
+        assert_eq!(
+            out,
+            "LOAD Input 1 None\n\
+             RELAY_WRITE 100 0\n\
+             JNC LABEL_1_2\n\
+             ROUTINE_ASM\n\
+             LABEL_1_2:\n\
+             RELAY_READ 100\n\
+             XOR 0"
+        );
+    }
+
+    #[test]
+    fn inverted_non_leading_routine_inverts_its_own_result_before_combining_once() {
+        // `emit_not` must land between the routine's own ASM and the combine
+        // read-back — inverting the routine's own result, not
+        // `running_total OP routine_result` — and must fire exactly once
+        // (the shared trailing inversion check is suppressed).
+        let mut routine = routine_column(2);
+        routine.combinator = Some(Combinator::Or);
+        routine.inverted = true;
+        let target = RecordingTarget::new();
+        let out = generate(&one_row(vec![leading_load(), routine]), &target).unwrap();
+        assert_eq!(
+            out,
+            "LOAD Input 1 None\n\
+             RELAY_WRITE 100 0\n\
+             JNC LABEL_1_2\n\
+             ROUTINE_ASM\n\
+             LABEL_1_2:\n\
+             NOT\n\
+             LOAD Flag 800 Parallel"
+        );
+        assert_eq!(target.calls.borrow().iter().filter(|line| *line == "NOT").count(), 1);
+    }
+
+    #[test]
+    fn first_position_routine_needs_no_stash_but_still_inverts_its_own_result() {
+        // Nothing precedes it, so there is no running total to stash or
+        // combine with — but `inverted` still applies, directly to the
+        // routine's own result.
+        let mut routine = routine_column(1);
+        routine.inverted = true;
+        let target = RecordingTarget::new();
+        let out = generate(&one_row(vec![routine]), &target).unwrap();
+        assert_eq!(out, "ROUTINE_ASM\nNOT");
+    }
+
+    #[test]
+    fn non_leading_routine_without_a_combinator_keeps_its_legacy_splice_only_emission() {
+        // Backward compatibility: screens saved before the combinator picker
+        // existed carry routine columns with `combinator: None`. Those stay
+        // on the legacy path (no stash, no combine, no new compile error) —
+        // byte-for-byte what `routine_after_load_wraps_with_jnc_and_label`
+        // already asserts.
+        let routine = routine_column(2);
+        let target = RecordingTarget::new();
+        let out = generate(&one_row(vec![leading_load(), routine]), &target).unwrap();
+        assert_eq!(out, "LOAD Input 1 None\nJNC LABEL_1_2\nROUTINE_ASM\nLABEL_1_2:");
+        assert!(!target.calls.borrow().iter().any(|line| line.starts_with("RELAY_WRITE")));
+    }
+
+    // ------------------------------------------------------------------
+    // Fix 6: naming a routine-only row's output now stores a real value.
+    // ------------------------------------------------------------------
+
+    #[test]
+    fn a_routine_only_row_with_a_named_output_writes_the_routine_s_own_result() {
+        // Consequence of Fix 5: the routine's own result reliably ends up in
+        // carry the way a Load's does, so the (already-correct in principle)
+        // row-output write stores something meaningful rather than residual
+        // garbage. The only thing that can be in carry at the RELAY_WRITE is
+        // whatever the routine's own ASM left there.
+        let screen = Screen {
+            rows: vec![RowScreen {
+                row_number: 1,
+                columns: vec![routine_column(1)],
+                output_name: Some("Reset Done".into()),
+            }],
+            end_row_number: None,
+            end_column_number: None,
+        };
+        let target = RecordingTarget::new();
+        let out = generate(&screen, &target).unwrap();
+        assert_eq!(out, "ROUTINE_ASM\nRELAY_WRITE 100 0");
+    }
+
+    #[test]
+    fn a_named_routine_row_output_captures_the_inverted_and_combined_result() {
+        // Row 1: `load OR NOT(routine)`, named. The RELAY_WRITE must come
+        // after the full combine — i.e. it captures the value the whole row
+        // expression produced, not the raw carry the routine's ASM left
+        // behind mid-expression. Row 2 then reads that same address back.
+        let mut routine = routine_column(2);
+        routine.combinator = Some(Combinator::Or);
+        routine.inverted = true;
+
+        let mut row_ref = column(CoilType::RowRef);
+        row_ref.row_number = 2;
+        row_ref.row_ref_name = Some("Reset Done".into());
+
+        let screen = Screen {
+            rows: vec![
+                RowScreen {
+                    row_number: 1,
+                    columns: vec![leading_load(), routine],
+                    output_name: Some("Reset Done".into()),
+                },
+                RowScreen { row_number: 2, columns: vec![row_ref], output_name: None },
+            ],
+            end_row_number: None,
+            end_column_number: None,
+        };
+        let target = RecordingTarget::new();
+        let out = generate(&screen, &target).unwrap();
+        assert_eq!(
+            out,
+            "LOAD Input 1 None\n\
+             RELAY_WRITE 100 1\n\
+             JNC LABEL_1_2\n\
+             ROUTINE_ASM\n\
+             LABEL_1_2:\n\
+             NOT\n\
+             LOAD Flag 801 Parallel\n\
+             RELAY_WRITE 100 0\n\
+             LOAD Flag 800 None"
+        );
     }
 }
