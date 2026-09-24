@@ -495,7 +495,11 @@ export default function App() {
         {pendingAppend?.stage.step === 'COMBINE' && (
           <CombinatorPicker
             onPick={(c, inverted) => commitAppend(pendingAppend.block, pendingAppend.rowNumber, c, inverted)}
-            onGroup={handleStartGrouping}
+            // Engineer-mode only, same gate as raw block placement:
+            // restructuring a rung into a nested expression is editing the
+            // diagram's shape, which requirements §7.1 keeps out of worker
+            // mode. A worker still gets the plain AND/OR/XOR + Invert choice.
+            onGroup={mode === 'ENGINEER' ? handleStartGrouping : undefined}
           />
         )}
         {pendingAppend?.stage.step === 'GROUP_INNER' && (

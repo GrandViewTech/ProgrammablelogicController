@@ -271,6 +271,18 @@ describe('App — group authoring', () => {
     }
   }
 
+  it('never offers grouping in Worker mode', async () => {
+    // Requirements §7.1: restructuring a rung into a nested expression is
+    // editing the diagram's shape, which worker mode doesn't allow. The
+    // plain AND/OR/XOR + Invert choice is still offered.
+    await renderApp();
+    await addRoutineBlock();
+    await waitForScreen((s) => s.rows.length === 1);
+    await addRoutineBlock();
+    expect(screen.getByRole('button', { name: 'AND' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: GROUP })).not.toBeInTheDocument();
+  });
+
   it('offers grouping only once the rung already has a block', async () => {
     await renderApp();
     await switchToEngineerMode();
