@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+    branches: [feature/ladder-studio-v2, master]
+    tags: ['ladder-studio-v*']
+  pull_request:
+    branches: [feature/ladder-studio-v2, master]
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Install Linux Tauri dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf build-essential curl wget file libssl-dev libgtk-3-dev
+
+      - name: Cargo test (ladder-core workspace)
+        run: cd ladder-core && cargo test --workspace
+
+      - name: Cargo clippy (ladder-core workspace)
+        run: cd ladder-core && cargo clippy --workspace -- -D warnings
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ui/package-lock.json
+
+      - name: Install UI dependencies
+        run: cd ui && npm ci
+
+      - name: UI unit tests
+        run: cd ui && npx vitest run
+
+      - name: UI production build
+        run: cd ui && npm run build
+
+      - name: Install Playwright browsers
+        run: cd ui && npx playwright install --with-deps chromium
+
+      - name: UI e2e tests
+        run: cd ui && npx playwright test
+
+      - name: Cargo test (src-tauri)
+        run: cd src-tauri && cargo test
+
+  release:
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/ladder-studio-v')
+    # tauri-action creates the GitHub release and uploads the installers to it
+    # with GITHUB_TOKEN, which needs write access to repository contents.
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Linux Tauri dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf build-essential curl wget file libssl-dev libgtk-3-dev
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ui/package-lock.json
+
+      - name: Install UI dependencies
+        run: cd ui && npm ci
+
+      # No `tauriScript` override: tauri-action installs and runs its own
+      # bundled CLI. Overriding it with `cargo tauri` would require a
+      # `cargo install tauri-cli` step that this job does not have.
+      # `ui/dist` is produced by tauri.conf.json's `beforeBuildCommand`.
+      # This workflow triggers on `push.tags`, not on a `release` event, so
+      # there is no `github.event.release.id` to attach to — tauri-action
+      # creates the release itself from the pushed tag instead.
+      - name: Build installer
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: .
+          tagName: ${{ github.ref_name }}
+          releaseName: 'Ladder Studio ${{ github.ref_name }}'
+          releaseBody: 'See the assets to download this version and install.'
+          releaseDraft: true
+          prerelease: false

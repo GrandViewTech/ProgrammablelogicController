@@ -1,0 +1,833 @@
+/*
+ * The single owner of the visual design system (requirements §8, v2
+ * direction): light, card-based layout — white elevated cards with soft
+ * shadows and no hard borders, on a soft neutral page background, 18px+
+ * corner radii, pill-shaped buttons and toggles, coral accent, teal lock
+ * indicator, Manrope for UI and JetBrains Mono for code.
+ *
+ * `index.css` is baseline resets only and must not set colors or layout.
+ */
+
+:root {
+  --color-page-bg: #F4F3F8;
+  --color-card-bg: #FFFFFF;
+  --color-accent: #FF6B4A;
+  --color-lock: #0F9B8E;
+  --color-text: #1A1A1A;
+  --color-text-muted: #6B6B76;
+  --color-danger: #B3261E;
+  --radius-card: 18px;
+  --radius-pill: 999px;
+  --font-ui: 'Manrope', -apple-system, sans-serif;
+  --font-code: 'JetBrains Mono', 'SFMono-Regular', monospace;
+  --shadow-card: 0 2px 12px rgba(20, 20, 30, 0.06);
+
+  /* Derived surfaces — kept as tokens so tints stay consistent. */
+  --color-accent-soft: color-mix(in srgb, var(--color-accent) 12%, var(--color-card-bg));
+  --color-sunken-bg: color-mix(in srgb, var(--color-page-bg) 70%, var(--color-card-bg));
+  --space-gutter: 20px;
+}
+
+body {
+  background: var(--color-page-bg);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  margin: 0;
+}
+
+code, pre, .mono {
+  font-family: var(--font-code);
+}
+
+/* ---------------------------------------------------------------- shell */
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  padding: var(--space-gutter);
+  gap: 16px;
+}
+
+.app-shell > header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 4px 8px;
+  flex: none;
+}
+
+.app-shell > header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.header-toggles {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Palette | Canvas | Preview, always visible side-by-side (requirements §7.4).
+   `min-height: 0` lets the children own their own scrolling instead of
+   stretching the shell past the viewport. */
+.app-shell > main {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* --------------------------------------------------------------- errors */
+
+.app-error,
+.panel-error {
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 8%, var(--color-card-bg));
+  border-radius: var(--radius-card);
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  flex: none;
+}
+
+.panel-error {
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+/* -------------------------------------------------------------- palette */
+
+.palette {
+  flex: 0 0 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  padding: 16px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.palette input {
+  flex: none;
+  width: 100%;
+  padding: 9px 16px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-sunken-bg);
+  font-size: 14px;
+  outline-offset: 2px;
+}
+
+.palette input:focus-visible {
+  outline: 2px solid var(--color-accent);
+}
+
+.palette ul {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.palette li {
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  background: transparent;
+  transition: background 120ms ease;
+}
+
+.palette li:hover,
+.palette li:focus-visible {
+  background: var(--color-accent-soft);
+}
+
+.palette li strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.palette li p {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+/* --------------------------------------------------------------- canvas */
+
+/* Wraps the row-outputs bar and the canvas so the pair shares the flexible
+   middle column between Palette and PreviewPanel. */
+.canvas-column {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Always visible, unlike `.row-outputs-bar` (which only appears once a row
+   exists): a worker needs "New row" reachable from an empty screen too, and
+   needs to see which rung the next block will land on before placing it. */
+.canvas-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  flex: none;
+}
+
+.canvas-toolbar__target {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.canvas-toolbar__target strong {
+  color: var(--color-text);
+}
+
+.canvas-toolbar__new-row {
+  margin-left: auto;
+  padding: 7px 16px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.canvas-toolbar__new-row:hover {
+  background: color-mix(in srgb, var(--color-accent) 20%, var(--color-card-bg));
+}
+
+/* Engineer-mode only (requirements §7.1). Sits alongside the toolbar above
+   the canvas, matching `.row-outputs-bar`'s card treatment so the authoring
+   controls read as one band rather than three unrelated widgets. */
+.raw-block-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  flex: none;
+}
+
+.raw-block-form__group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  font-size: 12px;
+}
+
+.raw-block-form__group legend {
+  float: left;
+  padding: 0 8px 0 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.raw-block-form__group label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.raw-block-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.raw-block-form__field input {
+  width: 128px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-sunken-bg);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text);
+  outline-offset: 2px;
+}
+
+.raw-block-form__field input:focus-visible {
+  outline: 2px solid var(--color-accent);
+}
+
+.raw-block-form__hint {
+  flex-basis: 100%;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-danger);
+}
+
+.raw-block-form button {
+  padding: 7px 18px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.raw-block-form button:disabled {
+  background: var(--color-sunken-bg);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+/* One row per rung: its output name field, plus a single action to open
+   the reference picker. Sits above the canvas rather than inline in each
+   RowLane, so naming/referencing stays independent of view style (Cards vs
+   Symbols) and doesn't reflow the diagram itself. */
+.row-outputs-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  flex: none;
+}
+
+.row-outputs-bar__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Doubles as the "add to this rung" selector — pressed state marks the rung
+   that `targetRowNumber` currently points at. */
+.row-outputs-bar__label {
+  padding: 5px 12px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.row-outputs-bar__label[aria-pressed='true'] {
+  background: var(--color-accent);
+  color: #FFFFFF;
+}
+
+.row-output-name {
+  padding: 6px 12px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-sunken-bg);
+  font-size: 13px;
+  outline-offset: 2px;
+}
+
+.row-output-name:focus-visible {
+  outline: 2px solid var(--color-accent);
+}
+
+.row-outputs-bar__reference {
+  margin-left: auto;
+  padding: 7px 16px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.row-outputs-bar__reference:hover {
+  background: color-mix(in srgb, var(--color-accent) 20%, var(--color-card-bg));
+}
+
+/* Positioning context for the scroll affordances: they must stay pinned to
+   the canvas edge rather than scrolling away with the diagram content, so
+   their containing block is `.canvas`, not the scrolling box. */
+.canvas {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+/* Whole-canvas scroll (requirements §7.5): the rungs live in one scrollable
+   box so both power rails span that box's full width and stay anchored. */
+.canvas-scroll-box {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* `max-content` is what actually makes a wide rung overflow (and therefore
+   scroll); `min-width: 100%` keeps the rails spanning the box when it
+   doesn't. Without both, the lane would be stretched to the box width and
+   never scroll. */
+.row-lane {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  width: max-content;
+  min-width: 100%;
+  padding: 8px 0;
+}
+
+.row-lane__cell {
+  position: relative;
+  padding: 4px 2px;
+}
+
+.power-rail {
+  flex: none;
+  align-self: stretch;
+  width: 4px;
+  min-height: 56px;
+  border-radius: var(--radius-pill);
+  background: var(--color-text-muted);
+}
+
+.canvas-edge-fade {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 48px;
+  background: linear-gradient(to right, transparent, var(--color-card-bg));
+  pointer-events: none;
+}
+
+.canvas-scroll-chip {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--color-sunken-bg);
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+/* ----------------------------------------------------------- blocks */
+
+.block-node {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 132px;
+  min-height: 56px;
+  padding: 12px 16px;
+  border-radius: var(--radius-card);
+  background: var(--color-sunken-bg);
+  box-shadow: var(--shadow-card);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.block-node__expand {
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1;
+  padding: 2px 4px;
+  cursor: pointer;
+}
+
+.block-node__expand:hover {
+  color: var(--color-text);
+}
+
+.block-node__asm {
+  flex-basis: 100%;
+  margin: 4px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--color-page-bg);
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  font-weight: 400;
+}
+
+/* Traditional ladder symbols, Symbols view only. Routine blocks never use
+   these — they're an opaque injected subroutine, not a single contact/coil
+   (requirements §5) — so they stay a labeled box in both views. */
+.block-symbol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-family: var(--font-code);
+}
+
+.block-symbol__glyph {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.block-symbol--coil .block-symbol__glyph {
+  color: var(--color-accent);
+}
+
+.block-symbol__value {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.block-node--routine {
+  background: color-mix(in srgb, var(--color-lock) 12%, var(--color-card-bg));
+  border-radius: var(--radius-card);
+}
+
+.lock-badge {
+  color: var(--color-lock);
+  font-size: 13px;
+  line-height: 1;
+}
+
+.invert-badge {
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-text);
+  color: #FFFFFF;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.block-node__group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 8px 8px 0;
+}
+
+.block-node__raw {
+  font-family: var(--font-code);
+}
+
+/* AND and XOR continuations — OR is drawn as a real branch (.row-branch)
+   rather than a badge, since a badge alone doesn't read as "either path"
+   the way an actual fork/merge does. */
+.combinator-badge {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+/* XOR is rarer and semantically sharper than AND — a distinct fill keeps a
+   rung's exclusive-or joins scannable at a glance instead of blending into
+   the accent-colored AND badges. */
+.combinator-badge--xor {
+  background: var(--color-text);
+}
+
+/* A run of one anchor block plus one or more OR-connected blocks, each
+   drawn on its own parallel path inside a shared bracket that visually
+   forks from and merges back into the main line. Underlying data is still
+   the flat, explicit-combinator sequence from requirements §7.3 — this is
+   rendering only. */
+.row-branch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-top: 10px;
+}
+
+.row-branch__paths {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--color-accent) 5%, transparent);
+}
+
+.row-branch__path {
+  display: flex;
+  align-items: center;
+}
+
+/* Floats above the three-column layout so showing it never reflows the
+   canvas or the preview panel. */
+.combinator-picker {
+  position: fixed;
+  left: 50%;
+  bottom: 40px;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-card-bg);
+  box-shadow: 0 8px 28px rgba(20, 20, 30, 0.18);
+}
+
+/* Names which of the group flow's two questions this instance is asking —
+   without it, two identical AND/OR/XOR rows in a row would be ambiguous. */
+.combinator-picker__prompt {
+  max-width: 280px;
+  padding: 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.combinator-picker__buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* Set apart from the AND/OR/XOR row: it doesn't answer the same question,
+   it switches to a different (two-step) one. Selector is deliberately
+   `button.…` so it outranks the `.combinator-picker button` rule below
+   without reaching for `!important`. */
+.combinator-picker button.combinator-picker__group {
+  margin-top: 2px;
+  background: var(--color-sunken-bg);
+  color: var(--color-text);
+  font-size: 12px;
+}
+
+.combinator-picker button.combinator-picker__group:hover {
+  background: var(--color-accent-soft);
+}
+
+.combinator-picker__invert {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  padding-bottom: 4px;
+}
+
+.combinator-picker button {
+  padding: 8px 22px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.combinator-picker button:hover {
+  background: color-mix(in srgb, var(--color-accent) 85%, #000000);
+}
+
+/* Floats the same way `.combinator-picker` does (see above) — showing it
+   never reflows the canvas or the preview panel. */
+.row-reference-picker {
+  position: fixed;
+  left: 50%;
+  bottom: 40px;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  min-width: 220px;
+  border-radius: var(--radius-card);
+  background: var(--color-card-bg);
+  box-shadow: 0 8px 28px rgba(20, 20, 30, 0.18);
+}
+
+.row-reference-picker ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row-reference-picker li {
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--color-sunken-bg);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.row-reference-picker li:hover {
+  background: var(--color-accent-soft);
+}
+
+.row-reference-picker p {
+  max-width: 240px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.row-reference-picker button {
+  align-self: flex-end;
+  padding: 7px 18px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-sunken-bg);
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.row-reference-picker button:hover {
+  background: color-mix(in srgb, var(--color-text) 10%, var(--color-sunken-bg));
+}
+
+/* -------------------------------------------------- segmented controls */
+
+.edit-mode-toggle,
+.view-style-toggle,
+.preview-panel__toggle {
+  display: inline-flex;
+  flex: none;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--color-sunken-bg);
+}
+
+.edit-mode-toggle button,
+.view-style-toggle button,
+.preview-panel__toggle button {
+  padding: 7px 18px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.edit-mode-toggle button.active,
+.view-style-toggle button.active,
+.preview-panel__toggle button.active {
+  background: var(--color-accent);
+  color: #FFFFFF;
+}
+
+.preview-panel__toggle button {
+  flex: 1;
+  padding: 7px 10px;
+}
+
+/* -------------------------------------------------------- preview panel */
+
+.preview-panel {
+  flex: 0 0 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  padding: 16px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.preview-panel__toggle {
+  display: flex;
+}
+
+.preview-panel__plain-english {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.preview-panel__plain-english li {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--color-sunken-bg);
+  font-size: 13px;
+}
+
+.preview-panel__code {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  margin: 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--color-sunken-bg);
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre;
+}

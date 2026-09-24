@@ -1,0 +1,45 @@
+/*
+ * Baseline resets only. Everything visual — palette, typography, radii,
+ * shadows and every layout region — lives in `theme/tokens.css`, which is the
+ * single owner of the design system (requirements §8). Nothing here may set a
+ * page background, a text color, or a width/centering constraint on `#root`:
+ * that is what the old Vite starter template did, and it fought the tokens.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+figure {
+  margin: 0;
+}
+
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
